@@ -1,0 +1,8 @@
+{
+  "esversion": 6,
+  "strict": "implied",
+  "globals: {
+    "console":true,
+    "require": true,
+  }
+}

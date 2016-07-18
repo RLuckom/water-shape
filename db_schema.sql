@@ -1,0 +1,40 @@
+CREATE TABLE IF NOT EXISTS sequences (
+  uid TEXT PRIMARY KEY,
+  date_created INTEGER,
+  name TEXT
+);
+
+CREATE TABLE IF NOT EXISTS gpio_pins (
+  pin_number INTEGER PRIMARY KEY,
+  sequence_uid TEXT,
+  FOREIGN KEY(sequence_uid) REFERENCES sequences(uid)
+);
+
+CREATE TABLE IF NOT EXISTS sequence_item (
+  uid TEXT PRIMARY KEY,
+  date_created INTEGER,
+  sequence_uid TEXT,
+  duration_seconds REAL,
+  state TEXT,
+  ordinal INTEGER,
+  FOREIGN KEY(sequence_uid) REFERENCES sequences(uid),
+  UNIQUE (sequence_uid, ordinal)
+);
+
+INSERT OR ABORT INTO gpio_pins VALUES (14, NULL);
+INSERT OR ABORT INTO gpio_pins VALUES (15, NULL);
+INSERT OR ABORT INTO gpio_pins VALUES (18, NULL);
+INSERT OR ABORT INTO gpio_pins VALUES (23, NULL);
+INSERT OR ABORT INTO gpio_pins VALUES (24, NULL);
+INSERT OR ABORT INTO gpio_pins VALUES (25, NULL);
+INSERT OR ABORT INTO gpio_pins VALUES (8, NULL);
+INSERT OR ABORT INTO gpio_pins VALUES (7, NULL);
+INSERT OR ABORT INTO gpio_pins VALUES (2, NULL);
+INSERT OR ABORT INTO gpio_pins VALUES (3, NULL);
+INSERT OR ABORT INTO gpio_pins VALUES (4, NULL);
+INSERT OR ABORT INTO gpio_pins VALUES (17, NULL);
+INSERT OR ABORT INTO gpio_pins VALUES (27, NULL);
+INSERT OR ABORT INTO gpio_pins VALUES (22, NULL);
+INSERT OR ABORT INTO gpio_pins VALUES (10, NULL);
+INSERT OR ABORT INTO gpio_pins VALUES (9, NULL);
+INSERT OR ABORT INTO gpio_pins VALUES (11, NULL);
