@@ -9,38 +9,38 @@ winston.add(winston.transports.File, { filename: __dirname + '/hydro.log' });
 winston.remove(winston.transports.Console);
 
 function startServer(db) {
-const server = new Hapi.Server();
-server.register(Inert, function() {
-        server.connection({ port: 8080 });
+  const server = new Hapi.Server();
+  server.register(Inert, function() {
+    server.connection({ port: 8080 });
 
-        server.route({
-                method: 'GET',
-                path: '/{param*}',
-                handler: {
-                        directory: {
-                                path: __dirname + '/dist'
-                        }
-                }
-        });
+    server.route({
+      method: 'GET',
+      path: '/{param*}',
+      handler: {
+        directory: {
+          path: __dirname + '/dist'
+        }
+      }
+    });
 
-        server.route({
-                method: 'GET',
-                path: '/sqlite3/gpio_pins',
-                handler: function(request, reply) {
-                        winston.log('error', 'get gpio');
-                        db.all('SELECT * FROM gpio_pins;', reply);
-                }  
-        });
+    server.route({
+      method: 'GET',
+      path: '/api/gpioPins',
+      handler: function(request, reply) {
+        winston.log('error', 'get gpio');
+        db.all('SELECT * FROM gpioPins;', reply);
+      }  
+    });
 
-        server.start((err) => {
+    server.start((err) => {
 
-                if (err) {
-                        throw err;
-                }
-                console.log('Server running at:', server.info.uri);
+      if (err) {
+        throw err;
+      }
+      console.log('Server running at:', server.info.uri);
 
-        });
-});
+    });
+  });
 }
 
 var db = new sqlite3.Database(__dirname + '/hydro.db');

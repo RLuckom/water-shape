@@ -1,40 +1,54 @@
 CREATE TABLE IF NOT EXISTS sequences (
   uid TEXT PRIMARY KEY,
-  date_created INTEGER,
+  dateCreated INTEGER,
+  defaultState REAL,
   name TEXT
 );
 
-CREATE TABLE IF NOT EXISTS gpio_pins (
-  pin_number INTEGER PRIMARY KEY,
-  sequence_uid TEXT,
-  FOREIGN KEY(sequence_uid) REFERENCES sequences(uid)
+CREATE TABLE IF NOT EXISTS gpioPins (
+  pinNumber INTEGER PRIMARY KEY,
+  sequenceUid TEXT,
+  FOREIGN KEY(sequenceUid) REFERENCES sequences(uid)
 );
 
-CREATE TABLE IF NOT EXISTS sequence_item (
+CREATE TABLE IF NOT EXISTS sequenceItem (
   uid TEXT PRIMARY KEY,
-  date_created INTEGER,
-  sequence_uid TEXT,
-  duration_seconds REAL,
-  state TEXT,
+  dateCreated INTEGER,
+  sequenceUid TEXT,
+  sequenceType INTEGER,
+  durationSeconds REAL,
   ordinal INTEGER,
-  FOREIGN KEY(sequence_uid) REFERENCES sequences(uid),
-  UNIQUE (sequence_uid, ordinal)
+  startTime TEXT,
+  endTime TEXT,
+  state REAL,
+  FOREIGN KEY(sequenceUid) REFERENCES sequences(uid),
+  FOREIGN KEY(sequenceType) REFERENCES sequenceTypes(sequenceId),
+  UNIQUE (sequenceUid, ordinal)
 );
 
-INSERT OR ABORT INTO gpio_pins VALUES (14, NULL);
-INSERT OR ABORT INTO gpio_pins VALUES (15, NULL);
-INSERT OR ABORT INTO gpio_pins VALUES (18, NULL);
-INSERT OR ABORT INTO gpio_pins VALUES (23, NULL);
-INSERT OR ABORT INTO gpio_pins VALUES (24, NULL);
-INSERT OR ABORT INTO gpio_pins VALUES (25, NULL);
-INSERT OR ABORT INTO gpio_pins VALUES (8, NULL);
-INSERT OR ABORT INTO gpio_pins VALUES (7, NULL);
-INSERT OR ABORT INTO gpio_pins VALUES (2, NULL);
-INSERT OR ABORT INTO gpio_pins VALUES (3, NULL);
-INSERT OR ABORT INTO gpio_pins VALUES (4, NULL);
-INSERT OR ABORT INTO gpio_pins VALUES (17, NULL);
-INSERT OR ABORT INTO gpio_pins VALUES (27, NULL);
-INSERT OR ABORT INTO gpio_pins VALUES (22, NULL);
-INSERT OR ABORT INTO gpio_pins VALUES (10, NULL);
-INSERT OR ABORT INTO gpio_pins VALUES (9, NULL);
-INSERT OR ABORT INTO gpio_pins VALUES (11, NULL);
+CREATE TABLE IF NOT EXISTS sequenceTypes (
+  sequenceId INTEGER PRIMARY KEY,
+  sequenceTypeName TEXT,
+  UNIQUE (sequenceTypeName)
+);
+
+INSERT OR ABORT INTO gpioPins VALUES (14, NULL);
+INSERT OR ABORT INTO gpioPins VALUES (15, NULL);
+INSERT OR ABORT INTO gpioPins VALUES (18, NULL);
+INSERT OR ABORT INTO gpioPins VALUES (23, NULL);
+INSERT OR ABORT INTO gpioPins VALUES (24, NULL);
+INSERT OR ABORT INTO gpioPins VALUES (25, NULL);
+INSERT OR ABORT INTO gpioPins VALUES (8, NULL);
+INSERT OR ABORT INTO gpioPins VALUES (7, NULL);
+INSERT OR ABORT INTO gpioPins VALUES (2, NULL);
+INSERT OR ABORT INTO gpioPins VALUES (3, NULL);
+INSERT OR ABORT INTO gpioPins VALUES (4, NULL);
+INSERT OR ABORT INTO gpioPins VALUES (17, NULL);
+INSERT OR ABORT INTO gpioPins VALUES (27, NULL);
+INSERT OR ABORT INTO gpioPins VALUES (22, NULL);
+INSERT OR ABORT INTO gpioPins VALUES (10, NULL);
+INSERT OR ABORT INTO gpioPins VALUES (9, NULL);
+INSERT OR ABORT INTO gpioPins VALUES (11, NULL);
+
+INSERT OR ABORT INTO sequenceTypes VALUES (1, "DURATION");
+INSERT OR ABORT INTO sequenceTypes VALUES (2, "TIME");

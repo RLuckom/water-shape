@@ -1,6 +1,7 @@
 *.swp
 *.log
 *.pid
+*.db
 node_modules
 dist
 app.pid
