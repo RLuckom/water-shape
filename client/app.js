@@ -1,13 +1,16 @@
 require('./scss/app.scss');
-var React = require('react');
-var ReactDOM = require('react-dom');
-var request = require('browser-request');
+const React = require('react');
+const ReactDOM = require('react-dom');
+const request = require('browser-request');
+const schemaFactory = require('../utils/schema').schemaFactory;
+const apiFactory = require('../utils/api');
+
+//TODO make .gitignored config file to avoid hardcoding environment-specific stuff.
+const api = apiFactory(schemaFactory(()=>{}), 'http://192.168.1.123/api', request);
 
 var GpioList = React.createClass({
   loadgpiosFromServer: function() {
-    request({
-      url: 'http://192.168.1.123/api/gpioPins',
-      json:true},
+    api.gpioPins.get(
     function(err, resp, body) {
       this.setState({data: body});
     }.bind(this)
@@ -38,9 +41,7 @@ var GpioList = React.createClass({
 
 var SequenceList = React.createClass({
   loadSequencesFromServer: function() {
-    request({
-      url: 'http://192.168.1.123/api/sequences',
-      json:true},
+    api.sequences.get(
     function(err, resp, body) {
       this.setState({data: body});
     }.bind(this)
@@ -55,8 +56,12 @@ var SequenceList = React.createClass({
   },
   render: function() {
     var sequences = this.state.data.map(function(sequence) {
+      function handleClick(seq) {
+        console.log(`hello ${sequence.name}`);
+      }
+      var self = this;
       return (
-        <div key={sequence.uid} className="sequence">
+        <div key={sequence.uid} className="sequence" onClick={handleClick}>
         <span className="sequenceName">{sequence.name}</span>
         </div>
       );

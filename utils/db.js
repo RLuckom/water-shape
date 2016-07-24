@@ -5,6 +5,7 @@ const boom = require('boom');
 
 module.exports = function(db) {
 
+  const schema = require('./schema').schemaFactory(noOpValidate);
   function noOpValidate(table, object, idColumn, id, columns, callback) {
     return dbUpsert(table, object, idColumn, id, columns, callback);
   }
@@ -29,20 +30,20 @@ module.exports = function(db) {
   }
 
   function upsertIntoDb(table, object, callback) {
-    if (allowedTables[table]) {
-      const idColumn = allowedTables[table].id;
+    if (schema[table]) {
+      const idColumn = schema[table].id;
       const id = object[idColumn];
-      const columns = allowedTables[table].columnNames;
-      return allowedTables[table].validateAndSave(table, object, idColumn, id, columns, callback);
+      const columns = schema[table].columnNames;
+      return schema[table].validateAndSave(table, object, idColumn, id, columns, callback);
     } else {
       return callback(boom.badRequest(`Unknown table: ${table}`));
     }
   }
 
   function handlePost(table, object, callback) {
-    if (allowedTables[table]) {
-      const id = object[object[allowedTables[table].id]];
-      return db.get(`SELECT * FROM ${table} WHERE ${allowedTables[table].id}=$id;`, {$id: id}, (err, row) => {
+    if (schema[table]) {
+      const id = object[object[schema[table].id]];
+      return db.get(`SELECT * FROM ${table} WHERE ${schema[table].id}=$id;`, {$id: id}, (err, row) => {
         if (err) {
           logger.log('error', `error getting object in POST: ${err.message}`);
           return callback(error);
@@ -53,47 +54,6 @@ module.exports = function(db) {
     } else {
       return callback(boom.badRequest(`Unknown table: ${table}`));
     }
-  }
-
-  const allowedTables = {
-    'sequences': {
-      id: 'uid',
-      columnNames: ['uid', 'dateCreated', 'defaultState', 'name'],
-      validateAndSave: noOpValidate, 
-      POST: true,
-      PUT: true,
-    },
-    'gpioPins': {
-      id: 'pinNumber',
-      columnNames: ['pinNumber', 'sequenceUid'],
-      validateAndSave: noOpValidate, 
-      POST: false,
-      PUT: true,
-    },
-    'sequenceItems': {
-      id: 'uid',
-      columnNames: [
-        'uid',
-        'dateCreated',
-        'sequenceUid',
-        'sequenceType',
-        'durationSeconds',
-        'ordinal',
-        'startTime',
-        'endTime',
-        'state'
-      ],
-      validateAndSave: noOpValidate, 
-      POST: true,
-      PUT: true,
-    },
-    'sequenceTypes': {
-      id: 'sequenceId',
-      columnNames: ['sequenceId', 'sequenceTypeName'],
-      validateAndSave: noOpValidate, 
-      POST: false,
-      PUT: false,
-    },
   }
 
   function dbLogResponse(callback) {
@@ -114,8 +74,8 @@ module.exports = function(db) {
     // https://github.com/mapbox/node-sqlite3/issues/330
     // so instead of using its input sanitation we just whitelist
     // the allowed table names.
-    if (allowedTables[table]) {
-      return db.get(`SELECT * FROM ${table} WHERE ${allowedTables[table].id}=$id;`, {$id: id}, dbLogResponse(callback));
+    if (schema[table]) {
+      return db.get(`SELECT * FROM ${table} WHERE ${schema[table].id}=$id;`, {$id: id}, dbLogResponse(callback));
     } else {
       return callback(boom.badRequest(`Unknown table: ${table}`));
     }
@@ -126,7 +86,7 @@ module.exports = function(db) {
     // https://github.com/mapbox/node-sqlite3/issues/330
     // so instead of using its input sanitation we just whitelist
     // the allowed table names.
-    if (allowedTables[table]) {
+    if (schema[table]) {
       return db.all(`SELECT * FROM ${table};`, dbLogResponse(callback));
     } else {
       return callback(boom.badRequest(`Unknown table: ${table}`));
@@ -134,7 +94,7 @@ module.exports = function(db) {
   }
 
   return {
-    allowedTables: _.cloneDeep(allowedTables),
+    schema: _.cloneDeep(schema),
     dbLogResponse:dbLogResponse,
     getFromDbById: getFromDbById,
     upsertIntoDb: upsertIntoDb,
