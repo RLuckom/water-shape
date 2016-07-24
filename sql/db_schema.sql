@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS gpioPins (
   FOREIGN KEY(sequenceUid) REFERENCES sequences(uid)
 );
 
-CREATE TABLE IF NOT EXISTS sequenceItem (
+CREATE TABLE IF NOT EXISTS sequenceItems (
   uid TEXT PRIMARY KEY,
   dateCreated INTEGER,
   sequenceUid TEXT,

@@ -47,7 +47,7 @@ set pidfile /var/run/monit.pid
 ## the monitoring state across reboots. If it is on temporary filesystem, the
 ## state will be lost on reboot which may be convenient in some situations.
 #
-  set statefile /var/lib/monit/state
+ set statefile /var/lib/monit/state
 #
 ## Set the list of mail servers for alert delivery. Multiple servers may be 
 ## specified using a comma separator. If the first mail server fails, Monit 
@@ -258,13 +258,13 @@ set pidfile /var/run/monit.pid
 #
    include /etc/monit/conf.d/*
 #
-check process nodeserver with pidfile /home/pi/workspace/server/app.pid
-  start program = "/bin/bash -c '2>&1 1>>/home/pi/workspace/server/app.log /home/pi/workspace/server/start.sh'"
+check process nodeserver with pidfile /home/pi/workspace/server/pids/app.pid 
+  start program = "/bin/bash -c '/home/pi/workspace/server/scripts/startServer.sh'"
     as uid pi and gid pi
-  stop program = "/home/pi/workspace/server/stopServer.sh"
+  stop program = "/home/pi/workspace/server/scripts/stopServer.sh"
   if does not exist then start
 
-check process gpio with pidfile /home/pi/workspace/server/gpio.pid
-  start program = "/bin/bash -c '2>&1 1>>/home/pi/workspace/server/gpio.log /home/pi/workspace/server/startGpio.sh'"
-  stop program = "/home/pi/workspace/server/stopGpio.sh"
+check process gpio with pidfile /home/pi/workspace/server/pids/gpio.pid
+  start program = "/bin/bash -c '/home/pi/workspace/server/scripts/startGpio.sh'"
+  stop program = "/home/pi/workspace/server/scripts/stopGpio.sh"
   if does not exist then start
