@@ -5,25 +5,36 @@ const boom = require('boom');
 
 module.exports = function(db) {
 
+  function noOpValidate(table, object, idColumn, id, columns, callback) {
+    console.log(this.columnNames);
+    return dbUpsert(table, object, idColumn, id, columns, callback);
+  }
+
+  function dbUpsert(table, object, idColumn, id, columns, callback) {
+    const values = _.reduce(columns, (r, v, k) => {
+      r.push(_.isUndefined(object[v]) ? null : object[v]);
+      return r;
+    }, []);
+    console.log('inserting', object);
+    var qs = _.fill(Array(values.length), '?');
+    var stmt = db.prepare(`INSERT OR REPLACE into ${table} (${columns.join(', ')}) VALUES (${qs.join(', ')});`, values);
+    console.log(JSON.stringify(stmt));
+    return db.get(`INSERT OR REPLACE into ${table} (${columns.join(', ')}) VALUES (${qs.join(', ')});`, values, (err, rows) => {
+      if (err) {
+        logger.log('error', `error upserting into ${table}: ${error}`);
+        callback(err);
+      } else {
+        return getFromDbById(table, id, callback);
+      }
+    });
+  }
+
   function upsertIntoDb(table, object, callback) {
     if (allowedTables[table]) {
       const idColumn = allowedTables[table].id;
+      const id = object[idColumn];
       const columns = allowedTables[table].columnNames;
-      try {
-        allowedTables[table].validate(object);
-        const values = _.reduce(columns, (r, v, k) => {
-          r.push(_.isUndefined(object[v]) ? null : object[v]);
-          return r;
-        }, []);
-        console.log('inserting', object);
-        var qs = _.fill(Array(values.length), '?');
-        var stmt = db.prepare(`INSERT OR REPLACE into ${table} (${columns.join(', ')}) VALUES (${qs.join(', ')});`, values);
-        console.log(JSON.stringify(stmt));
-        return db.run(`INSERT OR REPLACE into ${table} (${columns.join(', ')}) VALUES (${qs.join(', ')});`, values, dbLogResponse(callback));
-      } catch (err) {
-        logger.log('error', `Error upserting: ${err.message}`);
-        return callback(err);
-      }
+      return allowedTables[table].validateAndSave(table, object, idColumn, id, columns, callback);
     } else {
       return callback(boom.badRequest(`Unknown table: ${table}`));
     }
@@ -49,14 +60,14 @@ module.exports = function(db) {
     'sequences': {
       id: 'uid',
       columnNames: ['uid', 'dateCreated', 'defaultState', 'name'],
-      validate: function() {},
+      validateAndSave: noOpValidate, 
       POST: true,
       PUT: true,
     },
     'gpioPins': {
       id: 'pinNumber',
       columnNames: ['pinNumber', 'sequenceUid'],
-      validate: function() {},
+      validateAndSave: noOpValidate, 
       POST: false,
       PUT: true,
     },
@@ -73,14 +84,14 @@ module.exports = function(db) {
         'endTime',
         'state'
       ],
-      validate: function() {},
+      validateAndSave: noOpValidate, 
       POST: true,
       PUT: true,
     },
     'sequenceTypes': {
       id: 'sequenceId',
       columnNames: ['sequenceId', 'sequenceTypeName'],
-      validate: function() {},
+      validateAndSave: noOpValidate, 
       POST: false,
       PUT: false,
     },
@@ -117,7 +128,7 @@ module.exports = function(db) {
     // so instead of using its input sanitation we just whitelist
     // the allowed table names.
     if (allowedTables[table]) {
-      return db.get(`SELECT * FROM ${table};`, dbLogResponse(callback));
+      return db.all(`SELECT * FROM ${table};`, dbLogResponse(callback));
     } else {
       return callback(boom.badRequest(`Unknown table: ${table}`));
     }
