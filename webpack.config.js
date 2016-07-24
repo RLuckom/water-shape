@@ -1,6 +1,6 @@
 var path = require('path');
 module.exports = {
-  context: __dirname + "/app",
+  context: __dirname + "/client",
   entry: {
     javascript: "./app.js",
     html: './index.html',
@@ -12,7 +12,7 @@ module.exports = {
   module: {
     loaders: [{
       test: /\.js$/,
-      exclude: [/node_modules/, 'app.js'],
+      exclude: [],
       loaders: ["react-hot", "babel-loader"],
     },
     {
