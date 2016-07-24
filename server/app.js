@@ -107,7 +107,7 @@ function startServer(db) {
       method: 'GET',
       path: '/api/{table}',
       handler: function(request, reply) {
-        console.log('doing getAllRows');
+        logger.log('debug', 'doing getAllRows');
         return dbUtils.getAllRowsFromTable(request.params.table, reply);
       }
     });

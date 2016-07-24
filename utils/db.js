@@ -6,7 +6,6 @@ const boom = require('boom');
 module.exports = function(db) {
 
   function noOpValidate(table, object, idColumn, id, columns, callback) {
-    console.log(this.columnNames);
     return dbUpsert(table, object, idColumn, id, columns, callback);
   }
 
@@ -15,10 +14,10 @@ module.exports = function(db) {
       r.push(_.isUndefined(object[v]) ? null : object[v]);
       return r;
     }, []);
-    console.log('inserting', object);
+    logger.log('debug', `inserting ${JSON.stringify(object)}`);
     var qs = _.fill(Array(values.length), '?');
     var stmt = db.prepare(`INSERT OR REPLACE into ${table} (${columns.join(', ')}) VALUES (${qs.join(', ')});`, values);
-    console.log(JSON.stringify(stmt));
+    logger.log('debug', JSON.stringify(stmt));
     return db.get(`INSERT OR REPLACE into ${table} (${columns.join(', ')}) VALUES (${qs.join(', ')});`, values, (err, rows) => {
       if (err) {
         logger.log('error', `error upserting into ${table}: ${error}`);
@@ -99,7 +98,7 @@ module.exports = function(db) {
 
   function dbLogResponse(callback) {
     return function(error, rows) {
-      console.log('inserted, ', error, rows);
+      logger.log('debug', `insert complete. Error: ${JSON.stringify(error)}, rows: ${rows}`);
       if (error) {
         return logger.log('error', 'db error: ' + error);
         callback(new Error(`db error: ${error}`))
