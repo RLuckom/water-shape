@@ -7,6 +7,7 @@ const boom = require('boom');
 const _ = require('lodash');
 const dbUtilsFactory = require('../utils/db');
 const logger = require('../utils/logger');
+const uuid = require('node-uuid');
 
 function validateSequence() {
 }
@@ -49,9 +50,57 @@ function startServer(db) {
     });
 
     server.route({
+      method: 'POST',
+      path: '/api/{table}',
+      handler: function (request, reply) {
+        const table = request.params.table;
+        const id = request.params.id;
+        if (!dbUtils.allowedTables[table].POST) {
+          return callback(boom.badRequest(`Unknown table: ${table}`));
+        } else {
+          const objectToInsert = request.payload;
+          objectToInsert[dbUtils.allowedTables[table].id] = objectToInsert[dbUtils.allowedTables[table].id] || uuid.v4();
+          return dbUtils.handlePost(table, objectToInsert, reply);
+        }
+      }
+    });
+
+    server.route({
+      method: 'POST',
+      path: '/api/{table}/{id}',
+      handler: function (request, reply) {
+        const table = request.params.table;
+        const id = request.params.id;
+        if (!dbUtils.allowedTables[table].POST) {
+          return callback(boom.badRequest(`Unknown table: ${table}`));
+        } else {
+          const objectToInsert = request.payload;
+          if (objectToInsert[dbUtils.allowedTables[table].id] !== id) {
+            logger.log('warn', `Got object in POST with different ID than endpoint. endpoint had: ${id} and object had ${objectToInsert[dbUtils.allowedTables[table].id]}`);
+          } 
+          objectToInsert[dbUtils.allowedTables[table].id] = id;
+          return dbUtils.handlePost(table, objectToInsert, reply);
+        }
+      }
+    });
+
+    server.route({
       method: 'PUT',
-      path: '/api/{table?}',
-      handler: handlePutToDb
+      path: '/api/{table}/{id}',
+      handler: function (request, reply) {
+        const table = request.params.table;
+        const id = request.params.id;
+        if (!dbUtils.allowedTables[table].PUT) {
+          return callback(boom.badRequest(`Unknown table: ${table}`));
+        } else {
+          const objectToInsert = request.payload;
+          if (objectToInsert[dbUtils.allowedTables[table].id] !== id) {
+            logger.log('warn', `Got object in PUT with different ID than endpoint. endpoint had: ${id} and object had ${objectToInsert[dbUtils.allowedTables[table].id]}`);
+          } 
+          objectToInsert[dbUtils.allowedTables[table].id] = id;
+          return dbUtils.handlePost(table, objectToInsert, reply);
+        }
+      }
     });
 
     server.route({
