@@ -93,10 +93,34 @@ module.exports = function(db) {
     }
   }
 
+  function searchInTable(table, query,  callback) {
+    // sqlite3 cannot parameterize table names per
+    // https://github.com/mapbox/node-sqlite3/issues/330
+    // so instead of using its input sanitation we just whitelist
+    // the allowed table names.
+    if (schema[table]) {
+      var columns = [];
+      var values = [];
+      _.each(query, function(v, k) {
+        logger.log('info', `searching for ${k} in ${JSON.stringify(schema[table].columnNames)}`);
+        if (schema[table].columnNames.indexOf(k) !== -1) {
+          columns.push(`${k}=?`);
+          values.push(v);
+        } else {
+          logger.log('warn', `ignoring unknown query ${k}=${v}`);
+        }
+      });
+      return db.all(`SELECT * FROM ${table} WHERE ${columns.join(', ')};`, values, dbLogResponse(callback));
+    } else {
+      return callback(boom.badRequest(`Unknown table: ${table}`));
+    }
+  }
+
   return {
     schema: _.cloneDeep(schema),
     dbLogResponse:dbLogResponse,
     getFromDbById: getFromDbById,
+    searchInTable: searchInTable,
     upsertIntoDb: upsertIntoDb,
     handlePost: handlePost,
     getAllRowsFromTable: getAllRowsFromTable

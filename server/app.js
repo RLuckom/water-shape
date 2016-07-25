@@ -107,8 +107,15 @@ function startServer(db) {
       method: 'GET',
       path: '/api/{table}',
       handler: function(request, reply) {
-        logger.log('debug', 'doing getAllRows');
-        return dbUtils.getAllRowsFromTable(request.params.table, reply);
+        logger.log('info', `${JSON.stringify(_.keys(request))}`);
+        logger.log('info', `1 searching in ${request.params.table} with query: ${JSON.stringify(request.query)}`);
+        if (_.keys(request.query).length) {
+          logger.log('info', `searching in ${request.params.table} with query: ${JSON.stringify(request.query)}`);
+          return dbUtils.searchInTable(request.params.table, request.query, reply);
+        } else {
+          logger.log('info', `getting from ${request.params.table}`);
+          return dbUtils.getAllRowsFromTable(request.params.table, reply);
+        }
       }
     });
 
