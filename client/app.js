@@ -76,6 +76,8 @@ var SequenceList = React.createClass({
 
 ReactDOM.render(
   <div className="gpioSection">
+  <a className="btn-floating btn-large waves-effect waves-light red"><i className="material-icons">add</i></a>
+  <h2>Raspberry Pi GPIO Scheduling Controller</h2>
   <h3>GPIOs</h3>
   <GpioList pollInterval={10000}></GpioList>
   <h3>Sequences</h3>

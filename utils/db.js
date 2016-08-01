@@ -1,14 +1,8 @@
 'use strict';
 const _ = require('lodash');
-const logger = require('./logger');
 const boom = require('boom');
 
-module.exports = function(db) {
-
-  const schema = require('./schema').schemaFactory(noOpValidate);
-  function noOpValidate(table, object, idColumn, id, columns, callback) {
-    return dbUpsert(table, object, idColumn, id, columns, callback);
-  }
+module.exports = function(db, schema, logger) {
 
   function dbUpsert(table, object, idColumn, id, columns, callback) {
     const values = _.reduce(columns, (r, v, k) => {
@@ -33,7 +27,7 @@ module.exports = function(db) {
     if (schema[table]) {
       const idColumn = schema[table].id;
       const id = object[idColumn];
-      const columns = schema[table].columnNames;
+      const columns = _.values(schema[table].columns);
       return schema[table].validateAndSave(table, object, idColumn, id, columns, callback);
     } else {
       return callback(boom.badRequest(`Unknown table: ${table}`));
@@ -102,8 +96,8 @@ module.exports = function(db) {
       var columns = [];
       var values = [];
       _.each(query, function(v, k) {
-        logger.log('info', `searching for ${k} in ${JSON.stringify(schema[table].columnNames)}`);
-        if (schema[table].columnNames.indexOf(k) !== -1) {
+        logger.log('info', `searching for ${k} in ${JSON.stringify(_.values(schema[table].columns))}`);
+        if (_.values(schema[table].columns).indexOf(k) !== -1) {
           columns.push(`${k}=?`);
           values.push(v);
         } else {

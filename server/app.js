@@ -6,7 +6,7 @@ const sqlite3 = require('sqlite3');
 const boom = require('boom');
 const _ = require('lodash');
 const dbUtilsFactory = require('../utils/db');
-const logger = require('../utils/logger');
+const logger = require('../utils/logger')( '/../logs/hydro.log');
 const uuid = require('node-uuid');
 
 function validateSequence() {
@@ -25,7 +25,7 @@ function validateSequenceType() {
 
 function startServer(db) {
   const server = new Hapi.Server();
-  const dbUtils = dbUtilsFactory(db);
+  const dbUtils = dbUtilsFactory(db, require('../utils/schema').schemaFactory(), logger);
 
   function handlePutToDb(request, reply) {
     if (!dbUtils.allowedTables[request.params.table]) {
