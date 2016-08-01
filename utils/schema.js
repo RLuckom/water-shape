@@ -191,7 +191,7 @@ function buildSqliteSchema(schema) {
         statementBodyList.push(`  UNIQUE (${uniqueList.join(', ')})`);
       });
 
-      _.each(_.get(tableDescription, 'constraints.FOREIGN_KEY'), function(selfColumn, otherColumn) {
+      _.each(_.get(tableDescription, 'constraints.FOREIGN_KEYS'), function(otherColumn, selfColumn) {
         statementBodyList.push(`  FOREIGN KEY(${selfColumn}) REFERENCES ${otherColumn.split('.')[0]}(${otherColumn.split('.')[1]})`);
       });
       createStatement += `${statementBodyList.join(',\n')}\n);\n\n`;
@@ -213,8 +213,6 @@ function buildSqliteSchema(schema) {
   }
   return statements;
 }
-
-console.log(buildSqliteSchema(schemaFactory()));
 
 module.exports = {
   schemaFactory: schemaFactory,
