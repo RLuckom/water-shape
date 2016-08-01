@@ -2,6 +2,30 @@
 const _ = require('lodash');
 const boom = require('boom');
 
+/*
+ * API for data access:
+ *
+ * //make API object
+ * API = apiFromSchema(schema);
+ *
+ * Search within a table
+ * API.<tableName>.search({columName: value...}, callback(err, data));
+ *
+ * Upsert a record
+ *
+ * API.<tableName>.save({columnName: value}, callback(err, status));
+ * If the ID is supplied in the object, the object is updated, and any fields not
+ *  supplied are unchanged from their current values. If the ID is not supplied,
+ *  or if no object with the supplied ID exists, a new record is created.
+ *
+ *  Delete a record
+ *
+ *  API.<tableName>.delete({}, callback(err, status));
+ *  If the argument is an object, delete the record identified by the key corresponding
+ *  to the table's primary key column, e.g. 'uid' or 'gpioPin'. If the argument is not an
+ *  object, treat it as the primary key of the object to delete.
+ */
+
 module.exports = function(db, schema, logger) {
 
   function dbUpsert(table, object, idColumn, id, columns, callback) {
