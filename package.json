@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node spec/testRunner.js",
     "serve": "webpack && node server/app.js",
     "compile": "webpack"
   },
@@ -26,6 +26,7 @@
     "moment": "^2.14.1",
     "node-sass": "^3.7.0",
     "pigpio": "^0.3.4",
+    "raspicam": "^0.2.13",
     "react": "^15.1.0",
     "react-dom": "^15.1.0",
     "sass-loader": "^3.2.0",

@@ -6,7 +6,7 @@ const schemaFactory = require('../utils/schema').schemaFactory;
 const apiFactory = require('../utils/api');
 
 //TODO make .gitignored config file to avoid hardcoding environment-specific stuff.
-const api = apiFactory(schemaFactory(()=>{}), 'http://192.168.1.123/api', request);
+const api = apiFactory(schemaFactory(()=>{}), 'http://192.168.1.118:8080/api', request);
 
 var GpioList = React.createClass({
   loadgpiosFromServer: function() {

@@ -9,7 +9,7 @@ function apiFactory(schema, apiBaseUrl, request) {
   var api = {};
   _.each(schema, (v, k) => {
     var endpoint = _.cloneDeep(v);
-    if (v.GET) {
+    if (v.apiMethods.GET) {
       endpoint.get = function(options, callback) {
         if (_.isFunction(options)) {
           callback = options;
@@ -22,7 +22,7 @@ function apiFactory(schema, apiBaseUrl, request) {
         }, options), callback);
       };
     }
-    if (v.PUT) {
+    if (v.apiMethods.PUT) {
       endpoint.put = function(instance, options, callback) {
         var id = instance[v.id];
         if (_.isUndefined(id)) {
@@ -39,7 +39,7 @@ function apiFactory(schema, apiBaseUrl, request) {
         }, options, {body: instance}), callback);
       };
     }
-    if (v.POST) {
+    if (v.apiMethods.POST) {
       endpoint.post = function(instance, options, callback) {
         if (_.isFunction(options)) {
           callback = options;
@@ -52,7 +52,7 @@ function apiFactory(schema, apiBaseUrl, request) {
         }, options), callback);
       };
     }
-    if (v.DELETE) {
+    if (v.apiMethods.DELETE) {
       endpoint.delete = function(instance, options, callback) {
         var id = instance[v.id];
         if (_.isUndefined(id)) {

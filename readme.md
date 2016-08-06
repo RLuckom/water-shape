@@ -1,3 +1,12 @@
+sudo apt-get install pigpio
+sudo apt-get install sqlite3
+sudo apt-get install monit
+npm install sqlite3 --build-from-source
+npm rebuild node-sass
+
+# allow access to camera for pi:pi
+sudo chmod 666 /dev/vchiq
+
 nat rules needed:
 
         iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080
