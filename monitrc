@@ -268,3 +268,9 @@ check process gpio with pidfile /home/pi/workspace/server/pids/gpio.pid
   start program = "/bin/bash -c '/home/pi/workspace/server/scripts/startGpio.sh'"
   stop program = "/home/pi/workspace/server/scripts/stopGpio.sh"
   if does not exist then start
+
+check process camera with pidfile /home/pi/workspace/server/pids/camera.pid
+  start program = "/bin/bash -c '/home/pi/workspace/server/scripts/startCamera.sh'"
+    as uid pi and gid pi
+  stop program = "/home/pi/workspace/server/scripts/stopCamera.sh"
+  if does not exist then start
