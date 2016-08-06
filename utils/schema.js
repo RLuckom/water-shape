@@ -156,65 +156,6 @@ function schemaFactory(noOpValidate) {
   };
 }
 
-function buildSqliteSchema(schema) {
-  var finishedTables = [];
-  var tableDependencies = _.reduce(schema, function(acc, val, key) {
-    var dependencies = [];
-    var foreignKeyConstraints = _.get(val, 'constraints.FOREIGN_KEYS');
-    if (foreignKeyConstraints) {
-      _.each(foreignKeyConstraints, function(v, k) {
-        // v  e.g.=  'sequences.uid'
-        dependencies.push(v.split('.')[0]);
-      });
-      acc[key] = dependencies;
-    }
-    return acc;
-  }, {});
-  var statements = '';
-  while (finishedTables.length !== _.keys(schema).length) {
-    _.each(schema, function(tableDescription, tableName) {
-      var unmetDependencies = _.some(
-        tableDependencies[tableName], function(dependencyName) {
-          return finishedTables.indexOf(dependencyName) === -1;
-        }
-      );
-      if (finishedTables.indexOf(tableName) !== -1 || unmetDependencies) {
-        return;
-      }
-      var createStatement = `CREATE TABLE IF NOT EXISTS ${tableName} (\n`;
-      var statementBodyList = [];
-      _.each(tableDescription.columns, function(type, name) {
-        statementBodyList.push(`  ${name} ${type}${tableDescription.id === name ? ' PRIMARY KEY' : ''}`);
-      });
-
-      _.each(_.get(tableDescription, 'constraints.UNIQUE'), function(uniqueList) {
-        statementBodyList.push(`  UNIQUE (${uniqueList.join(', ')})`);
-      });
-
-      _.each(_.get(tableDescription, 'constraints.FOREIGN_KEYS'), function(otherColumn, selfColumn) {
-        statementBodyList.push(`  FOREIGN KEY(${selfColumn}) REFERENCES ${otherColumn.split('.')[0]}(${otherColumn.split('.')[1]})`);
-      });
-      createStatement += `${statementBodyList.join(',\n')}\n);\n\n`;
-      statements += createStatement;
-      _.each(tableDescription.initialValues, function(val, indx) {
-        var values = _.map(_.values(val), (v) => {
-          if (_.isUndefined(v) || _.isNull(v)) {
-            return 'null';
-          } else if (_.isString(v)) {
-            return '"' + v + '"';
-          } else {
-            return v;
-          }
-        });
-        statements += `INSERT OR ABORT INTO ${tableName} (${_.keys(val).join(', ')}) VALUES (${values.join(', ')});\n${indx === tableDescription.initialValues.length - 1 ? '\n' : ''}`;
-      });
-      finishedTables.push(tableName);
-    });
-  }
-  return statements;
-}
-
 module.exports = {
   schemaFactory: schemaFactory,
-  buildSqliteSchema: buildSqliteSchema
 };

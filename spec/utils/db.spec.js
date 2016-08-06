@@ -1,6 +1,7 @@
-const schemaTools = require('../../utils/schema');
+const db = require('../../utils/db');
 const fs = require('fs');
 const path = require('path');
+const _ = require('lodash');
 
 describe('the schema can be turned into a sql document', function() {
   var schema = {
@@ -104,7 +105,32 @@ describe('the schema can be turned into a sql document', function() {
     }
   };
 
-  it('can be done', function() {
-    expect(schemaTools.buildSqliteSchema(schema)).toEqual(fs.readFileSync(path.join(__dirname, '../fixtures/schema.sql'), 'utf8'));
+  var dbUtils;
+
+  beforeEach(function(done) {
+    var finished = {};
+    function all(taskName) {
+      finished[taskName] = false;
+      return function() {
+        finished[taskName] = true;
+        if (_.every(finished)) {
+          return done();
+        }
+      };
+    }
+    fs.unlinkSync('test.db');
+    db('test.db', schema, null, function(dbu) {
+      dbUtils = dbu;
+      dbUtils.createTablesAndDefaultValues(all('createTables'));
+    });
+  });
+
+  afterEach(function() {
+    fs.unlinkSync('test.db');
+  });
+
+  it('can be done', function(done) {
+    expect(dbUtils.buildSqliteSchema(schema)).toEqual(fs.readFileSync(path.join(__dirname, '../fixtures/schema.sql'), 'utf8'));
+    dbUtils.close(done);
   });
 });
