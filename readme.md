@@ -1,3 +1,5 @@
+![Travis CI Status Image](https://travis-ci.org/RLuckom/bucket-brain.svg)
+
 sudo apt-get install pigpio
 sudo apt-get install sqlite3
 sudo apt-get install monit
