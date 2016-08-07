@@ -6,7 +6,7 @@ sudo apt-get install monit
 npm install sqlite3 --build-from-source
 npm rebuild node-sass
 
-# allow access to camera for pi:pi
+allow access to camera for pi:pi
 sudo chmod 666 /dev/vchiq
 
 nat rules needed:
@@ -21,6 +21,23 @@ sample monit config line
             as uid pi and gid pi
           if does not exist then start
 
+avconv (ffmpeg probably the same) for making video from *sequentially* named jpegs
+avconv -framerate 25 -i %04d.jpg -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p output.mp4
+
+###RPi GPIO layout
+
+                              Edge of Board
+                                   ^
+                                   |
+      
+      |5v|5v|Gr|14|15|18|Gr|23|24|Gr|25|08|07|Ep|Gr|12|Gr|16|20|21|
+      |3v|02|03|04|Gr|17|27|22|3v|10|09|11|Gr|Ep|05|06|13|19|26|Gr|
+      
+      Numbered - GPIO outputs
+      3v - 3.3 volts
+      5v - 5 volts
+      Gr - Ground
+      Ep - IO EEPROM (don't touch)
 
 System Description
 ==================
