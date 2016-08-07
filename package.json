@@ -25,8 +25,6 @@
     "lodash": "^4.13.1",
     "moment": "^2.14.1",
     "node-sass": "^3.7.0",
-    "pigpio": "^0.3.4",
-    "raspicam": "^0.2.13",
     "react": "^15.1.0",
     "react-dom": "^15.1.0",
     "sass-loader": "^3.2.0",
@@ -47,5 +45,9 @@
     "react-hot-loader": "^1.3.0",
     "style-loader": "^0.13.1",
     "webpack-dev-server": "^1.14.1"
+  },
+  "optionalDependencies": {
+    "pigpio": "^0.3.4",
+    "raspicam": "^0.2.13"
   }
 }
