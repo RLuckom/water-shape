@@ -118,7 +118,9 @@ describe('the schema can be turned into a sql document', function() {
         }
       };
     }
-    fs.unlinkSync('test.db');
+    try {
+      fs.unlinkSync('test.db');
+    } catch(err) {} // don't care
     db('test.db', schema, null, function(dbu) {
       dbUtils = dbu;
       dbUtils.createTablesAndDefaultValues(all('createTables'));
@@ -126,7 +128,11 @@ describe('the schema can be turned into a sql document', function() {
   });
 
   afterEach(function() {
-    fs.unlinkSync('test.db');
+    try {
+      fs.unlinkSync('test.db');
+    } catch(err) {} // don't care
+    db('test.db', schema, null, function(dbu) {
+    });
   });
 
   it('can be done', function(done) {
