@@ -23,9 +23,8 @@ function validateSequenceType() {
   throw new Error('Not allowed to save sequence types.');
 }
 
-function startServer(db) {
+function startServer(dbUtils) {
   const server = new Hapi.Server();
-  const dbUtils = dbUtilsFactory(db, require('../utils/schema').schemaFactory(), logger);
 
   function handlePutToDb(request, reply) {
     if (!dbUtils.allowedTables[request.params.table]) {
@@ -138,5 +137,4 @@ function startServer(db) {
   });
 }
 
-var db = new sqlite3.Database(__dirname + '/../hydro.db');
-db.on('open', () => {startServer(db)});
+dbUtilsFactory(__dirname + '/../hydro.db', require('../utils/schema').schemaFactory(), logger, startServer);
