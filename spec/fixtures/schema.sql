@@ -1,8 +1,18 @@
+CREATE TABLE IF NOT EXISTS sequenceTypes (
+  sequenceId NUMBER PRIMARY KEY,
+  sequenceTypeName TEXT,
+  UNIQUE (sequenceTypeName)
+);
+
+INSERT OR ABORT INTO sequenceTypes (sequenceId, sequenceTypeName) VALUES (1, "DURATION");
+INSERT OR ABORT INTO sequenceTypes (sequenceId, sequenceTypeName) VALUES (2, "TIME");
+
 CREATE TABLE IF NOT EXISTS sequences (
   uid TEXT PRIMARY KEY,
   dateCreated TEXT,
   sequenceType NUMBER,
-  defaultState TEXT
+  defaultState NUMBER,
+  FOREIGN KEY(sequenceType) REFERENCES sequenceTypes(sequenceId)
 );
 
 CREATE TABLE IF NOT EXISTS gpioPins (
@@ -28,15 +38,6 @@ INSERT OR ABORT INTO gpioPins (pinNumber, sequenceUid) VALUES (22, null);
 INSERT OR ABORT INTO gpioPins (pinNumber, sequenceUid) VALUES (10, null);
 INSERT OR ABORT INTO gpioPins (pinNumber, sequenceUid) VALUES (9, null);
 INSERT OR ABORT INTO gpioPins (pinNumber, sequenceUid) VALUES (11, null);
-
-CREATE TABLE IF NOT EXISTS sequenceTypes (
-  sequenceId NUMBER PRIMARY KEY,
-  sequenceTypeName TEXT,
-  UNIQUE (sequenceTypeName)
-);
-
-INSERT OR ABORT INTO sequenceTypes (sequenceId, sequenceTypeName) VALUES (1, "DURATION");
-INSERT OR ABORT INTO sequenceTypes (sequenceId, sequenceTypeName) VALUES (2, "TIME");
 
 CREATE TABLE IF NOT EXISTS sequenceItems (
   uid TEXT PRIMARY KEY,

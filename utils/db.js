@@ -2,6 +2,7 @@
 const _ = require('lodash');
 const boom = require('boom');
 const sqlite3 = require('sqlite3');
+const uuid = require('uuid');
 
 /*
  * API for data access:
@@ -28,7 +29,11 @@ const sqlite3 = require('sqlite3');
  */
 
 module.exports = function(filename, schema, logger, callback) {
-  logger = logger || {error: console.log, info: console.log, debug: console.log};
+  logger = logger || {
+    log: (level, message) => {
+      return console.log(`[ ${level} ] ${message}`);
+    }
+  };
   var db = new sqlite3.Database(filename, onDbReady);
   function onDbReady(err) {
     if (err) {
@@ -55,10 +60,29 @@ module.exports = function(filename, schema, logger, callback) {
 
     function upsertIntoDb(table, object, callback) {
       if (schema[table]) {
+        const columns = _.keys(schema[table].columns);
         const idColumn = schema[table].id;
-        const id = object[idColumn];
-        const columns = _.values(schema[table].columns);
-        return schema[table].validateAndSave(table, object, idColumn, id, columns, callback);
+        var id = object[idColumn];
+        if (!id) {
+          if (['uid', 'uuid'].indexOf(idColumn) !== -1) {
+            id = uuid.v4();
+            object[idColumn] = id;
+          } else if (schema[table].columns[idColumn] === 'NUMBER') {
+            logger.log('warn', 'Making best effort to choose unused number ID. May overwrite existing record');
+            var idCallback = function(err, rows) {
+              if (err) {
+                logger.log('error', `Got error ${err} trying to read ${table} ids`);
+                return callback(err);
+              }
+              id = _.toInteger(_.maxBy(rows, (r) => {return _.toInteger(r[idColumn]);})[idColumn]) + 1;
+              logger.log('info', id);
+              object[idColumn] = id;
+              return dbUpsert(table, object, idColumn, id, columns, callback);
+            };
+            return db.all(`SELECT ${idColumn} FROM ${table};`, idCallback);  
+          }
+        }
+        return dbUpsert(table, object, idColumn, id, columns, callback);
       } else {
         return callback(boom.badRequest(`Unknown table: ${table}`));
       }
@@ -147,8 +171,8 @@ module.exports = function(filename, schema, logger, callback) {
         var columns = [];
         var values = [];
         _.each(query, function(v, k) {
-          logger.log('info', `searching for ${k} in ${JSON.stringify(_.values(schema[table].columns))}`);
-          if (_.values(schema[table].columns).indexOf(k) !== -1) {
+          logger.log('info', `searching for ${k} in ${JSON.stringify(_.keys(schema[table].columns))}`);
+          if (_.keys(schema[table].columns).indexOf(k) !== -1) {
             columns.push(`${k}=?`);
             values.push(v);
           } else {

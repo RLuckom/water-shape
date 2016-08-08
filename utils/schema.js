@@ -54,21 +54,26 @@ function sequenceItems(sequenceItem, sequenceByUid, sequenceTypes, sequenceItems
 }
 
 function schemaFactory(noOpValidate) {
-  return  {
+  return {
     'sequences': {
       id: 'uid',
       columns: {
         'uid': 'TEXT',
         'dateCreated': 'TEXT',
         'sequenceType': 'NUMBER',
-        'defaultState': 'TEXT'
+        'defaultState': 'NUMBER'
       },
       apiMethods: {
         GET: true,
         POST: true,
         PUT: true,
         DELETE: true
-      }
+      },
+      constraints: {
+        FOREIGN_KEYS: {
+          sequenceType : 'sequenceTypes.sequenceId'
+        }
+      },
     },
     'gpioPins': {
       id: 'pinNumber',
