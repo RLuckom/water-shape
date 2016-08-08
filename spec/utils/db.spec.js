@@ -114,22 +114,12 @@ describe('the schema can be turned into a sql document', function() {
   var dbUtils;
 
   beforeEach(function(done) {
-    var finished = {};
-    function all(taskName) {
-      finished[taskName] = false;
-      return function() {
-        finished[taskName] = true;
-        if (_.every(finished)) {
-          return done();
-        }
-      };
-    }
     try {
       fs.unlinkSync('test.db');
     } catch(err) {} // don't care
     db('test.db', schema, null, function(dbu) {
       dbUtils = dbu;
-      dbUtils.createTablesAndDefaultValues(all('createTables'));
+      done();
     });
   });
 
@@ -207,6 +197,9 @@ describe('the schema can be turned into a sql document', function() {
 
   });
   describe('database search', function() {
+    beforeEach(function(done) {
+      dbUtils.createTablesAndDefaultValues(done);
+    });
 
     it('will find the correct row', function(done) {
       const insertRow = {
