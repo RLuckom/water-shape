@@ -115,7 +115,7 @@ function startServer(dbUtils, logger, callback) {
       }
     });
 
-    callback = callback || (err) => {
+    callback = callback || function(err) {
       if (err) {
         throw err;
       }
