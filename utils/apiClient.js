@@ -48,7 +48,8 @@ function apiFactory(schema, apiBaseUrl, request) {
         return request(_.merge({
           method: 'POST',
           url: apiBaseUrl + '/' + k,
-          json: true
+          json: true,
+          body: instance
         }, options), callback);
       };
     }

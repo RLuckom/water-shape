@@ -15,15 +15,6 @@ function startServer(dbUtils, logger, callback) {
   };
   const server = new Hapi.Server();
 
-  function handlePutToDb(request, reply) {
-    if (!dbUtils.allowedTables[request.params.table]) {
-      return reply(boom.badRequest(`Unknown table: ${request.params.table}`));
-    } else {
-      logger.log('info', JSON.stringify(_.keys(request)));
-      logger.log('info', JSON.stringify(request.payload));
-      logger.log('info', JSON.stringify(request.query));
-    }
-  }
   server.register(Inert, function() {
     server.connection({ port: 8080 });
 
@@ -42,13 +33,13 @@ function startServer(dbUtils, logger, callback) {
       path: '/api/{table}',
       handler: function (request, reply) {
         const table = request.params.table;
-        const id = request.params.id;
-        if (!dbUtils.allowedTables[table].POST) {
+        if (!_.get(dbUtils.schema, `${request.params.table}.apiMethods.POST`)) {
           return callback(boom.badRequest(`Unknown table: ${table}`));
         } else {
+          logger.log('debug', `POST ${request.params.table}`)
           const objectToInsert = request.payload;
-          objectToInsert[dbUtils.allowedTables[table].id] = objectToInsert[dbUtils.allowedTables[table].id] || uuid.v4();
-          return dbUtils.handlePost(table, objectToInsert, reply);
+          objectToInsert[dbUtils.schema[table].id] = objectToInsert[dbUtils.schema[table].id] || uuid.v4();
+          return dbUtils[table].save(objectToInsert, reply);
         }
       }
     });
@@ -59,15 +50,29 @@ function startServer(dbUtils, logger, callback) {
       handler: function (request, reply) {
         const table = request.params.table;
         const id = request.params.id;
-        if (!dbUtils.allowedTables[table].POST) {
+        if (!dbUtils.schema[table].apiMethods.POST) {
           return callback(boom.badRequest(`Unknown table: ${table}`));
         } else {
           const objectToInsert = request.payload;
-          if (objectToInsert[dbUtils.allowedTables[table].id] !== id) {
-            logger.log('warn', `Got object in POST with different ID than endpoint. endpoint had: ${id} and object had ${objectToInsert[dbUtils.allowedTables[table].id]}`);
+          if (objectToInsert[dbUtils.schema[table].id] !== id) {
+            logger.log('warn', `Got object in POST with different ID than endpoint. endpoint had: ${id} and object had ${objectToInsert[dbUtils.schema[table].id]}`);
           } 
-          objectToInsert[dbUtils.allowedTables[table].id] = id;
-          return dbUtils.handlePost(table, objectToInsert, reply);
+          objectToInsert[dbUtils.schema[table].id] = id;
+          return dbUtils[table].save(objectToInsert, reply);
+        }
+      }
+    });
+
+    server.route({
+      method: 'DELETE',
+      path: '/api/{table}/{id}',
+      handler: function (request, reply) {
+        const table = request.params.table;
+        const id = request.params.id;
+        if (!dbUtils.schema[table].apiMethods.DELETE) {
+          return callback(boom.badRequest(`Unknown table: ${table}`));
+        } else {
+          return dbUtils[table].removeById(id, reply);
         }
       }
     });
@@ -78,15 +83,15 @@ function startServer(dbUtils, logger, callback) {
       handler: function (request, reply) {
         const table = request.params.table;
         const id = request.params.id;
-        if (!dbUtils.allowedTables[table].PUT) {
+        if (!dbUtils.schema[table].apiMethods.PUT) {
           return callback(boom.badRequest(`Unknown table: ${table}`));
         } else {
           const objectToInsert = request.payload;
-          if (objectToInsert[dbUtils.allowedTables[table].id] !== id) {
-            logger.log('warn', `Got object in PUT with different ID than endpoint. endpoint had: ${id} and object had ${objectToInsert[dbUtils.allowedTables[table].id]}`);
+          if (objectToInsert[dbUtils.schema[table].id] !== id) {
+            logger.log('warn', `Got object in PUT with different ID than endpoint. endpoint had: ${id} and object had ${objectToInsert[dbUtils.schema[table].id]}`);
           } 
-          objectToInsert[dbUtils.allowedTables[table].id] = id;
-          return dbUtils.handlePost(table, objectToInsert, reply);
+          objectToInsert[dbUtils.schema[table].id] = id;
+          return dbUtils[table].save(objectToInsert, reply);
         }
       }
     });
@@ -111,6 +116,7 @@ function startServer(dbUtils, logger, callback) {
       method: 'GET',
       path: '/api/{table}/{id}',
       handler: function(request, reply) {
+        logger.log('debug', `GET ${request.params.table}/${request.params.id}`)
         return dbUtils.getFromDbById(request.params.table, request.params.id, reply);
       }
     });

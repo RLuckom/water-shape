@@ -1,8 +1,11 @@
 'use strict';
 const dbUtilsFactory = require('../../utils/db');
 const startServer = require('../../utils/apiServer').startServer;
+const apiClientFactory = require('../../utils/apiClient');
 const schema = require('../../utils/schema').schemaFactory();
 const request = require('request');
+const uuid = require('uuid');
+const fs = require('fs');
 const _ = require('lodash');
 
 const logger = {
@@ -14,6 +17,7 @@ const logger = {
 describe('api tests', function() {
 
   var dbUtils, server;
+  const api = apiClientFactory(schema, 'http://localhost:8080/api', request);
 
   beforeEach(function(done) {
     var finished = {};
@@ -27,9 +31,9 @@ describe('api tests', function() {
       };
     }
     try {
-      fs.unlinkSync('test.db');
-    } catch(err) {} // don't care
-    dbUtilsFactory('test.db', schema, logger, function(dbu) {
+      fs.unlinkSync(__dirname + '/test.db');
+    } catch(err) {logger.log('unlink', err);} // don't care
+    dbUtilsFactory(__dirname + '/test.db', schema, logger, function(dbu) {
       dbUtils = dbu;
       var createTableCallback = all('createTables');
       var startServerCallback = all('startServer');
@@ -50,8 +54,8 @@ describe('api tests', function() {
       };
     }
     try {
-      fs.unlinkSync('test.db');
-    } catch(err) {} // don't care
+      fs.unlinkSync(__dirname + '/test.db');
+    } catch(err) {logger.log('unlink', err);} // don't care
     var closeDbCallback = all('closeDb');
     var stopServerCallback = all('stopServer');
     dbUtils.close(closeDbCallback);
@@ -64,10 +68,45 @@ describe('api tests', function() {
       url: 'http://localhost:8080/api/sequenceTypes',
       json: true
     }, function(e, r, b) {
-      logger.log('error', e);
-      logger.log('body', b);
       expect(b).toEqual(schema.sequenceTypes.initialValues);
       done();
+    });
+  });
+
+  it('api can get a list of predefined values', function(done) {
+    api.sequenceTypes.get(function(e, r, b) {
+      expect(b).toEqual(schema.sequenceTypes.initialValues);
+      done();
+    });
+  });
+
+  it('api can post a sequence, get it, then delete it', function(done) {
+    const sequenceToAdd = {
+      uid: uuid.v4(),
+      dateCreated: new Date().toString(),
+      sequenceType: 1,
+      defaultState: 1
+    };
+    api.sequences.get(function(e, r, b) {
+      expect(e).toBeNull();
+      expect(b).toEqual([]);
+      api.sequences.post(sequenceToAdd, function(e, r, b) {
+        expect(e).toBeNull();
+        expect(b).toEqual(sequenceToAdd);
+        api.sequences.get(function(e, r, b) {
+          expect(e).toBeNull();
+          expect(b).toEqual([sequenceToAdd]);
+          api.sequences.delete(sequenceToAdd, function(e, r, b) {
+            expect(e).toBeNull();
+            expect(b).toBeUndefined();
+            api.sequences.get(function(e, r, b) {
+              expect(e).toBeNull();
+              expect(b).toEqual([]);
+              done();
+            });
+          });
+        });
+      });
     });
   });
 });
