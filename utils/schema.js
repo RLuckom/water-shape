@@ -55,7 +55,7 @@ function sequenceItems(sequenceItem, sequenceByUid, sequenceTypes, sequenceItems
 
 function schemaFactory(noOpValidate) {
   return {
-    'sequences': {
+    sequences: {
       id: 'uid',
       columns: {
         'uid': 'TEXT',
@@ -75,7 +75,7 @@ function schemaFactory(noOpValidate) {
         }
       },
     },
-    'gpioPins': {
+    gpioPins: {
       id: 'pinNumber',
       columns: {
         'pinNumber': 'NUMBER', 
@@ -112,7 +112,7 @@ function schemaFactory(noOpValidate) {
         {pinNumber: 11, sequenceUid: null}
       ]
     },
-    'sequenceItems': {
+    sequenceItems: {
       id: 'uid',
       columns: {
         'uid': 'TEXT',
@@ -133,12 +133,11 @@ function schemaFactory(noOpValidate) {
       constraints: {
         FOREIGN_KEYS: {
           sequenceUid: 'sequences.uid',
-          sequenceType: 'sequenceTypes.sequenceId'
         },
         UNIQUE: [['sequenceUid', 'ordinal']],
       }
     },
-    'sequenceTypes': {
+    sequenceTypes: {
       id: 'sequenceId',
       columns: {
         'sequenceId': 'NUMBER',
