@@ -1,28 +1,28 @@
 ![Travis CI Status Image](https://travis-ci.org/RLuckom/bucket-brain.svg)
 
-sudo apt-get install pigpio
-sudo apt-get install sqlite3
-sudo apt-get install monit
-npm install sqlite3 --build-from-source
-npm rebuild node-sass
+        sudo apt-get install pigpio
+        sudo apt-get install sqlite3
+        sudo apt-get install monit
+        npm install sqlite3 --build-from-source
+        npm rebuild node-sass
 
-allow access to camera for pi:pi
-sudo chmod 666 /dev/vchiq
+        allow access to camera for pi:pi
+        sudo chmod 666 /dev/vchiq
 
-nat rules needed:
+        nat rules needed:
 
         iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080
         iptables -t nat -I OUTPUT -p tcp -d 127.0.0.1 --dport 80 -j REDIRECT --to-ports 8080
 
-sample monit config line
+        sample monit config line
 
         check process nodeserver with pidfile /home/pi/workspace/server/app.pid
           start program = "/home/pi/workspace/server/start.sh"
             as uid pi and gid pi
           if does not exist then start
 
-avconv (ffmpeg probably the same) for making video from *sequentially* named jpegs
-avconv -framerate 25 -i %04d.jpg -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p output.mp4
+          avconv (ffmpeg probably the same) for making video from *sequentially* named jpegs
+          avconv -framerate 25 -i %04d.jpg -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p output.mp4
 
 ###RPi GPIO layout
 

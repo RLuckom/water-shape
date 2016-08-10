@@ -219,7 +219,7 @@ module.exports = function(filename, schema, logger, callback) {
                 return v;
               }
             });
-            statements += `INSERT OR ABORT INTO ${tableName} (${_.keys(val).join(', ')}) VALUES (${values.join(', ')});\n${indx === tableDescription.initialValues.length - 1 ? '\n' : ''}`;
+            statements += `INSERT OR IGNORE INTO ${tableName} (${_.keys(val).join(', ')}) VALUES (${values.join(', ')});\n${indx === tableDescription.initialValues.length - 1 ? '\n' : ''}`;
           });
           finishedTables.push(tableName);
         });
