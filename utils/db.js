@@ -210,6 +210,9 @@ module.exports = function(filename, schema, logger, callback) {
           createStatement += `${statementBodyList.join(',\n')}\n);\n\n`;
           statements += createStatement;
           _.each(tableDescription.initialValues, function(val, indx) {
+            if (['uid', 'uuid'].indexOf(tableDescription.id) !== -1 && !val[tableDescription.id]) {
+              val[tableDescription.id] = uuid.v4();
+            } 
             var values = _.map(_.values(val), (v) => {
               if (_.isUndefined(v) || _.isNull(v)) {
                 return 'null';

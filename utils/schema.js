@@ -75,9 +75,98 @@ function schemaFactory(noOpValidate) {
         }
       },
     },
-    gpioPins: {
-      id: 'pinNumber',
+    pins: {
+      id: 'uid',
       columns: {
+        uid: 'TEXT',
+        displayLabel: 'TEXT',
+        pinType: 'TEXT',
+        boardPosition: 'NUMBER'
+      },
+      apiMethods: {
+        GET: true,
+        POST: false,
+        PUT: false,
+        DELETE: false
+      },
+      constraints: {
+        FOREIGN_KEYS: {
+          pinType: 'pinTypes.typeName'
+        }
+      },
+      initialValues: [
+        {boardPosition: 0, displayLabel: '5V', pinType: '5V'},
+        {boardPosition: 1, displayLabel: '5V', pinType: '5V'},
+        {boardPosition: 2, displayLabel: 'GR', pinType: 'GR'},
+        {boardPosition: 3, displayLabel: '14', pinType: 'GPIO'},
+        {boardPosition: 4, displayLabel: '15', pinType: 'GPIO'},
+        {boardPosition: 5, displayLabel: '18', pinType: 'GPIO'},
+        {boardPosition: 6, displayLabel: 'GR', pinType: 'GR'},
+        {boardPosition: 7, displayLabel: '23', pinType: 'GPIO'},
+        {boardPosition: 8, displayLabel: '24', pinType: 'GPIO'},
+        {boardPosition: 9, displayLabel: 'GR', pinType: 'GR'},
+        {boardPosition: 10, displayLabel: '25', pinType: 'GPIO'},
+        {boardPosition: 11, displayLabel: '08', pinType: 'GPIO'},
+        {boardPosition: 12, displayLabel: '07', pinType: 'GPIO'},
+        {boardPosition: 13, displayLabel: 'EP', pinType: 'EEPROM'},
+        {boardPosition: 14, displayLabel: 'GR', pinType: 'GR'},
+        {boardPosition: 15, displayLabel: '12', pinType: 'GPIO'},
+        {boardPosition: 16, displayLabel: 'GR', pinType: 'GR'},
+        {boardPosition: 17, displayLabel: '16', pinType: 'GPIO'},
+        {boardPosition: 18, displayLabel: '20', pinType: 'GPIO'},
+        {boardPosition: 19, displayLabel: '21', pinType: 'GPIO'},
+        {boardPosition: 20, displayLabel: '3V3', pinType: '3V3'},
+        {boardPosition: 21, displayLabel: '02', pinType: 'GPIO'},
+        {boardPosition: 22, displayLabel: '03', pinType: 'GPIO'},
+        {boardPosition: 23, displayLabel: '04', pinType: 'GPIO'},
+        {boardPosition: 24, displayLabel: 'GR', pinType: 'GR'},
+        {boardPosition: 25, displayLabel: '17', pinType: 'GPIO'},
+        {boardPosition: 26, displayLabel: '27', pinType: 'GPIO'},
+        {boardPosition: 27, displayLabel: '22', pinType: 'GPIO'},
+        {boardPosition: 28, displayLabel: '3V3', pinType: '3V3'},
+        {boardPosition: 29, displayLabel: '10', pinType: 'GPIO'},
+        {boardPosition: 30, displayLabel: '09', pinType: 'GPIO'},
+        {boardPosition: 31, displayLabel: '11', pinType: 'GPIO'},
+        {boardPosition: 32, displayLabel: 'GR', pinType: 'GR'},
+        {boardPosition: 33, displayLabel: 'EP', pinType: 'EEPROM'},
+        {boardPosition: 34, displayLabel: '05', pinType: 'GPIO'},
+        {boardPosition: 35, displayLabel: '06', pinType: 'GPIO'},
+        {boardPosition: 36, displayLabel: '13', pinType: 'GPIO'},
+        {boardPosition: 37, displayLabel: '19', pinType: 'GPIO'},
+        {boardPosition: 38, displayLabel: '26', pinType: 'GPIO'},
+        {boardPosition: 39, displayLabel: 'GR', pinType: 'GR'}
+      ],
+      constraints: {
+        UNIQUE: [['boardPosition']]
+      }
+    },
+    pinTypes: {
+      id: 'uid',
+      columns: {
+        uid: 'TEXT',
+        typeName: 'TEXT'
+      },
+      apiMethods: {
+        GET: true,
+        POST: false,
+        PUT: false,
+        DELETE: false
+      },
+      initialValues: [
+        {typeName: '5V'},
+        {typeName: '3V3'},
+        {typeName: 'GR'},
+        {typeName: 'EEPROM'},
+        {typeName: 'GPIO'},
+      ],
+      constraints: {
+        UNIQUE: [['typeName']]
+      }
+    },
+    gpioPins: {
+      id: 'uid',
+      columns: {
+        'uid': 'TEXT',
         'pinNumber': 'NUMBER', 
         'sequenceUid': 'TEXT',
       },
@@ -90,7 +179,8 @@ function schemaFactory(noOpValidate) {
       constraints: {
         FOREIGN_KEYS: {
           sequenceUid : 'sequences.uid'
-        }
+        },
+        UNIQUE: [['pinNumber']]
       },
       initialValues: [
         {pinNumber: 14, sequenceUid: null},
@@ -138,8 +228,9 @@ function schemaFactory(noOpValidate) {
       }
     },
     sequenceTypes: {
-      id: 'sequenceId',
+      id: 'uid',
       columns: {
+        'uid': 'TEXT',
         'sequenceId': 'NUMBER',
         'sequenceTypeName': 'TEXT'
       },
@@ -150,7 +241,7 @@ function schemaFactory(noOpValidate) {
         DELETE: false
       },
       constraints: {
-        UNIQUE: [['sequenceTypeName']],
+        UNIQUE: [['sequenceTypeName'], ['sequenceId']],
       },
       initialValues: [
         {sequenceId: 1, sequenceTypeName: 'DURATION'},
