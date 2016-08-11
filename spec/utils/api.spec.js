@@ -62,20 +62,34 @@ describe('api tests', function() {
     server.stop(stopServerCallback);
   });
 
+  function compareIgnoreId(a, b) {
+    var aNew = _.cloneDeep(a);
+    var bNew = _.cloneDeep(b);
+    delete aNew.uid;
+    delete bNew.uid;
+    return _.isEqual(aNew, bNew);
+  }
+
+  function allEqualWithoutId(aList, bList) {
+    return _.every(_.zip(aList, bList), (pair) => {
+      return compareIgnoreId(pair[0], pair[1]);
+    });
+  }
+
   it('serves the API', function(done) {
     request({
       method: 'GET',
       url: 'http://localhost:8080/api/sequenceTypes',
       json: true
     }, function(e, r, b) {
-      expect(b).toEqual(schema.sequenceTypes.initialValues);
+      expect(allEqualWithoutId(b, schema.sequenceTypes.initialValues)).toBe(true);
       done();
     });
   });
 
   it('api can get a list of predefined values', function(done) {
     api.sequenceTypes.get(function(e, r, b) {
-      expect(b).toEqual(schema.sequenceTypes.initialValues);
+      expect(allEqualWithoutId(b, schema.sequenceTypes.initialValues)).toBe(true);
       done();
     });
   });

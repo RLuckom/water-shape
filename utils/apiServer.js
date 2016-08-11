@@ -76,7 +76,7 @@ function startServer(dbUtils, logger, callback) {
         if (!dbUtils.schema[table].apiMethods.DELETE) {
           return callback(boom.badRequest(`Unknown table: ${table}`));
         } else {
-          return dbUtils[table].removeById(id, reply);
+          return dbUtils[table].delete(id, reply);
         }
       }
     });

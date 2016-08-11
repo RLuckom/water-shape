@@ -248,11 +248,12 @@ module.exports = function(filename, schema, logger, callback) {
     _.each(schema, function(tableDescription, tableName) {
       var tableMethods = {};
       tableMethods.save = _.partial(upsertIntoDb, tableName);
-      tableMethods.search = _.partial(searchInTable, tableName);
-      tableMethods.getAll = _.partial(getAllRowsFromTable, tableName);
+      tableMethods.update = tableMethods.save;
+      tableMethods.delete = _.partial(remove, tableName);
+      tableMethods.deleteById = _.partial(removeById, tableName);
+      tableMethods.list = _.partial(getAllRowsFromTable, tableName);
       tableMethods.getById = _.partial(getFromDbById, tableName);
-      tableMethods.removeById = _.partial(removeById, tableName);
-      tableMethods.remove = _.partial(remove, tableName);
+      tableMethods.search = _.partial(searchInTable, tableName);
       response[tableName] = tableMethods;
     });
     callback(response);

@@ -137,7 +137,7 @@ describe('the schema can be turned into a sql document', function() {
 
     it('can populate the database based on the schema object', function(done) {
       dbUtils.createTablesAndDefaultValues(function() {
-        dbUtils.sequenceTypes.getAll(function(err, rows) {
+        dbUtils.sequenceTypes.list(function(err, rows) {
           if (err) {
             console.log(err);
             expect(true).toBe(false);
