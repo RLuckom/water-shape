@@ -13,6 +13,10 @@ function startServer(dbUtils, logger, callback) {
       return console.log(`[ ${level} ] ${message}`);
     }
   };
+  if (callback && !_.isFunction(callback)) {
+    logger.log('error', `callback is ${callback}, not function`);
+    throw new Error(`callback is ${callback}, not function`);
+  }
   const server = new Hapi.Server();
 
   server.register(Inert, function() {
