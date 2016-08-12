@@ -1,10 +1,17 @@
 language: node_js
 node_js:
     - "6.1"
-before_install:
-  - sudo apt-get install sqlite3
 install:
   - npm install
 script:
   - npm test
   - npm run compile
+env:
+  - CXX=g++-4.8
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.8
+      - sqlite3
