@@ -3,7 +3,30 @@ const fs = require('fs');
 const path = require('path');
 const _ = require('lodash');
 const uuid = require('uuid');
+const testGenericDataManipulationInterface = require('./dataManipulationInterfaceTest.js');
 
+describe('the db object implements the data manipulation api', function() {
+
+  function beforeEachFunction(schema, callback) {
+    try {
+      fs.unlinkSync('test.db');
+    } catch(err) {} // don't care
+    db('test.db', schema, null, function(o) {
+      o.createTablesAndDefaultValues(function() {
+        callback(null, o);
+      });
+    });
+  };
+
+  function afterEachFunction(dmi, done) {
+    try {
+      fs.unlinkSync('test.db');
+    } catch(err) {} // don't care
+    dmi.close(done);
+  };
+
+  testGenericDataManipulationInterface(describe, it, beforeEach, afterEach, beforeEachFunction, afterEachFunction)
+});
 describe('the schema can be turned into a sql document', function() {
   var schema = {
     'sequences': {
