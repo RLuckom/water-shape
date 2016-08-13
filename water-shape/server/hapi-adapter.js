@@ -27,7 +27,7 @@ function startServer(dbUtils, logger, callback) {
       path: '/{param*}',
       handler: {
         directory: {
-          path: __dirname + '/../dist'
+          path: __dirname + '/../../dist'
         }
       }
     });

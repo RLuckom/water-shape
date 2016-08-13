@@ -55,6 +55,25 @@ function sequenceItems(sequenceItem, sequenceByUid, sequenceTypes, sequenceItems
 
 function schemaFactory(noOpValidate) {
   return {
+    peripherals: {
+      id: 'uid',
+      columns: {
+        'uid': 'TEXT',
+        'name': 'TEXT',
+        'dateCreated': 'TEXT',
+        'peripheralType': 'TEXT',
+        'defaultState': 'NUMBER'
+      },
+      apiMethods: {
+        GET: true,
+        POST: true,
+        PUT: true,
+        DELETE: true
+      },
+      constraints: {
+        UNIQUE: [['name']]
+      },
+    },
     sequences: {
       id: 'uid',
       columns: {

@@ -11,46 +11,6 @@ const uuid = require('uuid');
 //TODO make .gitignored config file to avoid hardcoding environment-specific stuff.
 const api = apiFactory(schemaFactory(()=>{}), window.location.href + 'api', request);
 
-function makeOnOffSequenceAndAssignToPin(onDuration, offDuration, pinNumber, defaultState, callback) {
-  var sequence = {
-    uid: uuid.v4(),
-    dateCreated: new Date().toString(),
-    sequenceType: 1,
-    defaultState: defaultState
-  };
-  var onSequenceItem = {
-    uid: uuid.v4(),
-    dateCreated: new Date().toString(),
-    sequenceUid: sequence.uid,
-    durationSeconds: onDuration,
-    ordinal: 1,
-    startTime: null,
-    endTime: null,
-    state: 1
-  };
-  var offSequenceItem = {
-    uid: uuid.v4(),
-    dateCreated: new Date().toString(),
-    sequenceUid: sequence.uid,
-    durationSeconds: offDuration,
-    ordinal: 2,
-    startTime: null,
-    endTime: null,
-    state: 1
-  };
-  var pin = {
-    pinNumber: pinNumber,
-    sequenceUid: sequence.uid
-  };
-  var tasks = [
-    _.partial(api.sequences.save, sequence),
-    _.partial(api.sequenceItems.save, onSequenceItem),
-    _.partial(api.sequenceItems.save, offSequenceItem),
-    _.partial(api.gpioPins.update, pin)
-  ];
-  async.series(tasks, callback);
-}
-
 var Svg = React.createClass({
   render: function() {
     return (
@@ -74,9 +34,9 @@ var CircleText = React.createClass({
 var GpioList = React.createClass({
   loadgpiosFromServer: function() {
     api.gpioPins.get(
-    function(err, resp, body) {
-      this.setState({data: body});
-    }.bind(this)
+      function(err, resp, body) {
+        this.setState({data: body});
+      }.bind(this)
     );
   },
   getInitialState: function() {
@@ -90,13 +50,13 @@ var GpioList = React.createClass({
     var pinNodes = this.state.data.map(function(pin) {
       return (
         <div key={pin.uid} className="gpioPin">
-        <span className="pinName">{pin.pinNumber}</span>
+          <span className="pinName">{pin.pinNumber}</span>
         </div>
       );
     });
     return (
       <div className="gpioList">
-      {pinNodes}
+        {pinNodes}
       </div>
     );
   }
@@ -105,9 +65,9 @@ var GpioList = React.createClass({
 var PinList = React.createClass({
   loadPinsFromServer: function() {
     api.pins.get(
-    function(err, resp, body) {
-      this.setState({data: body});
-    }.bind(this)
+      function(err, resp, body) {
+        this.setState({data: body});
+      }.bind(this)
     );
   },
   getInitialState: function() {
@@ -121,14 +81,14 @@ var PinList = React.createClass({
     var pinNodes = this.state.data.map(function(pin) {
       return (
         <div key={pin.uid} className="pin">
-        <div className="pinRow">{pin.row}</div>
-        <div className="pinColumn">{pin.column}</div>
+          <div className="pinRow">{pin.row}</div>
+          <div className="pinColumn">{pin.column}</div>
         </div>
       );
     });
     return (
       <div className="pin">
-      {pinNodes}
+        {pinNodes}
       </div>
     );
   }
@@ -137,9 +97,9 @@ var PinList = React.createClass({
 var SequenceList = React.createClass({
   loadSequencesFromServer: function() {
     api.sequences.get(
-    function(err, resp, body) {
-      this.setState({data: body});
-    }.bind(this)
+      function(err, resp, body) {
+        this.setState({data: body});
+      }.bind(this)
     );
   },
   getInitialState: function() {
@@ -157,30 +117,29 @@ var SequenceList = React.createClass({
       var self = this;
       return (
         <div key={sequence.uid} className="sequence" onClick={handleClick}>
-        <span className="sequenceName">{sequence.name}</span>
+          <span className="sequenceName">{sequence.name}</span>
         </div>
       );
     });
     return (
       <div className="sequenceList">
-      {sequences}
+        {sequences}
       </div>
     );
   }
 });
 
 ReactDOM.render(
-  <div className="gpioSection">
-  <a className="btn-floating btn-large waves-effect waves-light red"><i className="material-icons">add</i></a>
-  <h2>Raspberry Pi GPIO Scheduling Controller</h2>
-  <Svg width="400" height="400">
-    <CircleText text="HALLOA"></CircleText>
-  </Svg>
-  <h3>GPIOs</h3>
-  <GpioList pollInterval={10000}></GpioList>
-  <PinList pollInterval={10000}></PinList>
-  <h3>Sequences</h3>
-  <SequenceList pollInterval={10000}></SequenceList>
+  <div className="app">
+    <div className="header row">
+      <div className="header col s12">
+        <h2>Raspberry Pi GPIO Scheduling Controller</h2>
+      </div>
+    </div>
+    <div className="body row">
+      <div className="body col s12">
+      </div>
+    </div>
   </div>,
   document.getElementById('example')
 );
