@@ -1,9 +1,9 @@
-const db = require('../../utils/db');
+const db = require('../../../water-shape/persistence/sqlite3-adapter');
 const fs = require('fs');
 const path = require('path');
 const _ = require('lodash');
 const uuid = require('uuid');
-const testGenericDataManipulationInterface = require('./dataManipulationInterfaceTest.js');
+const testGenericDataManipulationInterface = require('../dataManipulationInterfaceTest');
 
 describe('the db object implements the data manipulation api', function() {
 
@@ -155,7 +155,7 @@ describe('the schema can be turned into a sql document', function() {
 
   describe('database creation', function() {
     it('creates a database schema based on the schema object', function() {
-      expect(dbUtils.buildSqliteSchema(schema)).toEqual(fs.readFileSync(path.join(__dirname, '../fixtures/schema.sql'), 'utf8'));
+      expect(dbUtils.buildSqliteSchema(schema)).toEqual(fs.readFileSync(path.join(__dirname, '../../fixtures/schema.sql'), 'utf8'));
     });
 
     it('can populate the database based on the schema object', function(done) {

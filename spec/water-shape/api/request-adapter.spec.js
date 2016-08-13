@@ -1,8 +1,8 @@
 'use strict';
-const dbUtilsFactory = require('../../utils/db');
-const startServer = require('../../utils/apiServer').startServer;
-const apiClientFactory = require('../../utils/apiClient');
-const testGenericDataManipulationInterface = require('./dataManipulationInterfaceTest.js');
+const dbUtilsFactory = require('../../../water-shape/persistence/sqlite3-adapter');
+const startServer = require('../../../water-shape/server/hapi-adapter').startServer;
+const apiClientFactory = require('../../../water-shape/api/request-adapter');
+const testGenericDataManipulationInterface = require('../dataManipulationInterfaceTest');
 const request = require('request');
 const uuid = require('uuid');
 const fs = require('fs');
@@ -64,7 +64,7 @@ describe('api tests', function() {
   testGenericDataManipulationInterface('api', setupTests, teardownTests);
 
   describe('nongeneric tests', function() {
-    const schema = require('../../utils/schema').schemaFactory();
+    const schema = require('../../../schema/schema').schemaFactory();
     const api = apiClientFactory(schema, 'http://localhost:8080/api', request);
     beforeEach(function(done) {
       var finished = {};

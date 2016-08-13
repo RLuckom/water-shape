@@ -3,8 +3,8 @@ const React = require('react');
 const ReactDOM = require('react-dom');
 const request = require('browser-request');
 const async = require('async');
-const schemaFactory = require('../utils/schema').schemaFactory;
-const apiFactory = require('../utils/apiClient');
+const schemaFactory = require('../schema/schema').schemaFactory;
+const apiFactory = require('../water-shape/api/request-adapter');
 const _ = require('lodash');
 const uuid = require('uuid');
 
@@ -46,7 +46,7 @@ function makeOnOffSequenceAndAssignToPin(onDuration, offDuration, pinNumber, def
     _.partial(api.sequences.save, sequence),
     _.partial(api.sequenceItems.save, onSequenceItem),
     _.partial(api.sequenceItems.save, offSequenceItem),
-    _.partial(api.gpioPins.put, pin)
+    _.partial(api.gpioPins.update, pin)
   ];
   async.series(tasks, callback);
 }
