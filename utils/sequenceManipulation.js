@@ -72,9 +72,40 @@ function sequenceUtilsFactory(dmi) {
     ];
     async.series(tasks, callback);
   }
+
+  function getSequenceItemsAndPinsAssociatedWithSequence(sequence, callback) {
+    const tasks = {
+      gpioPins: _.partial(dmi.gpioPins.search, {sequenceUid: sequence.uid}),
+      sequenceItems: _.partial(dmi.sequenceItems.search, {sequenceUid: sequence.uid})
+    };
+    return async.auto(tasks, callback);
+  }
+  
+  function getSequencesWithItemsAndPins(callback) {
+    return dmi.sequences.list(function(err, sequenceList) {
+      if (err) {
+        return callback(err);
+      } else {
+        const tasks = _.map(sequenceList, function(si) {
+          return function(callback) {
+            return getSequenceItemsAndPinsAssociatedWithSequence(si, function(e, o) {
+              if (e) {
+                return callback(e);
+              } else {
+                return callback(void(0), _.merge({sequence: si}, o));
+              }
+            });
+          };
+        });
+        return async.parallel(tasks, callback);
+      }
+    });
+  }
+
   return {
     makeOnOffSequenceAndAssignToPin: makeOnOffSequenceAndAssignToPin,
-    makeTimeSequenceAndAssignToPin: makeTimeSequenceAndAssignToPin
+    makeTimeSequenceAndAssignToPin: makeTimeSequenceAndAssignToPin,
+    getSequencesWithItemsAndPins: getSequencesWithItemsAndPins
   };
 }
 

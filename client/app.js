@@ -5,11 +5,14 @@ const request = require('browser-request');
 const async = require('async');
 const schemaFactory = require('../schema/schema').schemaFactory;
 const apiFactory = require('../water-shape/api/request-adapter');
+const sequenceUtils = require('../utils/sequenceManipulation.js');
 const _ = require('lodash');
 const uuid = require('uuid');
 
+
 //TODO make .gitignored config file to avoid hardcoding environment-specific stuff.
 const api = apiFactory(schemaFactory(()=>{}), window.location.href + 'api', request);
+window.sequenceUtils = sequenceUtils(api);
 
 var Svg = React.createClass({
   render: function() {
