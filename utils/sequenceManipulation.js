@@ -4,9 +4,10 @@ const _ = require('lodash');
 const uuid = require('uuid');
 
 function sequenceUtilsFactory(dmi) {
-  function makeOnOffSequenceAndAssignToPin(onDuration, offDuration, pinNumber, defaultState, callback) {
+  function makeOnOffSequenceAndAssignToPin(name, onDuration, offDuration, pinNumber, defaultState, callback) {
     var sequence = {
       uid: uuid.v4(),
+      name: name,
       dateCreated: new Date().toString(),
       sequenceType: 'DURATION',
       defaultState: defaultState
@@ -44,9 +45,10 @@ function sequenceUtilsFactory(dmi) {
     async.series(tasks, callback);
   }
 
-  function makeTimeSequenceAndAssignToPin(onTime, offTime, pinNumber, defaultState, callback) {
+  function makeTimeSequenceAndAssignToPin(name, onTime, offTime, pinNumber, defaultState, callback) {
     var sequence = {
       uid: uuid.v4(),
+      name: name,
       dateCreated: new Date().toString(),
       sequenceType: 'TIME',
       defaultState: defaultState
@@ -76,7 +78,25 @@ function sequenceUtilsFactory(dmi) {
   function getSequenceItemsAndPinsAssociatedWithSequence(sequence, callback) {
     const tasks = {
       gpioPins: _.partial(dmi.gpioPins.search, {sequenceUid: sequence.uid}),
-      sequenceItems: _.partial(dmi.sequenceItems.search, {sequenceUid: sequence.uid})
+      sequenceItems: function(callback) {
+        dmi.sequenceItems.search({sequenceUid: sequence.uid}, function(err, d) {
+          if (err) {
+            return callback(err);
+          } else {
+            _.each(d, function(sqi) {
+              if (sqi.startTime) {
+                try {
+                  sqi.startTime = JSON.parse(sqi.startTime);
+                  sqi.endTime = JSON.parse(sqi.endTime);
+                } catch(error) {
+                  callback(error);
+                }
+              }
+            });
+            return callback(void(0), d);
+          }
+        });
+      }
     };
     return async.auto(tasks, callback);
   }

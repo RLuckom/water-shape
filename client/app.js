@@ -5,14 +5,14 @@ const request = require('browser-request');
 const async = require('async');
 const schemaFactory = require('../schema/schema').schemaFactory;
 const apiFactory = require('../water-shape/api/request-adapter');
-const sequenceUtils = require('../utils/sequenceManipulation.js');
+const sequenceUtilsFactory = require('../utils/sequenceManipulation.js');
 const _ = require('lodash');
 const uuid = require('uuid');
 
 
 //TODO make .gitignored config file to avoid hardcoding environment-specific stuff.
 const api = apiFactory(schemaFactory(()=>{}), window.location.href + 'api', request);
-window.sequenceUtils = sequenceUtils(api);
+const sequenceUtils = sequenceUtilsFactory(api);
 
 var Svg = React.createClass({
   render: function() {
@@ -65,6 +65,62 @@ var GpioList = React.createClass({
   }
 });
 
+var SequenceList = React.createClass({
+  loadSequences: function() {
+    sequenceUtils.getSequencesWithItemsAndPins(
+      function(err, body) {
+        this.setState({data: body});
+      }.bind(this)
+    );
+  },
+  getInitialState: function() {
+    return {data: []};
+  },
+  componentDidMount: function() {
+    this.loadSequences();
+    setInterval(this.loadSequences, this.props.pollInterval);
+  },
+  render: function() {
+    var sequenceCards = this.state.data.map(function(deepSequence) {
+      const sequence = deepSequence.sequence;
+      const sequenceItems = deepSequence.sequenceItems;
+      const gpioPins = deepSequence.gpioPins;
+      const sequenceItemDivs = _.map(sequenceItems, function(sequenceItem) {
+        if (sequence.sequenceType === 'DURATION') {
+          return (
+            <div key={sequenceItem.uid} className="sequenceItem">
+              <p><span className="text-label duration-label">Duration: </span><span className="duration-value">{sequenceItem.durationSeconds}</span></p>
+              <p><span className="text-label state-label">State: </span><span className="state-value">{sequenceItem.state}</span></p>
+            </div>
+          );
+        } else {
+          return (
+            <div key={sequenceItem.uid} className="sequenceItem">
+              <p><span className="text-label start-time-label">Start Time: </span><span className="start-time-value">{sequenceItem.startTime.hour}:{sequenceItem.startTime.minute}:{sequenceItem.startTime.second}</span></p>
+              <p><span className="text-label end-time-label">End Time: </span><span className="end-time-value">{sequenceItem.endTime.hour}:{sequenceItem.endTime.minute}:{sequenceItem.endTime.second}</span></p>
+              <p><span className="text-label state-label">State: </span><span className="state-value">{sequenceItem.state}</span></p>
+            </div>
+          );
+        }
+      });
+      return (
+        <div key={deepSequence.sequence.uid} className="sequence-card card">
+          <div className="card-content sequence-card-content black-text">
+            <span className="card-title sequence-card-title">{sequence.name}</span>
+            <span className="sequence-card-type">{sequence.sequenceType}</span>
+            {sequenceItemDivs}
+          </div>
+        </div>
+      );
+    });
+    return (
+      <div className="sequence-cards">
+        {sequenceCards}
+      </div>
+    );
+  }
+});
+
 var PinList = React.createClass({
   loadPinsFromServer: function() {
     api.pins.get(
@@ -97,41 +153,6 @@ var PinList = React.createClass({
   }
 });
 
-var SequenceList = React.createClass({
-  loadSequencesFromServer: function() {
-    api.sequences.get(
-      function(err, resp, body) {
-        this.setState({data: body});
-      }.bind(this)
-    );
-  },
-  getInitialState: function() {
-    return {data: []};
-  },
-  componentDidMount: function() {
-    this.loadSequencesFromServer();
-    setInterval(this.loadgpiosFromServer, this.props.pollInterval);
-  },
-  render: function() {
-    var sequences = this.state.data.map(function(sequence) {
-      function handleClick(seq) {
-        console.log(`hello ${sequence.name}`);
-      }
-      var self = this;
-      return (
-        <div key={sequence.uid} className="sequence" onClick={handleClick}>
-          <span className="sequenceName">{sequence.name}</span>
-        </div>
-      );
-    });
-    return (
-      <div className="sequenceList">
-        {sequences}
-      </div>
-    );
-  }
-});
-
 ReactDOM.render(
   <div className="app">
     <div className="header row">
@@ -141,6 +162,7 @@ ReactDOM.render(
     </div>
     <div className="body row">
       <div className="body col s12">
+        <SequenceList></SequenceList>
       </div>
     </div>
   </div>,

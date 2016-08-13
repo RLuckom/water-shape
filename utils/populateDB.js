@@ -20,6 +20,7 @@ function populateDB(db, callback) {
    */
   const populatePumpSequence = _.partial(
     sequenceUtils.makeOnOffSequenceAndAssignToPin,
+    'Pump Sequence',
     60, // 60 seconds on
     240, // 4 mins off
     4, // pin 4
@@ -34,6 +35,7 @@ function populateDB(db, callback) {
    */
   const populateLightSequence = _.partial(
     sequenceUtils.makeTimeSequenceAndAssignToPin,
+    'Light Sequence',
     {hour: 5, minute: 30, second: 0}, // 5:30 AM on
     {hour: 18, minute: 30, second: 0}, // 6:30PM off
     14, // pin 14
