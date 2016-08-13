@@ -145,7 +145,8 @@ describe('api tests', function() {
       const sequenceToAdd = {
         uid: uuid.v4(),
         dateCreated: new Date().toString(),
-        sequenceType: 1,
+        name: 'newSequence',
+        sequenceType: 'DURATION',
         defaultState: 1
       };
       api.sequences.get(function(e, r, b) {

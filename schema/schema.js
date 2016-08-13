@@ -59,8 +59,9 @@ function schemaFactory(noOpValidate) {
       id: 'uid',
       columns: {
         'uid': 'TEXT',
+        'name': 'TEXT',
         'dateCreated': 'TEXT',
-        'sequenceType': 'NUMBER',
+        'sequenceType': 'TEXT',
         'defaultState': 'NUMBER'
       },
       apiMethods: {
@@ -71,7 +72,7 @@ function schemaFactory(noOpValidate) {
       },
       constraints: {
         FOREIGN_KEYS: {
-          sequenceType : 'sequenceTypes.sequenceId'
+          sequenceType : 'sequenceTypes.typeName'
         }
       },
     },
@@ -232,8 +233,7 @@ function schemaFactory(noOpValidate) {
       id: 'uid',
       columns: {
         'uid': 'TEXT',
-        'sequenceId': 'NUMBER',
-        'sequenceTypeName': 'TEXT'
+        'typeName': 'TEXT'
       },
       apiMethods: {
         GET: true,
@@ -242,11 +242,11 @@ function schemaFactory(noOpValidate) {
         DELETE: false
       },
       constraints: {
-        UNIQUE: [['sequenceTypeName'], ['sequenceId']],
+        UNIQUE: [['typeName']],
       },
       initialValues: [
-        {sequenceId: 1, sequenceTypeName: 'DURATION'},
-        {sequenceId: 2, sequenceTypeName: 'TIME'}
+        {typeName: 'DURATION'},
+        {typeName: 'TIME'}
       ]
     }
   };
