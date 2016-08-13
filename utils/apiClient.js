@@ -5,6 +5,11 @@ const _ = require('lodash');
 // validation logic shared with server side, based on
 // required data such as 'all models of this type' etc.
 function apiFactory(schema, apiBaseUrl, request) {
+  function translateToGeneric(callback) {
+    return function(e, r, b) {
+      callback(e, b);
+    };
+  }
   var api = {};
   _.each(schema, (v, k) => {
     var endpoint = _.cloneDeep(v);
@@ -16,19 +21,23 @@ function apiFactory(schema, apiBaseUrl, request) {
           json: true
         }, callback);
       };
-      endpoint.list = endpoint.get;
+      endpoint.list = function(callback) {
+        return endpoint.get(translateToGeneric(callback));
+      }
       endpoint.search = function(instance, callback) {
         return request({
           method: 'GET',
           qs: instance,
           url: apiBaseUrl + '/' + k,
           json: true
-        }, callback);
+        }, translateToGeneric(callback));
       };
       endpoint.getById = function(id, callback) {
-        var qs = {};
-        qs[v.id] = id;
-        endpoint.search(qs, callback);
+        return request({
+          method: 'GET',
+          url: `${apiBaseUrl}/${k}/${id}`,
+          json: true
+        }, translateToGeneric(callback));
       };
     }
     if (v.apiMethods.PUT) {
@@ -44,7 +53,9 @@ function apiFactory(schema, apiBaseUrl, request) {
           body: instance
         }, callback);
       };
-      endpoint.update = endpoint.put;
+      endpoint.update = function(instance, callback) {
+        endpoint.put(instance, translateToGeneric(callback));
+      };
     }
     if (v.apiMethods.POST) {
       endpoint.post = function(instance, callback) {
@@ -56,6 +67,9 @@ function apiFactory(schema, apiBaseUrl, request) {
         }, callback);
       };
     }
+    endpoint.save = function(instance, callback) {
+      endpoint.post(instance, translateToGeneric(callback));
+    };
     if (v.apiMethods.DELETE) {
       endpoint.delete = function(instance, callback) {
         var id = instance[v.id];
@@ -69,10 +83,9 @@ function apiFactory(schema, apiBaseUrl, request) {
           method: 'DELETE',
           url: `${apiBaseUrl}/${k}/${id}`,
           json: true
-        }, callback);
+        }, translateToGeneric(callback));
       };
     }
-    endpoint.save = endpoint.post;
     api[k] = endpoint;
   });
   return api;

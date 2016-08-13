@@ -25,7 +25,7 @@ describe('the db object implements the data manipulation api', function() {
     dmi.close(done);
   };
 
-  testGenericDataManipulationInterface(describe, it, beforeEach, afterEach, beforeEachFunction, afterEachFunction)
+  testGenericDataManipulationInterface('db', beforeEachFunction, afterEachFunction)
 });
 describe('the schema can be turned into a sql document', function() {
   var schema = {
