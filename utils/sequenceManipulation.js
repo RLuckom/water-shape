@@ -30,7 +30,7 @@ function sequenceUtilsFactory(dmi) {
       ordinal: 2,
       startTime: null,
       endTime: null,
-      state: 1
+      state: 0
     };
     var pin = {
       pinNumber: pinNumber,

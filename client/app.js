@@ -85,30 +85,61 @@ var SequenceList = React.createClass({
       const sequence = deepSequence.sequence;
       const sequenceItems = deepSequence.sequenceItems;
       const gpioPins = deepSequence.gpioPins;
-      const sequenceItemDivs = _.map(sequenceItems, function(sequenceItem) {
+      const sequenceItemTableRows = _.map(sequenceItems, function(sequenceItem) {
         if (sequence.sequenceType === 'DURATION') {
           return (
-            <div key={sequenceItem.uid} className="sequenceItem">
-              <p><span className="text-label duration-label">Duration: </span><span className="duration-value">{sequenceItem.durationSeconds}</span></p>
-              <p><span className="text-label state-label">State: </span><span className="state-value">{sequenceItem.state}</span></p>
-            </div>
+            <tr key={sequenceItem.uid} className="sequenceItem">
+              <td>{sequenceItem.durationSeconds}</td>
+              <td>{sequenceItem.state === '1' ? 'ON' : 'OFF'}</td>
+            </tr>
           );
         } else {
           return (
-            <div key={sequenceItem.uid} className="sequenceItem">
-              <p><span className="text-label start-time-label">Start Time: </span><span className="start-time-value">{sequenceItem.startTime.hour}:{sequenceItem.startTime.minute}:{sequenceItem.startTime.second}</span></p>
-              <p><span className="text-label end-time-label">End Time: </span><span className="end-time-value">{sequenceItem.endTime.hour}:{sequenceItem.endTime.minute}:{sequenceItem.endTime.second}</span></p>
-              <p><span className="text-label state-label">State: </span><span className="state-value">{sequenceItem.state}</span></p>
-            </div>
+            <tr key={sequenceItem.uid} className="sequenceItem">
+              <td>{sequenceItem.startTime.hour}:{sequenceItem.startTime.minute}:{sequenceItem.startTime.second}</td>
+              <td>{sequenceItem.endTime.hour}:{sequenceItem.endTime.minute}:{sequenceItem.endTime.second}</td>
+              <td>{sequenceItem.state === '1' ? 'ON' : 'OFF'}</td>
+            </tr>
           );
         }
       });
+      var sequenceItemsTable;
+      if (sequence.sequenceType === 'DURATION') {
+        sequenceItemsTable = (
+          <table key={sequence.uid} className="highlight">
+            <thead>
+              <tr>
+                <th data-field="duration">Duration (seconds)</th>
+                <th data-field="state">On / Off</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sequenceItemTableRows}
+            </tbody>
+          </table>
+        );
+      } else {
+        sequenceItemsTable = (
+          <table key={sequence.uid} className="highlight sequence">
+            <thead>
+              <tr>
+                <th data-field="start-time">Start Time</th>
+                <th data-field="end-time">End Time</th>
+                <th data-field="state">On / Off</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sequenceItemTableRows}
+            </tbody>
+          </table>
+        );
+      }
       return (
         <div key={deepSequence.sequence.uid} className="sequence-card card">
           <div className="card-content sequence-card-content black-text">
-            <span className="card-title sequence-card-title">{sequence.name}</span>
-            <span className="sequence-card-type">{sequence.sequenceType}</span>
-            {sequenceItemDivs}
+            <span className="card-title sequence-card-title black-text">{sequence.name}</span>
+            <div className="sequence-type-display"><span className="text-label sequence-type-label">Sequence Type: </span><span className="sequence-type-value">{sequence.sequenceType}</span></div>
+            {sequenceItemsTable}
           </div>
         </div>
       );
