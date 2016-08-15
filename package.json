@@ -45,13 +45,13 @@
     "file-loader": "^0.8.5",
     "jasmine": "^2.4.1",
     "materialize-sass": "^0.95.2",
-    "phantomjs-prebuilt": "^2.1.12",
     "react-hot-loader": "^1.3.0",
     "selenium-webdriver": "^3.0.0-beta-2",
     "style-loader": "^0.13.1",
     "webpack-dev-server": "^1.14.1"
   },
   "optionalDependencies": {
+    "phantomjs-prebuilt": "^2.1.12",
     "pigpio": "^0.3.4",
     "raspicam": "^0.2.13"
   }
