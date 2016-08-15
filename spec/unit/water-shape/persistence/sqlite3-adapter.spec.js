@@ -1,4 +1,4 @@
-const db = require('../../../water-shape/persistence/sqlite3-adapter');
+const db = require('../../../../water-shape/persistence/sqlite3-adapter');
 const fs = require('fs');
 const path = require('path');
 const _ = require('lodash');

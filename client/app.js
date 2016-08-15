@@ -65,6 +65,29 @@ var GpioList = React.createClass({
   }
 });
 
+var SequenceItemRow = React.createClass({
+  render: function() {
+    const sequenceItem = this.props.sequenceItem;
+    const sequenceType = this.props.sequenceType;
+    if (sequenceType === 'DURATION') {
+      return (
+        <tr key={sequenceItem.uid} className="sequenceItem">
+          <td>{sequenceItem.durationSeconds}</td>
+          <td>{sequenceItem.state === '1' ? 'ON' : 'OFF'}</td>
+        </tr>
+      );
+    } else {
+      return (
+        <tr key={sequenceItem.uid} className="sequenceItem">
+          <td>{sequenceItem.startTime.hour}:{sequenceItem.startTime.minute}:{sequenceItem.startTime.second}</td>
+          <td>{sequenceItem.endTime.hour}:{sequenceItem.endTime.minute}:{sequenceItem.endTime.second}</td>
+          <td>{sequenceItem.state === '1' ? 'ON' : 'OFF'}</td>
+        </tr>
+      );
+    }
+  }
+});
+
 var SequenceList = React.createClass({
   loadSequences: function() {
     sequenceUtils.getSequencesWithItemsAndPins(
@@ -139,6 +162,7 @@ var SequenceList = React.createClass({
           <div className="card-content sequence-card-content black-text">
             <span className="card-title sequence-card-title black-text">{sequence.name}</span>
             <div className="sequence-type-display"><span className="text-label sequence-type-label">Sequence Type: </span><span className="sequence-type-value">{sequence.sequenceType}</span></div>
+            <div className="gpio-display"><span className="text-label gpio-label">GPIO Pin Numbers: </span><span className="sequence-type-value">{_.map(gpioPins, 'pinNumber').join(', ')}</span></div>
             {sequenceItemsTable}
           </div>
         </div>
@@ -193,7 +217,7 @@ ReactDOM.render(
     </div>
     <div className="body row">
       <div className="body col s12">
-        <SequenceList></SequenceList>
+        <SequenceList pollInterval="20000"></SequenceList>
       </div>
     </div>
   </div>,
