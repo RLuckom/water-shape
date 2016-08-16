@@ -65,20 +65,158 @@ var GpioList = React.createClass({
   }
 });
 
+var SelectNumber = React.createClass({
+  render: function() {
+    var label = this.props.label;
+    var id = this.props.id;
+    var from = this.props.from;
+    var to = this.props.to;
+    var callback = this.props.callback;
+    function validate(n) {
+      return _.inRange(n, from, to);
+    }
+    return <div>
+      <input type="number" id={id} onKeyDown={callback}></input>
+      <label htmlFor={id}>{label}</label>
+    </div>
+  }
+});
+
+var NumberInput = React.createClass({
+  render: function() {
+    var callback = this.props.callback;
+    return <input type="number" validate={_.isNumber} onKeyDown={callback}></input>;
+  }
+});
+
 var SequenceItemRow = React.createClass({
+  getInitialState: function() {
+    return {editing: false};
+  },
   render: function() {
     const sequenceItem = this.props.sequenceItem;
     const sequenceType = this.props.sequenceType;
     if (sequenceType === 'DURATION') {
+      return this.renderDurationSequenceItemOrEdit(sequenceItem);
+    } else {
+      return this.renderTimeSequenceItemOrEdit(sequenceItem);
+    }
+  },
+  renderDurationSequenceItemOrEdit: function(sequenceItem) {
+    var self = this;
+    function setDurationSeconds(evt) {
+      if ( evt.keyCode === 13 ) {
+        let target = evt.target,
+          update = {};
+
+        self.props.sequenceItem.durationSeconds = target.value;
+        api.sequenceItems.update(self.props.sequenceItem, function(err, res) {
+          if (err) {
+            console.error(err)
+          } else {
+            console.log('successfully updated');
+            console.log(self.props.sequenceItem);
+            self.toggleEditing();
+          }
+        });
+      }
+    }
+    function setState(evt) {
+      if ( evt.keyCode === 13 ) {
+        let target = evt.target,
+          update = {};
+
+        self.props.sequenceItem.state = target.value;
+        console.log(target);
+        api.sequenceItems.update(self.props.sequenceItem, function(err, res) {
+          if (err) {
+            console.error(err)
+          } else {
+            console.log('successfully updated');
+            console.log(self.props.sequenceItem);
+            self.toggleEditing();
+          }
+        });
+      }
+    }
+    if (this.state.editing) {
       return (
-        <tr key={sequenceItem.uid} className="sequenceItem">
-          <td>{sequenceItem.durationSeconds}</td>
-          <td>{sequenceItem.state === '1' ? 'ON' : 'OFF'}</td>
+        <tr className="sequenceItem">
+          <td><NumberInput callback={setDurationSeconds}></NumberInput></td>
+          <td><SelectNumber from={0} to={2} callback={setState} id={sequenceItem.uid + 'setState'} label="State"></SelectNumber></td>
         </tr>
       );
     } else {
       return (
-        <tr key={sequenceItem.uid} className="sequenceItem">
+        <tr className="sequenceItem" onClick={this.toggleEditing}>
+          <td>{sequenceItem.durationSeconds}</td>
+          <td>{sequenceItem.state === '1' ? 'ON' : 'OFF'}</td>
+        </tr>
+      );
+    }
+  },
+  toggleEditing: function() {
+    this.setState({editing: !this.state.editing});
+  },
+  renderTimeSequenceItemOrEdit: function(sequenceItem) {
+    var self = this;
+    function setState(evt) {
+      if ( evt.keyCode === 13 ) {
+        let target = evt.target,
+          update = {};
+
+        self.props.sequenceItem.state = target.value;
+        api.sequenceItems.update(self.props.sequenceItem, function(err, res) {
+          if (err) {
+            console.error(err)
+          } else {
+            console.log('successfully updated');
+            console.log(self.props.sequenceItem);
+            self.toggleEditing();
+          }
+        });
+      }
+    }
+    function setTime(accessor) {
+      return function(evt) {
+        if ( evt.keyCode === 13 ) {
+          let target = evt.target,
+            update = {};
+          console.log(target);
+          console.log(evt);
+
+          _.set(self.props.sequenceItem, accessor, target.value);
+          console.log(self.props.sequenceItem);
+          self.props.sequenceItem.startTime = JSON.stringify(self.props.sequenceItem.startTime);
+          self.props.sequenceItem.endTime = JSON.stringify(self.props.sequenceItem.endTime);
+
+          api.sequenceItems.update(self.props.sequenceItem, function(err, res) {
+            if (err) {
+              console.error(err)
+            } else {
+              console.log('successfully updated');
+              console.log(self.props.sequenceItem);
+              self.toggleEditing();
+            }
+          });
+        }
+      }
+    }
+    if (this.state.editing) {
+      return (
+        <tr className="sequenceItem">
+          <td><SelectNumber from={0} to={24} callback={setTime('startTime.hour')} id={sequenceItem.uid + 'startTime.hour'} label="startTime.hour"></SelectNumber></td>
+          <td><SelectNumber from={0} to={60} callback={setTime('startTime.minute')} id={sequenceItem.uid + 'startTime.minute'} label="startTime.minute"></SelectNumber></td>
+          <td><SelectNumber from={0} to={60} callback={setTime('startTime.second')} id={sequenceItem.uid + 'startTime.second'} label="startTime.second"></SelectNumber></td>
+          <td><SelectNumber from={0} to={24} callback={setTime('endTime.hour')} id={sequenceItem.uid + 'endTime-hour'} label="endTime.hour"></SelectNumber></td>
+          <td><SelectNumber from={0} to={60} callback={setTime('endTime.minute')} id={sequenceItem.uid + 'endTime-minute'} label="endTime.minute"></SelectNumber></td>
+          <td><SelectNumber from={0} to={60} callback={setTime('endTime.second')} id={sequenceItem.uid + 'endTime-second'} label="endTime.second"></SelectNumber></td>
+          <td><SelectNumber from={0} to={2} id={sequenceItem.uid + 'setState'} label="state"callback={setState}></SelectNumber></td>
+        </tr>
+      );
+    } else {
+      return (
+        <tr className="sequenceItem" onClick={this.toggleEditing}>
           <td>{sequenceItem.startTime.hour}:{sequenceItem.startTime.minute}:{sequenceItem.startTime.second}</td>
           <td>{sequenceItem.endTime.hour}:{sequenceItem.endTime.minute}:{sequenceItem.endTime.second}</td>
           <td>{sequenceItem.state === '1' ? 'ON' : 'OFF'}</td>
@@ -97,34 +235,20 @@ var SequenceList = React.createClass({
     );
   },
   getInitialState: function() {
-    return {data: []};
+    return {data: [], editingName: false};
   },
   componentDidMount: function() {
     this.loadSequences();
     setInterval(this.loadSequences, this.props.pollInterval);
   },
   render: function() {
+    var self = this;
     var sequenceCards = this.state.data.map(function(deepSequence) {
       const sequence = deepSequence.sequence;
       const sequenceItems = deepSequence.sequenceItems;
       const gpioPins = deepSequence.gpioPins;
       const sequenceItemTableRows = _.map(sequenceItems, function(sequenceItem) {
-        if (sequence.sequenceType === 'DURATION') {
-          return (
-            <tr key={sequenceItem.uid} className="sequenceItem">
-              <td>{sequenceItem.durationSeconds}</td>
-              <td>{sequenceItem.state === '1' ? 'ON' : 'OFF'}</td>
-            </tr>
-          );
-        } else {
-          return (
-            <tr key={sequenceItem.uid} className="sequenceItem">
-              <td>{sequenceItem.startTime.hour}:{sequenceItem.startTime.minute}:{sequenceItem.startTime.second}</td>
-              <td>{sequenceItem.endTime.hour}:{sequenceItem.endTime.minute}:{sequenceItem.endTime.second}</td>
-              <td>{sequenceItem.state === '1' ? 'ON' : 'OFF'}</td>
-            </tr>
-          );
-        }
+        return <SequenceItemRow key={sequenceItem.uid} sequenceItem={sequenceItem} sequenceType={sequence.sequenceType}></SequenceItemRow>;
       });
       var sequenceItemsTable;
       if (sequence.sequenceType === 'DURATION') {
@@ -157,10 +281,11 @@ var SequenceList = React.createClass({
           </table>
         );
       }
+      var sequenceNameField = self.renderSequenceNameField(self, sequence);
       return (
         <div key={deepSequence.sequence.uid} className="sequence-card card">
           <div className="card-content sequence-card-content black-text">
-            <span className="card-title sequence-card-title black-text">{sequence.name}</span>
+            {sequenceNameField}
             <div className="sequence-type-display"><span className="text-label sequence-type-label">Sequence Type: </span><span className="sequence-type-value">{sequence.sequenceType}</span></div>
             <div className="gpio-display"><span className="text-label gpio-label">GPIO Pin Numbers: </span><span className="sequence-type-value">{_.map(gpioPins, 'pinNumber').join(', ')}</span></div>
             {sequenceItemsTable}
@@ -173,6 +298,46 @@ var SequenceList = React.createClass({
         {sequenceCards}
       </div>
     );
+  },
+  toggleEditingName: function toggleEditingName() {
+    this.setState({editingName: !this.state.editingName});
+  },
+	renderSequenceNameField: function(self, sequence) {
+    function handleEdit(evt) {
+      return self.handleEditName(sequence, evt);
+    }
+		if (self.state.editingName) {
+			return (
+				<input
+					onKeyDown={handleEdit}
+					type="text"
+					className="form-control"
+					ref={ `title_${ sequence.uid }` }
+					name="title"
+					defaultValue={ sequence.name }
+				/>
+			);
+		} else {
+      return <span className="card-title sequence-card-title black-text" onClick={self.toggleEditingName} >{sequence.name}</span>;
+    }
+  },
+  handleEditName: function(sequence, event) {
+    if ( event.keyCode === 13 ) {
+      let target = event.target,
+        update = {};
+
+      sequence.name = target.value;
+      var self = this;
+      api.sequences.update(sequence, function(err, res) {
+        if (err) {
+          console.error(err)
+        } else {
+          console.log('successfully updated');
+          console.log(sequence);
+          self.toggleEditingName();
+        }
+      });
+    }
   }
 });
 
