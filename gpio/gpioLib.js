@@ -2,8 +2,9 @@
 var moment = require('moment');
 var _ = require('lodash');
 
-function gpioLibFactory(logger, gpio, getDeepSequences, setTimeoutFunction) {
+function gpioLibFactory(logger, gpio, getDeepSequences, setTimeoutFunction, setIntervalFunction) {
   var setTimeout = setTimeoutFunction || setTimeout;
+  var setInterval = setIntervalFunction || setInterval;
 
   var pump = new gpio(14, {mode: gpio.OUTPUT, pullUpDown:gpio.PUD_DOWN});
   var lights = new gpio(4, {mode: gpio.OUTPUT, pullUpDown:gpio.PUD_DOWN});
@@ -12,43 +13,85 @@ function gpioLibFactory(logger, gpio, getDeepSequences, setTimeoutFunction) {
   var savedInterval;
   var sequencesInProgress = {};
 
-  function startPinSequence(pin, sequenceItems) {
+  function startDurationPinSequence(deepSequence) {
+    const pin = deepSequence.gpioPins[0].pinNumber;
+    const sequenceItems = deepSequence.sequenceItems;
     var sequenceInProgress = {};
     sequenceInProgress.pinNumber = pin;
     sequenceInProgress.itemInProgress = 0;
     sequenceInProgress.items = _.cloneDeep(sequenceItems);
     sequenceInProgress.pin = new gpio(pin, {mode: gpio.OUTPUT, pullUpDown: gpio.PUD_DOWN});
     sequenceInProgress.pin.digitalWrite(sequenceItems[0].state);
-    logger.log('starting timeout');
     sequenceInProgress.timeout = setTimeout(function() {
       nextSequenceItem(sequenceInProgress);
-    }, sequenceItems[0].durationInSeconds * 1000);
+    }, sequenceItems[0].durationSeconds * 1000);
+    sequenceInProgress.deepSequence = deepSequence;
     sequencesInProgress[sequenceInProgress.pinNumber] = sequenceInProgress;
   }
 
+  function cancelSequence(oldSequence) {
+    clearTimeout(sequencesInProgress[oldSequence.gpioPins[0].pinNumber].timeout);
+    sequencesInProgress[oldSequence.gpioPins[0].pinNumber].pin.digitalWrite(0);
+    delete sequencesInProgress[oldSequence.gpioPins[0].pinNumber];
+  }
+
+  function updateSequence(oldSequence, newSequence) {
+    cancelSequence(oldSequence);
+    startDurationPinSequence(newSequence);
+  }
+
+  function compareDeepSequences(oldList, newList) {
+    _.each(oldList, function(oldDeepSequence) {
+      var oldSequence = oldDeepSequence.sequence;
+      var newSequence = _.find(newList, ['sequence.uid', oldSequence.uid]);
+      if (!newSequence) {
+        return cancelSequence(oldDeepSequence);
+      } else if (!_.isEqual(oldSequence, newSequence)) {
+        return updateSequence(oldDeepSequence, newSequence);
+      }
+    });
+    _.each(newList, function(newDeepSequence) {
+      var newSequence = newDeepSequence.sequence;
+      var oldSequence = _.find(oldList, ['sequence.uid', newSequence.uid]);
+      if (!oldSequence) {
+        return startDurationPinSequence(newDeepSequence);
+      }
+    });
+  }
+
   function nextSequenceItem(sequenceInProgress) {
-    sequenceInProgress.itemInProgress = sequenceInProgress.itemInProgress < sequenceInProgress.items.length + 1 ? sequenceInProgress.itemInProgress + 1 : 0;
+    sequenceInProgress.itemInProgress = sequenceInProgress.itemInProgress < sequenceInProgress.items.length - 1 ? sequenceInProgress.itemInProgress + 1 : 0;
     sequenceInProgress.pin.digitalWrite(sequenceInProgress.items[sequenceInProgress.itemInProgress].state);
     sequenceInProgress.timeout = setTimeout(function() {
       nextSequenceItem(sequenceInProgress);
-    }, sequenceInProgress.items[sequenceInProgress.itemInProgress].durationInSeconds * 1000);
+    }, sequenceInProgress.items[sequenceInProgress.itemInProgress].durationSeconds * 1000);
   }
 
-  function startSequences(callback) {
-    return function(deepSequences) {
-      _.each(deepSequences, function(sq) {
-        if (sq.sequence.sequenceType === 'DURATION') {
-          logger.log('debug', 'starting sequence '  + sq.sequence.name);
-          startPinSequence(sq.gpioPins[0].pinNumber, sq.sequenceItems);
-        }
-      });
+  function startSequences(deepSequences, callback) {
+    _.each(deepSequences, function(sq) {
+      if (sq.sequence.sequenceType === 'DURATION') {
+        startDurationPinSequence(sq);
+      }
+    });
+    if (_.isFunction(callback)) {
       callback();
     }
   }
 
   function start(callback) {
-    logger.log('debug', 'starting');
-    return getDeepSequences(startSequences(callback));
+    function startInterval(sequences) {
+      savedInterval = setInterval(function(callback) {
+        var oldDeepSequences = _.map(sequencesInProgress, 'deepSequence');
+        getDeepSequences(function(sequences) {
+          compareDeepSequences(oldDeepSequences, sequences);
+          if (_.isFunction(callback)) {
+            return callback();
+          }
+        });
+      }, 3000);
+      startSequences(sequences, callback);
+    }
+    return getDeepSequences(startInterval);
   }
 
   function stop() {

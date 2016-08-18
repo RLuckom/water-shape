@@ -11,18 +11,12 @@ function insertRecordsIntoTables(filename, schema, records, logger, callback) {
     db.createTablesAndDefaultValues(function() {
       var tasks = [];
       _.map(records, function(recordAndTable) {
-        logger.log('pushing', recordAndTable);
         tasks.push(function(callback) {
-          function cb(err) {
-            logger.log('err', err);
-            callback();
-          }
-          db[recordAndTable[0]].save(recordAndTable[1], cb)
+          db[recordAndTable[0]].save(recordAndTable[1], callback)
         });
       });
       logger.log('task', tasks);
       async.series(tasks, function(err, body) {
-        logger.log('debug in insert', `${err} ${body} ${records}`)
         if (err) {
           throw err;
         } else {
@@ -34,6 +28,24 @@ function insertRecordsIntoTables(filename, schema, records, logger, callback) {
   dbUtils(filename, schema, logger, receiveDBAndPopulate);
 }
 
+function deleteRecordsFromTables(db, records, logger, callback) {
+  var tasks = [];
+  _.map(records, function(recordAndTable) {
+    tasks.push(function(callback) {
+      db[recordAndTable[0]].delete(recordAndTable[1], callback)
+    });
+  });
+  logger.log('task', tasks);
+  async.series(tasks, function(err, body) {
+    if (err) {
+      throw err;
+    } else {
+      callback(db);
+    }
+  });
+}
+
 module.exports = {
-  insertRecordsIntoTables: insertRecordsIntoTables
+  insertRecordsIntoTables: insertRecordsIntoTables,
+  deleteRecordsFromTables: deleteRecordsFromTables
 };
