@@ -233,7 +233,7 @@ function schemaFactory(noOpValidate) {
         'ordinal': 'NUMBER',
         'startTime': 'TEXT',
         'endTime': 'TEXT',
-        'state': 'TEXT'
+        'state': 'NUMBER'
       },
       apiMethods: {
         GET: true,
