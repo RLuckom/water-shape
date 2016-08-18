@@ -30,14 +30,18 @@ function gpioLibFactory(logger, gpio, getDeepSequences, setTimeoutFunction, setI
   }
 
   function cancelSequence(oldSequence) {
-    clearTimeout(sequencesInProgress[oldSequence.gpioPins[0].pinNumber].timeout);
-    sequencesInProgress[oldSequence.gpioPins[0].pinNumber].pin.digitalWrite(0);
-    delete sequencesInProgress[oldSequence.gpioPins[0].pinNumber];
+    if (oldSequence.sequence.sequenceType === 'DURATION') {
+      clearTimeout(sequencesInProgress[oldSequence.gpioPins[0].pinNumber].timeout);
+      sequencesInProgress[oldSequence.gpioPins[0].pinNumber].pin.digitalWrite(0);
+      delete sequencesInProgress[oldSequence.gpioPins[0].pinNumber];
+    }
   }
 
   function updateSequence(oldSequence, newSequence) {
-    cancelSequence(oldSequence);
-    startDurationPinSequence(newSequence);
+    if (oldSequence.sequence.sequenceType === 'DURATION') {
+      cancelSequence(oldSequence);
+      startDurationPinSequence(newSequence);
+    }
   }
 
   function compareDeepSequences(oldList, newList) {
@@ -46,7 +50,7 @@ function gpioLibFactory(logger, gpio, getDeepSequences, setTimeoutFunction, setI
       var newSequence = _.find(newList, ['sequence.uid', oldSequence.uid]);
       if (!newSequence) {
         return cancelSequence(oldDeepSequence);
-      } else if (!_.isEqual(oldSequence, newSequence)) {
+      } else if (!_.isEqual(oldDeepSequence, newSequence)) {
         return updateSequence(oldDeepSequence, newSequence);
       }
     });

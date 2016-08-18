@@ -18,5 +18,5 @@ dbUtils(FILENAME, schema, logger, function(db) {
       }
     });
   }
-  gpioLibFactory(logger, gpio, deepSequences).start();
-}
+  gpioLibFactory(logger, gpio, deepSequences, setTimeout, setInterval).start();
+});
