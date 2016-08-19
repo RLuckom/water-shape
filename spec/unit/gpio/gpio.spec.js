@@ -9,20 +9,8 @@ const _ = require('lodash');
 var sequenceUtilsFactory = require('../../../utils/sequenceManipulation.js');
 
 describe('gpio utils sets gpio pins', function() {
-  var intervalCalls = [], timeoutCalls = [], gpioLib, registeredGpios = {};
+  var gpioLib, registeredGpios = {};
   var sequence1, sequence2, onSequenceItem1, onSequenceItem2, offSequenceItem1, offSequenceItem2, pin1, pin2;
-  function fakeSetTimeout(a, b) {
-    timeoutCalls.push({
-      callback: a,
-      timeoutMS: b
-    });
-  }
-  function fakeSetInterval(a, b) {
-    intervalCalls.push({
-      callback: a,
-      intervalMS: b
-    });
-  }
 
   function fakeGpio(pinNumber, options) {
     var self = this;
@@ -51,11 +39,10 @@ describe('gpio utils sets gpio pins', function() {
 
   afterEach(function() {
     tryToDelete(dbFile);
+    gpioLib.stop();
   });
 
-  beforeEach(function(done) {
-    intervalCalls = [];
-    timeoutCalls = [];
+  beforeEach(function() {
     registeredGpios = {};
     tryToDelete(dbFile);
     sequence1 = ['sequences', {
@@ -76,7 +63,7 @@ describe('gpio utils sets gpio pins', function() {
       uid: uuid.v4(),
       dateCreated: new Date().toString(),
       sequenceUid: sequence1[1].uid,
-      durationSeconds: 1,
+      durationSeconds: .25,
       ordinal: 1,
       startTime: null,
       endTime: null,
@@ -86,7 +73,7 @@ describe('gpio utils sets gpio pins', function() {
       uid: uuid.v4(),
       dateCreated: new Date().toString(),
       sequenceUid: sequence1[1].uid,
-      durationSeconds: 2,
+      durationSeconds: .25,
       ordinal: 2,
       startTime: null,
       endTime: null,
@@ -96,7 +83,7 @@ describe('gpio utils sets gpio pins', function() {
       uid: uuid.v4(),
       dateCreated: new Date().toString(),
       sequenceUid: sequence2[1].uid,
-      durationSeconds: 3,
+      durationSeconds: .25,
       ordinal: 1,
       startTime: null,
       endTime: null,
@@ -106,7 +93,7 @@ describe('gpio utils sets gpio pins', function() {
       uid: uuid.v4(),
       dateCreated: new Date().toString(),
       sequenceUid: sequence2[1].uid,
-      durationSeconds: 4,
+      durationSeconds: .5,
       ordinal: 2,
       startTime: null,
       endTime: null,
@@ -120,93 +107,109 @@ describe('gpio utils sets gpio pins', function() {
       pinNumber: 14,
       sequenceUid: sequence2[1].uid
     }];
-    const recordsToInsert = [
-      sequence1,
-      sequence2,
-      onSequenceItem1,
-      offSequenceItem1,
-      onSequenceItem2,
-      offSequenceItem2,
-      pin1,
-      pin2
-    ];
-    function assigndb(populatedDb) {
-      db = populatedDb;
-      done();
-    }
-    dbUtils.insertRecordsIntoTables('test.db', schema.schemaFactory(), recordsToInsert, logger, assigndb)
   });
 
-  it('reads sequences from the db and sets up timeouts correctly based on sequenceItems', function(done) {
-    var sequenceUtils = sequenceUtilsFactory(db);
-    function deepSequences(callback) {
-      return sequenceUtils.getSequencesWithItemsAndPins(function(err, res) {
-        if (err) {
-          throw err;
-        } else {
-          return callback(res);
-        }
-      });
-    }
-    gpioLib = gpioLibFactory(logger, fakeGpio, deepSequences, fakeSetTimeout, fakeSetInterval);
-    gpioLib.start(function() {
-      var pump = registeredGpios[14];
-      var pumpTimeoutFunction = _.find(timeoutCalls, ['timeoutMS', 3000]).callback;
-      expect(pump.callArguments.length).toBe(1);
-      expect(pump.callArguments[0]).toBe(1);
-      pumpTimeoutFunction();
-      expect(pump.callArguments.length).toBe(2);
-      expect(pump.callArguments[1]).toBe(0);
-      pumpTimeoutFunction = _.find(timeoutCalls, ['timeoutMS', 4000]).callback;
-      pumpTimeoutFunction();
-      expect(pump.callArguments.length).toBe(3);
-      expect(pump.callArguments[2]).toBe(1);
-      var recordsToDelete = [
+
+  describe('need another beforeEach', function() {
+    beforeEach(function(done) {
+      const recordsToInsert = [
+        sequence2,
         onSequenceItem2,
         offSequenceItem2,
-        pin2, // shouldn't really delete this
-        sequence2
+        pin2
       ];
-      dbUtils.deleteRecordsFromTables(db, recordsToDelete, logger, function() {
+      function assigndb(populatedDb) {
+        db = populatedDb;
         done();
+      }
+      dbUtils.insertRecordsIntoTables('test.db', schema.schemaFactory(), recordsToInsert, logger, assigndb)
+    });
+    it('reads sequences from the db and sets up timeouts correctly based on sequenceItems', function(done) {
+      var sequenceUtils = sequenceUtilsFactory(db);
+      function deepSequences(callback) {
+        return sequenceUtils.getSequencesWithItemsAndPins(function(err, res) {
+          if (err) {
+            throw err;
+          } else {
+            return callback(res);
+          }
+        });
+      }
+      gpioLib = gpioLibFactory(logger, fakeGpio, deepSequences);
+      gpioLib.start(function() {
+        var pump = registeredGpios[14];
+        expect(pump.callArguments.length).toBe(1);
+        expect(pump.callArguments[0]).toBe(1);
+        setTimeout(function() {
+          expect(pump.callArguments.length).toBe(2);
+          expect(pump.callArguments[1]).toBe(0);
+        }, 400);
+        setTimeout(function() {
+          expect(pump.callArguments.length).toBe(3);
+          expect(pump.callArguments[2]).toBe(1);
+          var recordsToDelete = [
+            onSequenceItem2,
+            offSequenceItem2,
+            pin2, // shouldn't really delete this
+            sequence2
+          ];
+          dbUtils.deleteRecordsFromTables(db, recordsToDelete, logger, function() {
+            done();
+          });
+        }, 900);
       });
     });
   });
 
-  it('reads sequences from the db and sets up timeouts correctly based on sequenceItems', function(done) {
-    var sequenceUtils = sequenceUtilsFactory(db);
-    function deepSequences(callback) {
-      return sequenceUtils.getSequencesWithItemsAndPins(function(err, res) {
-        if (err) {
-          throw err;
-        } else {
-          return callback(res);
-        }
-      });
-    }
-    gpioLib = gpioLibFactory(logger, fakeGpio, deepSequences, fakeSetTimeout, fakeSetInterval);
-    gpioLib.start(function() {
-      var pump = registeredGpios[14];
-      var pumpTimeoutFunction = _.find(timeoutCalls, ['timeoutMS', 3000]).callback;
-      expect(pump.callArguments.length).toBe(1);
-      expect(pump.callArguments[0]).toBe(1);
-      pumpTimeoutFunction();
-      expect(pump.callArguments.length).toBe(2);
-      expect(pump.callArguments[1]).toBe(0);
-      var recordsToDelete = [
-        onSequenceItem2,
-        offSequenceItem2,
-        pin2, // shouldn't really delete this
-        sequence2
+  describe('need another beforeEach', function() {
+    beforeEach(function(done) {
+      const recordsToInsert = [
+        sequence1,
+        onSequenceItem1,
+        offSequenceItem1,
+        pin1,
       ];
-      dbUtils.deleteRecordsFromTables(db, recordsToDelete, logger, function() {
-        expect(intervalCalls.length).toEqual(1);
-        expect(intervalCalls[0].intervalMS).toEqual(3000);
-        intervalCalls[0].callback(function() {
-          expect(pump.callArguments.length).toBe(3);
-          expect(pump.callArguments[2]).toBe(0);
-          done();
+      function assigndb(populatedDb) {
+        db = populatedDb;
+        done();
+      }
+      dbUtils.insertRecordsIntoTables('test.db', schema.schemaFactory(), recordsToInsert, logger, assigndb)
+    });
+    it('reads sequences from the db and sets up timeouts correctly based on sequenceItems', function(done) {
+      var sequenceUtils = sequenceUtilsFactory(db);
+      function deepSequences(callback) {
+        return sequenceUtils.getSequencesWithItemsAndPins(function(err, res) {
+          if (err) {
+            throw err;
+          } else {
+            return callback(res);
+          }
         });
+      }
+      gpioLib = gpioLibFactory(logger, fakeGpio, deepSequences);
+      gpioLib.start(function() {
+        var lights = registeredGpios[4];
+        expect(lights.callArguments.length).toBe(1);
+        expect(lights.callArguments[0]).toBe(1);
+        setTimeout(function() {
+          expect(lights.callArguments.length).toBe(2);
+          expect(lights.callArguments[1]).toBe(0);
+        }, 300);
+        setTimeout(function() {
+          var recordsToDelete = [
+            onSequenceItem1,
+            offSequenceItem1,
+            pin1, // shouldn't really delete this
+            sequence1
+          ];
+          dbUtils.deleteRecordsFromTables(db, recordsToDelete, logger, function() {
+            setTimeout(function() {
+              expect(lights.callArguments.length).toBe(13);
+              expect(lights.callArguments[2]).toBe(1);
+              done();
+            }, 3900);
+          });
+        }, 600);
       });
     });
   });

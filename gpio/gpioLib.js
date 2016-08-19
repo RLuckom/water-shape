@@ -2,9 +2,7 @@
 var moment = require('moment');
 var _ = require('lodash');
 
-function gpioLibFactory(logger, gpio, getDeepSequences, setTimeoutFunction, setIntervalFunction) {
-  var setTimeout = setTimeoutFunction || setTimeout;
-  var setInterval = setIntervalFunction || setInterval;
+function gpioLibFactory(logger, gpio, getDeepSequences) {
 
   var pump = new gpio(14, {mode: gpio.OUTPUT, pullUpDown:gpio.PUD_DOWN});
   var lights = new gpio(4, {mode: gpio.OUTPUT, pullUpDown:gpio.PUD_DOWN});
