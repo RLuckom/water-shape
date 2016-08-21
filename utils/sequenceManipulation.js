@@ -15,7 +15,7 @@ function sequenceUtilsFactory(dmi) {
     var onSequenceItem = {
       uid: uuid.v4(),
       dateCreated: new Date().toString(),
-      sequenceUid: sequence.uid,
+      sequenceId: sequence.uid,
       durationSeconds: onDuration,
       ordinal: 1,
       startTime: null,
@@ -25,7 +25,7 @@ function sequenceUtilsFactory(dmi) {
     var offSequenceItem = {
       uid: uuid.v4(),
       dateCreated: new Date().toString(),
-      sequenceUid: sequence.uid,
+      sequenceId: sequence.uid,
       durationSeconds: offDuration,
       ordinal: 2,
       startTime: null,
@@ -34,13 +34,13 @@ function sequenceUtilsFactory(dmi) {
     };
     var pin = {
       pinNumber: pinNumber,
-      sequenceUid: sequence.uid
+      sequenceId: sequence.uid
     };
     var tasks = [
-      _.partial(dmi.sequences.save, sequence),
-      _.partial(dmi.sequenceItems.save, onSequenceItem),
-      _.partial(dmi.sequenceItems.save, offSequenceItem),
-      _.partial(dmi.gpioPins.update, pin)
+      _.partial(dmi.sequence.save, sequence),
+      _.partial(dmi.sequenceItem.save, onSequenceItem),
+      _.partial(dmi.sequenceItem.save, offSequenceItem),
+      _.partial(dmi.gpioPin.update, pin)
     ];
     async.series(tasks, callback);
   }
@@ -56,7 +56,7 @@ function sequenceUtilsFactory(dmi) {
     var onSequenceItem = {
       uid: uuid.v4(),
       dateCreated: new Date().toString(),
-      sequenceUid: sequence.uid,
+      sequenceId: sequence.uid,
       durationSeconds: null,
       ordinal: null,
       startTime: JSON.stringify(onTime),
@@ -65,21 +65,21 @@ function sequenceUtilsFactory(dmi) {
     };
     var pin = {
       pinNumber: pinNumber,
-      sequenceUid: sequence.uid
+      sequenceId: sequence.uid
     };
     var tasks = [
-      _.partial(dmi.sequences.save, sequence),
-      _.partial(dmi.sequenceItems.save, onSequenceItem),
-      _.partial(dmi.gpioPins.update, pin)
+      _.partial(dmi.sequence.save, sequence),
+      _.partial(dmi.sequenceItem.save, onSequenceItem),
+      _.partial(dmi.gpioPin.update, pin)
     ];
     async.series(tasks, callback);
   }
 
   function getSequenceItemsAndPinsAssociatedWithSequence(sequence, callback) {
     const tasks = {
-      gpioPins: _.partial(dmi.gpioPins.search, {sequenceUid: sequence.uid}),
+      gpioPins: _.partial(dmi.gpioPin.search, {sequenceId: sequence.uid}),
       sequenceItems: function(callback) {
-        dmi.sequenceItems.search({sequenceUid: sequence.uid}, function(err, d) {
+        dmi.sequenceItem.search({sequenceId: sequence.uid}, function(err, d) {
           if (err) {
             return callback(err);
           } else {
@@ -102,7 +102,7 @@ function sequenceUtilsFactory(dmi) {
   }
   
   function getSequencesWithItemsAndPins(callback) {
-    return dmi.sequences.list(function(err, sequenceList) {
+    return dmi.sequence.list(function(err, sequenceList) {
       if (err) {
         return callback(err);
       } else {

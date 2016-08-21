@@ -92,8 +92,8 @@ module.exports = function(filename, schema, logger, callback) {
       return function(error, rows) {
         logger.log('debug', `${op} complete. Error: ${JSON.stringify(error)}, rows: ${rows}`);
         if (error) {
-          return logger.log('error', 'db error: ' + error);
-          callback(new Error(`db error: ${error}`))
+          logger.log('error', 'db error: ' + error);
+          return callback(new Error(`db error: ${error}`))
         } else {
           logger.log('info', 'e, r: ' + JSON.stringify(error) + JSON.stringify(rows));
           return callback(null, rows);

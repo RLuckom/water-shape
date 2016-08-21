@@ -45,67 +45,67 @@ describe('gpio utils sets gpio pins', function() {
   beforeEach(function() {
     registeredGpios = {};
     tryToDelete(dbFile);
-    sequence1 = ['sequences', {
+    sequence1 = ['sequence', {
       uid: uuid.v4(),
       name: 'sequence1',
       dateCreated: new Date().toString(),
       sequenceType: 'DURATION',
       defaultState: 1
     }];
-    sequence2 = ['sequences', {
+    sequence2 = ['sequence', {
       uid: uuid.v4(),
       name: 'sequence2',
       dateCreated: new Date().toString(),
       sequenceType: 'DURATION',
       defaultState: 0
     }];
-    onSequenceItem1 = ['sequenceItems', {
+    onSequenceItem1 = ['sequenceItem', {
       uid: uuid.v4(),
       dateCreated: new Date().toString(),
-      sequenceUid: sequence1[1].uid,
+      sequenceId: sequence1[1].uid,
       durationSeconds: .25,
       ordinal: 1,
       startTime: null,
       endTime: null,
       state: 1
     }];
-    offSequenceItem1 = ['sequenceItems', {
+    offSequenceItem1 = ['sequenceItem', {
       uid: uuid.v4(),
       dateCreated: new Date().toString(),
-      sequenceUid: sequence1[1].uid,
+      sequenceId: sequence1[1].uid,
       durationSeconds: .25,
       ordinal: 2,
       startTime: null,
       endTime: null,
       state: 0
     }];
-    onSequenceItem2 = ['sequenceItems', {
+    onSequenceItem2 = ['sequenceItem', {
       uid: uuid.v4(),
       dateCreated: new Date().toString(),
-      sequenceUid: sequence2[1].uid,
+      sequenceId: sequence2[1].uid,
       durationSeconds: .25,
       ordinal: 1,
       startTime: null,
       endTime: null,
       state: 1
     }];
-    offSequenceItem2 = ['sequenceItems', {
+    offSequenceItem2 = ['sequenceItem', {
       uid: uuid.v4(),
       dateCreated: new Date().toString(),
-      sequenceUid: sequence2[1].uid,
+      sequenceId: sequence2[1].uid,
       durationSeconds: .5,
       ordinal: 2,
       startTime: null,
       endTime: null,
       state: 0
     }];
-    pin1 = ['gpioPins', {
+    pin1 = ['gpioPin', {
       pinNumber: 4,
-      sequenceUid: sequence1[1].uid
+      sequenceId: sequence1[1].uid
     }];
-    pin2 = ['gpioPins', {
+    pin2 = ['gpioPin', {
       pinNumber: 14,
-      sequenceUid: sequence2[1].uid
+      sequenceId: sequence2[1].uid
     }];
   });
 

@@ -126,17 +126,17 @@ describe('api tests', function() {
     it('serves the API', function(done) {
       request({
         method: 'GET',
-        url: 'http://localhost:8080/api/sequenceTypes',
+        url: 'http://localhost:8080/api/sequenceType',
         json: true
       }, function(e, r, b) {
-        expect(allEqualWithoutId(b, schema.sequenceTypes.initialValues)).toBe(true);
+        expect(allEqualWithoutId(b, schema.sequenceType.initialValues)).toBe(true);
         done();
       });
     });
 
     it('api can get a list of predefined values', function(done) {
-      api.sequenceTypes.get(function(e, r, b) {
-        expect(allEqualWithoutId(b, schema.sequenceTypes.initialValues)).toBe(true);
+      api.sequenceType.get(function(e, r, b) {
+        expect(allEqualWithoutId(b, schema.sequenceType.initialValues)).toBe(true);
         done();
       });
     });
@@ -149,19 +149,19 @@ describe('api tests', function() {
         sequenceType: 'DURATION',
         defaultState: 1
       };
-      api.sequences.get(function(e, r, b) {
+      api.sequence.get(function(e, r, b) {
         expect(e).toBeNull();
         expect(b).toEqual([]);
-        api.sequences.post(sequenceToAdd, function(e, r, b) {
+        api.sequence.post(sequenceToAdd, function(e, r, b) {
           expect(e).toBeNull();
           expect(b).toEqual(sequenceToAdd);
-          api.sequences.get(function(e, r, b) {
+          api.sequence.get(function(e, r, b) {
             expect(e).toBeNull();
             expect(b).toEqual([sequenceToAdd]);
-            api.sequences.delete(sequenceToAdd, function(e, r, b) {
+            api.sequence.delete(sequenceToAdd, function(e, r, b) {
               expect(e).toBeNull();
               expect(b).toBeUndefined();
-              api.sequences.get(function(e, r, b) {
+              api.sequence.get(function(e, r, b) {
                 expect(e).toBeNull();
                 expect(b).toEqual([]);
                 done();

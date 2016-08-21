@@ -36,7 +36,7 @@ var CircleText = React.createClass({
 
 var GpioList = React.createClass({
   loadgpiosFromServer: function() {
-    api.gpioPins.get(
+    api.gpioPin.get(
       function(err, resp, body) {
         this.setState({data: body});
       }.bind(this)

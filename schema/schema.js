@@ -3,7 +3,7 @@ var _ = require('lodash');
 
 /* sequence name is unique
  * sequence uid is unique
- * sequence type exists in sequenceTypes
+ * sequence type exists in sequenceType
  */
 function validateSequence(sequence, sequencesByName, sequencesByUid, sequenceTypes) {
   return (
@@ -55,26 +55,7 @@ function sequenceItems(sequenceItem, sequenceByUid, sequenceTypes, sequenceItems
 
 function schemaFactory(noOpValidate) {
   return {
-    peripherals: {
-      id: 'uid',
-      columns: {
-        'uid': 'TEXT',
-        'name': 'TEXT',
-        'dateCreated': 'TEXT',
-        'peripheralType': 'TEXT',
-        'defaultState': 'NUMBER'
-      },
-      apiMethods: {
-        GET: true,
-        POST: true,
-        PUT: true,
-        DELETE: true
-      },
-      constraints: {
-        UNIQUE: [['name']]
-      },
-    },
-    sequences: {
+    sequence: {
       id: 'uid',
       columns: {
         'uid': 'TEXT',
@@ -91,11 +72,11 @@ function schemaFactory(noOpValidate) {
       },
       constraints: {
         FOREIGN_KEYS: {
-          sequenceType : 'sequenceTypes.typeName'
+          sequenceType : 'sequenceType.typeName'
         }
       },
     },
-    pins: {
+    pin: {
       id: 'uid',
       columns: {
         uid: 'TEXT',
@@ -112,7 +93,7 @@ function schemaFactory(noOpValidate) {
       },
       constraints: {
         FOREIGN_KEYS: {
-          pinType: 'pinTypes.typeName'
+          pinType: 'pinType.typeName'
         }
       },
       initialValues: [
@@ -161,7 +142,7 @@ function schemaFactory(noOpValidate) {
         UNIQUE: [['column', 'row']]
       }
     },
-    pinTypes: {
+    pinType: {
       id: 'uid',
       columns: {
         uid: 'TEXT',
@@ -184,12 +165,13 @@ function schemaFactory(noOpValidate) {
         UNIQUE: [['typeName']]
       }
     },
-    gpioPins: {
+    gpioPin: {
       id: 'uid',
       columns: {
         'uid': 'TEXT',
         'pinNumber': 'NUMBER', 
-        'sequenceUid': 'TEXT',
+        'sequenceId': 'TEXT',
+        'peripheralId': 'TEXT',
       },
       apiMethods: {
         GET: true,
@@ -199,36 +181,37 @@ function schemaFactory(noOpValidate) {
       },
       constraints: {
         FOREIGN_KEYS: {
-          sequenceUid : 'sequences.uid'
+          sequenceId : 'sequence.uid',
+          peripheralId : 'peripheral.uid'
         },
         UNIQUE: [['pinNumber']]
       },
       initialValues: [
-        {pinNumber: 14, sequenceUid: null},
-        {pinNumber: 15, sequenceUid: null},
-        {pinNumber: 18, sequenceUid: null},
-        {pinNumber: 23, sequenceUid: null},
-        {pinNumber: 24, sequenceUid: null},
-        {pinNumber: 25, sequenceUid: null},
-        {pinNumber: 8, sequenceUid: null},
-        {pinNumber: 7, sequenceUid: null},
-        {pinNumber: 2, sequenceUid: null},
-        {pinNumber: 3, sequenceUid: null},
-        {pinNumber: 4, sequenceUid: null},
-        {pinNumber: 17, sequenceUid: null},
-        {pinNumber: 27, sequenceUid: null},
-        {pinNumber: 22, sequenceUid: null},
-        {pinNumber: 10, sequenceUid: null},
-        {pinNumber: 9, sequenceUid: null},
-        {pinNumber: 11, sequenceUid: null}
+        {pinNumber: 14, sequenceId: null, peripheralId: null},
+        {pinNumber: 15, sequenceId: null, peripheralId: null},
+        {pinNumber: 18, sequenceId: null, peripheralId: null},
+        {pinNumber: 23, sequenceId: null, peripheralId: null},
+        {pinNumber: 24, sequenceId: null, peripheralId: null},
+        {pinNumber: 25, sequenceId: null, peripheralId: null},
+        {pinNumber: 8, sequenceId: null, peripheralId: null},
+        {pinNumber: 7, sequenceId: null, peripheralId: null},
+        {pinNumber: 2, sequenceId: null, peripheralId: null},
+        {pinNumber: 3, sequenceId: null, peripheralId: null},
+        {pinNumber: 4, sequenceId: null, peripheralId: null},
+        {pinNumber: 17, sequenceId: null, peripheralId: null},
+        {pinNumber: 27, sequenceId: null, peripheralId: null},
+        {pinNumber: 22, sequenceId: null, peripheralId: null},
+        {pinNumber: 10, sequenceId: null, peripheralId: null},
+        {pinNumber: 9, sequenceId: null, peripheralId: null},
+        {pinNumber: 11, sequenceId: null, peripheralId: null}
       ]
     },
-    sequenceItems: {
+    sequenceItem: {
       id: 'uid',
       columns: {
         'uid': 'TEXT',
         'dateCreated': 'TEXT',
-        'sequenceUid': 'TEXT',
+        'sequenceId': 'TEXT',
         'durationSeconds': 'NUMBER',
         'ordinal': 'NUMBER',
         'startTime': 'TEXT',
@@ -243,12 +226,12 @@ function schemaFactory(noOpValidate) {
       },
       constraints: {
         FOREIGN_KEYS: {
-          sequenceUid: 'sequences.uid',
+          sequenceId: 'sequence.uid',
         },
-        UNIQUE: [['sequenceUid', 'ordinal']],
+        UNIQUE: [['sequenceId', 'ordinal']],
       }
     },
-    sequenceTypes: {
+    sequenceType: {
       id: 'uid',
       columns: {
         'uid': 'TEXT',
@@ -267,7 +250,155 @@ function schemaFactory(noOpValidate) {
         {typeName: 'DURATION'},
         {typeName: 'TIME'}
       ]
-    }
+    },
+    peripheral: {
+      id: 'uid',
+      columns: {
+        'uid': 'TEXT',
+        'peripheralTypeId': 'TEXT',
+        'name': 'TEXT'
+      },
+      apiMethods: {
+        GET: true,
+        POST: true,
+        PUT: true,
+        DELETE: true
+      },
+      constraints: {
+        UNIQUE: [['name']],
+        FOREIGN_KEYS: {
+          peripheralTypeId: 'peripheralType.uid'
+        }
+      },
+      initialValues: [
+      ]
+    },
+    peripheralType: {
+      id: 'uid',
+      columns: {
+        'uid': 'TEXT',
+        'name': 'TEXT',
+        'domain': 'TEXT'
+      },
+      apiMethods: {
+        GET: true,
+        POST: false,
+        PUT: false,
+        DELETE: false
+      },
+      constraints: {
+        UNIQUE: [['name']],
+        FOREIGN_KEYS: {
+          domain: 'peripheralDomain.name'
+        }
+      },
+      initialValues: [
+      ]
+    },
+    ioType: {
+      id: 'name',
+      columns: {
+        'name': 'TEXT',
+      },
+      apiMethods: {
+        GET: true,
+        POST: false,
+        PUT: false,
+        DELETE: false
+      },
+      constraints: {
+        UNIQUE: [['name']],
+      },
+      initialValues: [
+        {name: 'GPIO'},
+        {name: 'CAMERA'}
+      ]
+    },
+    peripheralDomain: {
+      id: 'name',
+      columns: {
+        'name': 'TEXT'
+      },
+      apiMethods: {
+        GET: true,
+        POST: false,
+        PUT: false,
+        DELETE: false
+      },
+      constraints: {
+        UNIQUE: [['name']],
+      },
+      initialValues: [
+        {name: 'CONTINUOUS'},
+        {name: 'TRIGGERED'}
+      ]
+    },
+    peripheralTypeDependency: {
+      id: 'uid',
+      columns: {
+        'uid': 'TEXT',
+        'name': 'TEXT',
+        'peripheralTypeId': 'TEXT',
+        'ioType': 'TEXT'
+      },
+      apiMethods: {
+        GET: true,
+        POST: true,
+        PUT: true,
+        DELETE: true
+      },
+      constraints: {
+        UNIQUE: [['name']],
+        FOREIGN_KEYS: {
+          peripheralTypeId: 'peripheralType.uid',
+          ioType: 'ioType.name'
+        }
+      },
+      initialValues: [
+      ]
+    },
+    peripheralRule: {
+      id: 'uid',
+      columns: {
+        'uid': 'TEXT',
+        'alwaysOn': 'INTEGER',
+        'alwaysOff': 'INTEGER',
+        'sequenceId': 'TEXT',
+      },
+      apiMethods: {
+        GET: true,
+        POST: true,
+        PUT: true,
+        DELETE: true
+      },
+      constraints: {
+        FOREIGN_KEYS: {
+          sequenceId: 'sequence.uid'
+        }
+      },
+      initialValues: [
+      ]
+    },
+    peripheralOverrideRule: {
+      id: 'uid',
+      columns: {
+        'uid': 'TEXT',
+        'subjectPeripheral': 'TEXT',
+        'subjectPeripheralState': 'INTEGER',
+        'testPeripheral': 'TEXT',
+        'testPeripheralState': 'INTEGER',
+      },
+      apiMethods: {
+        GET: true,
+        POST: true,
+        PUT: true,
+        DELETE: true
+      },
+      constraints: {
+      },
+      initialValues: [
+      ]
+    },
   };
 }
 
