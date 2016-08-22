@@ -165,6 +165,28 @@ function schemaFactory(noOpValidate) {
         UNIQUE: [['typeName']]
       }
     },
+    camera: {
+      id: 'uid',
+      columns: {
+        'uid': 'TEXT',
+        'cameraNumber': 'NUMBER', 
+        'peripheralId': 'TEXT',
+      },
+      apiMethods: {
+        GET: true,
+        POST: false,
+        PUT: true,
+        DELETE: false
+      },
+      constraints: {
+        FOREIGN_KEYS: {
+          peripheralId : 'peripheral.uid'
+        },
+        UNIQUE: [['cameraNumber']]
+      },
+      initialValues: [
+      ]
+    },
     gpioPin: {
       id: 'uid',
       columns: {
@@ -255,7 +277,7 @@ function schemaFactory(noOpValidate) {
       id: 'uid',
       columns: {
         'uid': 'TEXT',
-        'peripheralTypeId': 'TEXT',
+        'peripheralType': 'TEXT',
         'name': 'TEXT'
       },
       apiMethods: {
@@ -267,16 +289,15 @@ function schemaFactory(noOpValidate) {
       constraints: {
         UNIQUE: [['name']],
         FOREIGN_KEYS: {
-          peripheralTypeId: 'peripheralType.uid'
+          peripheralType: 'peripheralType.name'
         }
       },
       initialValues: [
       ]
     },
     peripheralType: {
-      id: 'uid',
+      id: 'name',
       columns: {
-        'uid': 'TEXT',
         'name': 'TEXT',
         'domain': 'TEXT'
       },
@@ -338,7 +359,7 @@ function schemaFactory(noOpValidate) {
       columns: {
         'uid': 'TEXT',
         'name': 'TEXT',
-        'peripheralTypeId': 'TEXT',
+        'peripheralType': 'TEXT',
         'ioType': 'TEXT'
       },
       apiMethods: {
@@ -350,7 +371,7 @@ function schemaFactory(noOpValidate) {
       constraints: {
         UNIQUE: [['name']],
         FOREIGN_KEYS: {
-          peripheralTypeId: 'peripheralType.uid',
+          peripheralType: 'peripheralType.name',
           ioType: 'ioType.name'
         }
       },
@@ -360,10 +381,11 @@ function schemaFactory(noOpValidate) {
     peripheralRule: {
       id: 'uid',
       columns: {
-        'uid': 'TEXT',
-        'alwaysOn': 'INTEGER',
-        'alwaysOff': 'INTEGER',
-        'sequenceId': 'TEXT',
+        uid: 'TEXT',
+        peripheralId: 'TEXT',
+        alwaysOn: 'INTEGER',
+        alwaysOff: 'INTEGER',
+        sequenceId: 'TEXT',
       },
       apiMethods: {
         GET: true,
@@ -373,6 +395,7 @@ function schemaFactory(noOpValidate) {
       },
       constraints: {
         FOREIGN_KEYS: {
+          peripheralId: 'peripheral.uid',
           sequenceId: 'sequence.uid'
         }
       },

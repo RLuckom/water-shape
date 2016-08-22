@@ -88,9 +88,9 @@ module.exports = function(filename, schema, logger, callback) {
       }
     }
 
-    function dbLogResponse(callback, op) {
+    function dbLogResponse(callback, op, table) {
       return function(error, rows) {
-        logger.log('debug', `${op} complete. Error: ${JSON.stringify(error)}, rows: ${rows}`);
+        logger.log('debug', `${op} in table ${table} complete. Error: ${JSON.stringify(error)}, rows: ${rows}`);
         if (error) {
           logger.log('error', 'db error: ' + error);
           return callback(new Error(`db error: ${error}`))
@@ -107,7 +107,7 @@ module.exports = function(filename, schema, logger, callback) {
       // so instead of using its input sanitation we just whitelist
       // the allowed table names.
       if (schema[table]) {
-        return db.get(`SELECT * FROM ${table} WHERE ${schema[table].id}=$id;`, {$id: id}, dbLogResponse(callback, 'searchById'));
+        return db.get(`SELECT * FROM ${table} WHERE ${schema[table].id}=$id;`, {$id: id}, dbLogResponse(callback, 'searchById', table));
       } else {
         return callback(boom.badRequest(`Unknown table: ${table}`));
       }
@@ -128,7 +128,7 @@ module.exports = function(filename, schema, logger, callback) {
       // so instead of using its input sanitation we just whitelist
       // the allowed table names.
       if (schema[table]) {
-        return db.get(`DELETE FROM ${table} WHERE ${schema[table].id}=$id;`, {$id: id}, dbLogResponse(callback, 'delete'));
+        return db.get(`DELETE FROM ${table} WHERE ${schema[table].id}=$id;`, {$id: id}, dbLogResponse(callback, 'delete', table));
       } else {
         return callback(boom.badRequest(`Unknown table: ${table}`));
       }
@@ -140,7 +140,7 @@ module.exports = function(filename, schema, logger, callback) {
       // so instead of using its input sanitation we just whitelist
       // the allowed table names.
       if (schema[table]) {
-        return db.all(`SELECT * FROM ${table};`, dbLogResponse(callback, 'getAll'));
+        return db.all(`SELECT * FROM ${table};`, dbLogResponse(callback, 'getAll', table));
       } else {
         return callback(boom.badRequest(`Unknown table: ${table}`));
       }
@@ -163,7 +163,7 @@ module.exports = function(filename, schema, logger, callback) {
             logger.log('warn', `ignoring unknown query ${k}=${v}`);
           }
         });
-        return db.all(`SELECT * FROM ${table} WHERE ${columns.join(', ')};`, values, dbLogResponse(callback, 'search'));
+        return db.all(`SELECT * FROM ${table} WHERE ${columns.join(', ')};`, values, dbLogResponse(callback, 'search', table));
       } else {
         return callback(boom.badRequest(`Unknown table: ${table}`));
       }

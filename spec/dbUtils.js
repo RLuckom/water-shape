@@ -15,7 +15,6 @@ function insertRecordsIntoTables(filename, schema, records, logger, callback) {
           db[recordAndTable[0]].save(recordAndTable[1], callback)
         });
       });
-      logger.log('task', tasks);
       async.series(tasks, function(err, body) {
         if (err) {
           throw err;
@@ -35,7 +34,6 @@ function deleteRecordsFromTables(db, records, logger, callback) {
       db[recordAndTable[0]].delete(recordAndTable[1], callback)
     });
   });
-  logger.log('task', tasks);
   async.series(tasks, function(err, body) {
     if (err) {
       throw err;
