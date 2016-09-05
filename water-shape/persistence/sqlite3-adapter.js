@@ -50,7 +50,7 @@ module.exports = function(filename, schema, logger, callback) {
       logger.log('debug', JSON.stringify(stmt));
       return db.get(`INSERT OR REPLACE into ${table} (${columns.join(', ')}) VALUES (${qs.join(', ')});`, values, (err, rows) => {
         if (err) {
-          logger.log('error', `error upserting into ${table}: ${error}`);
+          logger.log('error', `error upserting into ${table}: ${err}`);
           callback(err);
         } else {
           return getFromDbById(table, id, callback);
@@ -256,6 +256,8 @@ module.exports = function(filename, schema, logger, callback) {
       tableMethods.search = _.partial(searchInTable, tableName);
       response[tableName] = tableMethods;
     });
-    callback(response);
+    db.run('PRAGMA foreign_keys = ON;', function() {
+      callback(response);
+    });
   }
 }

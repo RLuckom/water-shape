@@ -1,58 +1,4 @@
 'use strict';
-var _ = require('lodash');
-
-/* sequence name is unique
- * sequence uid is unique
- * sequence type exists in sequenceType
- */
-function validateSequence(sequence, sequencesByName, sequencesByUid, sequenceTypes) {
-  return (
-    // sequencesByName is falsy or has length 0
-    (!sequencesByName || (sequencesByName.length === 0))
-    // sequencesByUid is falsy or has length 0
-    && (!sequencesByUid || (sequencesByUid.length === 0))
-  // name and uid are defined
-    && sequence.name && sequence.uid
-    && _.find(sequenceTypes, 'sequenceId', sequence.sequenceType)
-  );
-}
-validateSequence.restParams = ['sequencesByName', 'sequencesByUid'];
-
-/* gpioPins can't be created but they can be modified.
- * Only the sequenceUid can be changed.
- */
-function validateGpioPins(gpioPin, gpioPinByUid) {
-  return (
-    _.values(gpioPin).length === _.values(gpioPinByUid).length
-    && _.every(_.values(this.columns), function(n) {
-      return n === 'sequenceUid' ? true : gpioPin[n] === gpioPinByUid[n];
-    })
-  );
-}
-
-/* uid is unique
- * if sequenceType is duration, durationSeconds is defined and startTime and endTime are not.
- * if sequenceType is time, durationSeconds is not defined and startTime and endTime are.
- * if sequenceType is duration, there are no sequenceItems with the same ordinal and sequenceUid
- * if sequenceType is time, there are no sequenceItems in the same sequence that the startTime or endTime falls in.
- * state is defined
- */
-function sequenceItems(sequenceItem, sequenceByUid, sequenceTypes, sequenceItemsBySequenceUid) {
-  const sequenceTypeName = _.find(sequenceTypes, 'sequenceId', sequenceByUid.sequenceType).sequenceTypeName;
-  const durationOk = (
-    sequenceTypeName === 'TIME'
-    || (
-      !_.any(sequenceItemsBySequenceUid, 'ordinal', sequenceItem.ordinal)
-      && (_.isNumber(sequenceItem.durationSeconds) 
-      && !sequenceItem.startTime
-      && !sequenceItem.endTime
-      )
-    ));
-  const timeOk = (
-    sequenceTypeName === 'DURATION'
-  )
-}
-
 function schemaFactory(noOpValidate) {
   return {
     sequence: {
@@ -194,6 +140,7 @@ function schemaFactory(noOpValidate) {
         'pinNumber': 'NUMBER', 
         'sequenceId': 'TEXT',
         'peripheralId': 'TEXT',
+        'ioType': 'TEXT'
       },
       apiMethods: {
         GET: true,
@@ -204,6 +151,7 @@ function schemaFactory(noOpValidate) {
       constraints: {
         FOREIGN_KEYS: {
           sequenceId : 'sequence.uid',
+          ioType : 'ioType.name',
           peripheralId : 'peripheral.uid'
         },
         UNIQUE: [['pinNumber']]
@@ -314,6 +262,8 @@ function schemaFactory(noOpValidate) {
         }
       },
       initialValues: [
+        {name: 'RELAY', domain: 'CONTINUOUS'},
+        {name: 'CAMERA', domain: 'TRIGGERED'}
       ]
     },
     ioType: {
@@ -331,7 +281,8 @@ function schemaFactory(noOpValidate) {
         UNIQUE: [['name']],
       },
       initialValues: [
-        {name: 'GPIO'},
+        {name: 'GPIO_INPUT'},
+        {name: 'GPIO_OUTPUT'},
         {name: 'CAMERA'}
       ]
     },

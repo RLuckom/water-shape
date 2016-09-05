@@ -53,7 +53,7 @@ describe('gpio utils sets gpio pins', function() {
       uid: uuid.v4(),
       name: 'On / Off Pin',
       peripheralType: 'RELAY',
-      ioType: 'GPIO'
+      ioType: 'GPIO_OUTPUT'
     }];
     peripheralType1 = ['peripheralType', {
       name: 'CAMERA',
@@ -198,6 +198,7 @@ describe('gpio utils sets gpio pins', function() {
           var recordsToDelete = [
             onSequenceItem2,
             offSequenceItem2,
+            peripheralRule2,
             pin2, // shouldn't really delete this
             sequence2
           ];
@@ -252,8 +253,8 @@ describe('gpio utils sets gpio pins', function() {
             onSequenceItem1,
             offSequenceItem1,
             peripheralRule1,
-            peripheral1,
             pin1, // shouldn't really delete this
+            peripheral1,
             sequence1
           ];
           dbUtils.deleteRecordsFromTables(db, recordsToDelete, logger, function() {
