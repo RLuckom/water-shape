@@ -6,8 +6,9 @@
   "scripts": {
     "test": "node spec/unit/testRunner.js",
     "phantomTest":"node spec/phantom/testRunner.js",
-    "serve": "webpack && node server/app.js",
-    "compile": "webpack"
+    "serve": "node server/app.js",
+    "compile": "webpack",
+    "watch": "webpack --watch"
   },
   "author": "",
   "license": "ISC",

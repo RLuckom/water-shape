@@ -18,7 +18,7 @@ Requirements
 
 I would like to add features to the control system. Specifically:
 
-  1. Remote configuration of lights and pump on / off supportng both cycle-based control (1 on, 2 off) and time-based
+  1. Remote configuration of lights and pump on / off supporting both cycle-based control (1 on, 2 off) and time-based
      control (5:30AM on, 8:30PM off)
   2. Easy addition of features such as camera monitoring, etc.
   3. Configurable data storage, optimally making all writes to a usb stick or other non-SD storage 
@@ -98,7 +98,8 @@ Currently supported `npm` commands are:
  * `npm test`: run Jasmine-based 'unit' (in reality they're closer to end-to-end, but excluding the ui) tests in `spec/unit`.
  * `npm run phantomTest`: Run e2e tests using selenium webdriver js, jasmine, and Phantom
  * `npm run compile`: Compile the React UI. 
- * `npm run serve`: Compile the React UI and start Hapi.
+ * `npm run watch`: Compile the React UI and recompile as changes are detected (does not serve or autorefresh)
+ * `npm run serve`: start Hapi.
 
 Decisions I Expect To Be Controversial And Why I Made Them
 ==========================================================
@@ -145,20 +146,17 @@ costs in terms of complexity, and to reduce those costs it is necessary to silo 
 behind simple, consistent interfaces.
 
 The maintainer complexity budget for this project is invested heavily in the description
-of the database schema defined in `schema/schema.js`. Any new maintainer will need
-to learn to understand the format of that object and the meanings of its parts. If I can
-editorialize for a moment, it is a matter of respect for the new maintainer that when I ask
-them to do something like 'learn the structure of this schema object,' I should try to
-make that knowledge as valuable as possible by making it widely applicable to the design
-of the overall application. So from that schema object comes the basic structure of each of
-the data manipulation objects, the server's API, and the schema of the database itself. When
-a new maintainer learns the schema object and one of the data manipulation objects, that
-is enough to write domain logic, as well as generic tests that will run against all
-the data manipulation objects to further sharpen their API. When I am adding new functionality,
-I aggressively try to tie it back to the concepts and metaphors I have already introduced.
-Thus data validation and RBAC, as and when they are needed, will be layered over the existing
-schema description so that they can be enforced on the server side but also communicated on
-the client side without duplication of effort.
+of the data schema defined in `schema/schema.js`. Any new maintainer will need
+to learn to understand the format of that object and the meanings of its parts. From that
+ schema object comes the basic structure of each ofthe data manipulation objects, the 
+server's API, and the schema of the database itself. When a new maintainer learns the
+schema object and one of the data manipulation objects, that is enough to write domain logic,
+as well as generic tests that will run against all the data manipulation objects to further
+sharpen their API. When I am adding new functionality, I aggressively try to tie it back to
+the concepts and metaphors I have already introduced. Thus data validation and RBAC, as and
+when they are needed, will be layered over the existing schema description so that they can
+be enforced on the server side but also communicated on the client side without duplication
+of effort.
 
 The complexity budget extends to testing as well as implementation. Respecting the complexity
 budget during implementation itself makes testing easier, because the components to test
