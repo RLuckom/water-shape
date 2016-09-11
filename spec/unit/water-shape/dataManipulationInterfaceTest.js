@@ -29,7 +29,11 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
         POST: true,
         PUT: true,
         DELETE: true
-      }
+      },
+      initialValues: [
+        {treeNumber: 1, treeName: 'Bob', treeType: 'walnut'},
+        {treeNumber: 2, treeName: 'Samantha', treeType: 'oak'}
+      ]
     },
     treeTypes: {
       id: 'uid',
@@ -51,6 +55,52 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
         {uid: '79', name: 'oak'},
         {uid: '80', name: 'pine'}
       ]
+    },
+    leaves: {
+      id: 'uid',
+      columns: {
+        uid: 'NUMBER',
+        name: 'TEXT',
+        tree: 'NUMBER'
+      },
+      apiMethods: {
+        GET: true,
+        POST: true,
+        PUT: true,
+        DELETE: true
+      },
+      constraints: {
+        FOREIGN_KEYS: {
+          tree: 'trees.treeNumber'
+        }
+      },
+      initialValues: [
+        {uid: 1, name: 'Bob1', tree: 1},
+        {uid: 2, name: 'Bob2', tree: 1},
+        {uid: 3, name: 'Bob3', tree: 1}
+      ]
+    },
+    treesWithType: {
+      constructed: true,
+      structure: {
+        tree: {
+          single: true,
+          table: 'trees'
+        },
+        treeType: {
+          single: true,
+          table: 'treeTypes',
+          select: {
+            name: 'tree.treeType'
+          }
+        },
+        leaves: {
+          table: 'leaves',
+          select: {
+            tree: 'tree.treeNumber'
+          }
+        }
+      }
     }
   };
 
@@ -69,6 +119,45 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
 
     afterEach(function(done) {
       afterEachFunction(dmi, done)
+    });
+
+    it('can list the records in a constructed table', function(done) {
+      const treesWithTypes = [
+        {
+          tree: {treeNumber: 1, treeName: 'Bob', treeType: 'walnut'},
+          treeType: {uid: '78', name: 'walnut'},
+          leaves: [
+            {uid: 1, name: 'Bob1', tree: 1},
+            {uid: 2, name: 'Bob2', tree: 1},
+            {uid: 3, name: 'Bob3', tree: 1}
+          ]
+        },
+        {
+          tree: {treeNumber: 2, treeName: 'Samantha', treeType: 'oak'},
+          treeType: {uid: '79', name: 'oak'},
+          leaves: []
+        }
+      ];
+      dmi.treesWithType.list(function(err, records) {
+        expect(records).toEqual(treesWithTypes);
+        done();
+      });
+    });
+
+    it('can get a record in a constructed table by id', function(done) {
+      const treeWithType = {
+        tree: {treeNumber: 1, treeName: 'Bob', treeType: 'walnut'},
+        treeType: {uid: '78', name: 'walnut'},
+        leaves: [
+          {uid: 1, name: 'Bob1', tree: 1},
+          {uid: 2, name: 'Bob2', tree: 1},
+          {uid: 3, name: 'Bob3', tree: 1}
+        ]
+      };
+      dmi.treesWithType.getById(1, function(err, records) {
+        expect(records).toEqual(treeWithType);
+        done();
+      });
     });
 
     it('can list the records in a table', function(done) {
@@ -93,9 +182,9 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
     });
 
     it('can update a record', function(done) {
-      dmi.treeTypes.update({uid: '78', name: 'spruce'}, function(err, records) {
-        dmi.treeTypes.getById('78', function(err, record) {
-          expect(record).toEqual({uid: '78', name: 'spruce'});
+      dmi.treeTypes.update({uid: '80', name: 'spruce'}, function(err, records) {
+        dmi.treeTypes.getById('80', function(err, record) {
+          expect(record).toEqual({uid: '80', name: 'spruce'});
           done();
         });
       });
@@ -115,7 +204,7 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
     }
 
     it('can delete a record using the record', function(done) {
-      var typeToDelete = _.cloneDeep(schema.treeTypes.initialValues[0]);
+      var typeToDelete = _.cloneDeep(schema.treeTypes.initialValues[2]);
       dmi.treeTypes.delete(typeToDelete, function(err, records) {
         dmi.treeTypes.list(function(err, records) {
           expect(verifyNotIn(records, typeToDelete)).toBe(true);
@@ -125,7 +214,7 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
     });
 
     it('can delete a record using the id', function(done) {
-      var typeToDelete = _.cloneDeep(schema.treeTypes.initialValues[0]);
+      var typeToDelete = _.cloneDeep(schema.treeTypes.initialValues[2]);
       dmi.treeTypes.deleteById(typeToDelete.uid, function(err, records) {
         dmi.treeTypes.list(function(err, records) {
           expect(verifyNotIn(records, typeToDelete)).toBe(true);

@@ -373,6 +373,72 @@ function schemaFactory(noOpValidate) {
       initialValues: [
       ]
     },
+    completePeripheral: {
+      constructed: true,
+      structure: {
+        peripheral: {
+          single: true,
+          table: 'peripheral'
+        },
+        peripheralType: {
+          single: true,
+          table: 'peripheralType',
+          select: {
+            name: 'peripheral.peripheralType'
+          }
+        },
+        peripheralTypeDependencies: {
+          table: 'peripheralTypeDependency',
+          select: {
+            peripheralType: 'peripheral.peripheralType'
+          }
+        },
+        peripheralRule: {
+          single: true,
+          table: 'peripheralRule',
+          select: {
+            peripheralId: 'peripheral.uid'
+          }
+        },
+        peripheralOverrideRules: {
+          table: 'peripheralOverrideRule',
+          select: {
+            subjectPeripheral: 'peripheral.uid'
+          }
+        },
+        overrides: {
+          table: 'peripheralOverrideRule',
+          select: {
+            testPeripheral: 'peripheral.uid'
+          }
+        },
+        sequence: {
+          single: true,
+          table: 'sequence',
+          select: {
+            uid: 'peripheralRule.sequenceId'
+          },
+        },
+        sequenceItems: {
+          table: 'sequenceItem',
+          select: {
+            sequenceId: 'peripheralRule.sequenceId'
+          }
+        },
+        gpioPins: {
+          table: 'gpioPin',
+          select: {
+            peripheralId: 'peripheral.uid'
+          }
+        },
+        cameras: {
+          table: 'camera',
+          select: {
+            peripheralId: 'peripheral.uid'
+          }
+        }
+      }
+    }
   };
 }
 

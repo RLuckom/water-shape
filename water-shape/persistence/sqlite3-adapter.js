@@ -3,6 +3,7 @@ const _ = require('lodash');
 const boom = require('boom');
 const sqlite3 = require('sqlite3');
 const uuid = require('uuid');
+const constructedTableFactory = require('../generic/constructed');
 
 /*
  * API for data access:
@@ -170,7 +171,11 @@ module.exports = function(filename, schema, logger, callback) {
     }
 
     function buildSqliteSchema(schema) {
-      var finishedTables = [];
+      var finishedTables = _.filter(_.map(schema, function(v, k) {
+        if (v.constructed) {
+          return k;
+        }
+      }));
       var tableDependencies = _.reduce(schema, function(acc, val, key) {
         var dependencies = [];
         var foreignKeyConstraints = _.get(val, 'constraints.FOREIGN_KEYS');
@@ -234,7 +239,7 @@ module.exports = function(filename, schema, logger, callback) {
       return db.exec(buildSqliteSchema(schema), callback);
     }
 
-    var response = {
+    var dmi = {
       schema: _.cloneDeep(schema),
       close: function(cb) {db.close(cb);},
       buildSqliteSchema: buildSqliteSchema,
@@ -246,18 +251,22 @@ module.exports = function(filename, schema, logger, callback) {
       getAllRowsFromTable: getAllRowsFromTable
     };
     _.each(schema, function(tableDescription, tableName) {
-      var tableMethods = {};
-      tableMethods.save = _.partial(upsertIntoDb, tableName);
-      tableMethods.update = tableMethods.save;
-      tableMethods.delete = _.partial(remove, tableName);
-      tableMethods.deleteById = _.partial(removeById, tableName);
-      tableMethods.list = _.partial(getAllRowsFromTable, tableName);
-      tableMethods.getById = _.partial(getFromDbById, tableName);
-      tableMethods.search = _.partial(searchInTable, tableName);
-      response[tableName] = tableMethods;
+      if (!tableDescription.constructed) {
+        var tableMethods = {};
+        tableMethods.save = _.partial(upsertIntoDb, tableName);
+        tableMethods.update = tableMethods.save;
+        tableMethods.delete = _.partial(remove, tableName);
+        tableMethods.deleteById = _.partial(removeById, tableName);
+        tableMethods.list = _.partial(getAllRowsFromTable, tableName);
+        tableMethods.getById = _.partial(getFromDbById, tableName);
+        tableMethods.search = _.partial(searchInTable, tableName);
+        dmi[tableName] = tableMethods;
+      } else {
+        dmi[tableName] = constructedTableFactory.createConstructedTable(dmi, tableDescription, tableName);
+      }
     });
     db.run('PRAGMA foreign_keys = ON;', function() {
-      callback(response);
+      callback(dmi);
     });
   }
 }

@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const constructedTableFactory = require('../generic/constructed');
 
 //TODO: Add support for POST with ID in url
 // Add the option to validate before PUT / POST, using 
@@ -10,9 +11,13 @@ function apiFactory(schema, apiBaseUrl, request) {
       callback(e, b);
     };
   }
-  var api = {};
+  var dmi = {};
   _.each(schema, (v, k) => {
     var endpoint = _.cloneDeep(v);
+    if (v.constructed) {
+      dmi[k] = constructedTableFactory.createConstructedTable(dmi, v, k);
+      return;
+    }
     if (v.apiMethods.GET) {
       endpoint.get = function(callback) {
         return request({
@@ -86,8 +91,8 @@ function apiFactory(schema, apiBaseUrl, request) {
         }, translateToGeneric(callback));
       };
     }
-    api[k] = endpoint;
+    dmi[k] = endpoint;
   });
-  return api;
+  return dmi;
 }
 module.exports = apiFactory;
