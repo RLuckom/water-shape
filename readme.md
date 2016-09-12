@@ -99,6 +99,8 @@ Currently supported `npm` commands are:
  * `npm run phantomTest`: Run e2e tests using selenium webdriver js, jasmine, and Phantom
  * `npm run compile`: Compile the React UI. 
  * `npm run watch`: Compile the React UI and recompile as changes are detected (does not serve or autorefresh)
+ * `npm run compile-demo`: Compile the React UI using an in-browser data store so the app can be used when served statically. 
+ * `npm run watch`: Compile the React UI with the demo data store and recompile as changes are detected (does not serve or autorefresh)
  * `npm run serve`: start Hapi.
 
 Decisions I Expect To Be Controversial And Why I Made Them
@@ -148,7 +150,7 @@ behind simple, consistent interfaces.
 The maintainer complexity budget for this project is invested heavily in the description
 of the data schema defined in `schema/schema.js`. Any new maintainer will need
 to learn to understand the format of that object and the meanings of its parts. From that
- schema object comes the basic structure of each ofthe data manipulation objects, the 
+ schema object comes the basic structure of each of the data manipulation objects, the 
 server's API, and the schema of the database itself. When a new maintainer learns the
 schema object and one of the data manipulation objects, that is enough to write domain logic,
 as well as generic tests that will run against all the data manipulation objects to further

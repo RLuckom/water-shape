@@ -134,9 +134,8 @@ function schemaFactory(noOpValidate) {
       ]
     },
     gpioPin: {
-      id: 'uid',
+      id: 'pinNumber',
       columns: {
-        'uid': 'TEXT',
         'pinNumber': 'NUMBER', 
         'sequenceId': 'TEXT',
         'peripheralId': 'TEXT',

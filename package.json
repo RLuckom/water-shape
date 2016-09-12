@@ -7,8 +7,10 @@
     "test": "node spec/unit/testRunner.js",
     "phantomTest":"node spec/phantom/testRunner.js",
     "serve": "node server/app.js",
-    "compile": "webpack",
-    "watch": "webpack --watch"
+    "compile": "webpack --config webpack.config.prod.js",
+    "watch": "webpack --config webpack.config.prod.js --watch",
+    "compile-demo": "webpack --config webpack.config.demo.js",
+    "watch-demo": "webpack --config webpack.config.demo.js --watch"
   },
   "author": "",
   "license": "ISC",

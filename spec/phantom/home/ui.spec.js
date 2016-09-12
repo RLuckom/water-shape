@@ -10,7 +10,7 @@ describe('ui tests', function() {
       driver.findElement(by.id('example')).then(function(e) {
         return e.getText().then(function(t) {
           console.log('t', t);
-          expect(t).toEqual('Raspberry Pi GPIO Scheduling Controller');
+          expect(t.indexOf('Raspberry Pi GPIO Scheduling Controller') !== -1).toBe(true);
           return done();
         });
       });

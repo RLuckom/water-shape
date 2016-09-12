@@ -4,13 +4,23 @@ const _ = require('lodash');
 const uuid = require('uuid');
 
 function sequenceUtilsFactory(dmi) {
-  function makeOnOffSequenceAndAssignToPin(name, onDuration, offDuration, pinNumber, defaultState, callback) {
+  function makeOnOffSequenceAndAssignToPin(name, peripheralType, onDuration, offDuration, pinNumber, defaultState, callback) {
+    var peripheral = {
+      uid: uuid.v4(),
+      name: name,
+      peripheralType: peripheralType
+    };
     var sequence = {
       uid: uuid.v4(),
       name: name,
       dateCreated: new Date().toString(),
       sequenceType: 'DURATION',
       defaultState: defaultState
+    };
+    var peripheralRule = {
+      uid: uuid.v4(),
+      peripheralId: peripheral.uid,
+      sequenceId: sequence.uid
     };
     var onSequenceItem = {
       uid: uuid.v4(),
@@ -37,7 +47,9 @@ function sequenceUtilsFactory(dmi) {
       sequenceId: sequence.uid
     };
     var tasks = [
+      _.partial(dmi.peripheral.save, peripheral),
       _.partial(dmi.sequence.save, sequence),
+      _.partial(dmi.peripheralRule.save, peripheralRule),
       _.partial(dmi.sequenceItem.save, onSequenceItem),
       _.partial(dmi.sequenceItem.save, offSequenceItem),
       _.partial(dmi.gpioPin.update, pin)
@@ -45,13 +57,23 @@ function sequenceUtilsFactory(dmi) {
     async.series(tasks, callback);
   }
 
-  function makeTimeSequenceAndAssignToPin(name, onTime, offTime, pinNumber, defaultState, callback) {
+  function makeTimeSequenceAndAssignToPin(name, peripheralType, onTime, offTime, pinNumber, defaultState, callback) {
+    var peripheral = {
+      uid: uuid.v4(),
+      name: name,
+      peripheralType: peripheralType
+    };
     var sequence = {
       uid: uuid.v4(),
       name: name,
       dateCreated: new Date().toString(),
       sequenceType: 'TIME',
       defaultState: defaultState
+    };
+    var peripheralRule = {
+      uid: uuid.v4(),
+      peripheralId: peripheral.uid,
+      sequenceId: sequence.uid
     };
     var onSequenceItem = {
       uid: uuid.v4(),
@@ -68,7 +90,9 @@ function sequenceUtilsFactory(dmi) {
       sequenceId: sequence.uid
     };
     var tasks = [
+      _.partial(dmi.peripheral.save, peripheral),
       _.partial(dmi.sequence.save, sequence),
+      _.partial(dmi.peripheralRule.save, peripheralRule),
       _.partial(dmi.sequenceItem.save, onSequenceItem),
       _.partial(dmi.gpioPin.update, pin)
     ];
