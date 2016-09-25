@@ -94,6 +94,7 @@ module.exports = function(filename, schema, logger, callback) {
         if (schema[table].validate) {
           try {
             return schema[table].validate(object, dmi, function(err) {
+              logger.log('error', err);
               if (err) {
                 return callback(err);
               } else {
@@ -101,6 +102,7 @@ module.exports = function(filename, schema, logger, callback) {
               }
             });
           } catch(err) {
+            logger.log('error', err);
             return callback(err)
           }
         } else {
@@ -276,7 +278,18 @@ module.exports = function(filename, schema, logger, callback) {
       if (!tableDescription.constructed) {
         var tableMethods = {};
         tableMethods.save = _.partial(upsertIntoDb, tableName);
-        tableMethods.update = tableMethods.save;
+        tableMethods.update = function(instance, callback) {
+          var id = instance[tableDescription.id];
+          if (_.isNull(id) || _.isUndefined(id)) {
+            return callback(boom.badRequest(`Can't save without id column: ${tableDescription.id}`));
+          }
+          return tableMethods.getById(id, function(err, record) {
+            if (!record) {
+              return callback(boom.badRequest(`Can't update nonexistent object: ${id}`));
+            }
+            return tableMethods.save(_.merge(record, instance), callback);
+          });
+        };
         tableMethods.delete = _.partial(remove, tableName);
         tableMethods.deleteById = _.partial(removeById, tableName);
         tableMethods.list = _.partial(getAllRowsFromTable, tableName);

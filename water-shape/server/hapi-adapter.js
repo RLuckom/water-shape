@@ -95,7 +95,7 @@ function startServer(dbUtils, logger, callback) {
             logger.log('warn', `Got object in PUT with different ID than endpoint. endpoint had: ${id} and object had ${objectToInsert[dbUtils.schema[table].id]}`);
           } 
           objectToInsert[dbUtils.schema[table].id] = id;
-          return dbUtils[table].save(objectToInsert, reply);
+          return dbUtils[table].update(objectToInsert, reply);
         }
       }
     });

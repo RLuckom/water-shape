@@ -40,6 +40,7 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
       columns: {
         uid: 'TEXT',
         name: 'TEXT',
+        description: 'TEXT'
       },
       constraints: {
         UNIQUE: [['name']]
@@ -51,9 +52,9 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
         DELETE: true
       },
       initialValues: [
-        {uid: '78', name: 'walnut'},
-        {uid: '79', name: 'oak'},
-        {uid: '80', name: 'pine'}
+        {uid: '78', name: 'walnut', description: 'cool tree'},
+        {uid: '79', name: 'oak', description: 'ok tree'},
+        {uid: '80', name: 'pine', description: 'also cool tree'}
       ]
     },
     leaves: {
@@ -195,7 +196,7 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
       const treesWithTypes = [
         {
           tree: {treeNumber: 1, treeName: 'Bob', treeType: 'walnut'},
-          treeType: {uid: '78', name: 'walnut'},
+          treeType: {uid: '78', name: 'walnut', description: 'cool tree'},
           leaves: [
             {uid: 1, name: 'Bob1', tree: 1},
             {uid: 2, name: 'Bob2', tree: 1},
@@ -204,7 +205,7 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
         },
         {
           tree: {treeNumber: 2, treeName: 'Samantha', treeType: 'oak'},
-          treeType: {uid: '79', name: 'oak'},
+          treeType: {uid: '79', name: 'oak', description: 'ok tree'},
           leaves: []
         }
       ];
@@ -217,7 +218,7 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
     it('can get a record in a constructed table by id', function(done) {
       const treeWithType = {
         tree: {treeNumber: 1, treeName: 'Bob', treeType: 'walnut'},
-        treeType: {uid: '78', name: 'walnut'},
+        treeType: {uid: '78', name: 'walnut', description: 'cool tree'},
         leaves: [
           {uid: 1, name: 'Bob1', tree: 1},
           {uid: 2, name: 'Bob2', tree: 1},
@@ -254,16 +255,18 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
     it('can update a record', function(done) {
       dmi.treeTypes.update({uid: '80', name: 'spruce'}, function(err, records) {
         dmi.treeTypes.getById('80', function(err, record) {
-          expect(record).toEqual({uid: '80', name: 'spruce'});
+          expect(record.uid).toEqual('80');
+          expect(record.name).toEqual('spruce');
+          expect(record.description).toEqual('also cool tree');
           done();
         });
       });
     });
 
     it('can save a record', function(done) {
-      dmi.treeTypes.save({uid: '57', name: 'crabapple'}, function(err, records) {
+      dmi.treeTypes.save({uid: '57', name: 'crabapple', description: 'useless tree'}, function(err, records) {
         dmi.treeTypes.getById('57', function(err, record) {
-          expect(record).toEqual({uid: '57', name: 'crabapple'});
+          expect(record).toEqual({uid: '57', name: 'crabapple', description: 'useless tree'});
           done();
         });
       });

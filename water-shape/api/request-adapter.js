@@ -60,7 +60,21 @@ function apiFactory(schema, apiBaseUrl, request) {
         }, callback);
       };
       endpoint.update = function(instance, callback) {
-        endpoint.put(instance, translateToGeneric(callback));
+        if (v.validate) {
+          try {
+            v.validate(instance, dmi, function(err, validate) {
+              if (err) {
+                callback(err)
+              } else {
+                endpoint.put(instance, translateToGeneric(callback));
+              }
+            });
+          } catch(err) {
+            callback(err);
+          }
+        } else {
+          endpoint.put(instance, translateToGeneric(callback));
+        }
       };
     }
     if (v.apiMethods.POST) {
@@ -74,9 +88,9 @@ function apiFactory(schema, apiBaseUrl, request) {
       };
     }
     endpoint.save = function(instance, callback) {
-      if (schema[k].validate) {
+      if (v.validate) {
         try {
-          schema[k].validate(instance, dmi, function(err, validate) {
+          v.validate(instance, dmi, function(err, validate) {
             if (err) {
               callback(err)
             } else {
