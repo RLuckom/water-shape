@@ -6,7 +6,7 @@
  * @throws {Error} : if the time is not parseable
  */
 
-var timeRegex =  /([0-9]{1,2}):([0-9]{2})[\.:]{0,1}([0-9]{0,2})(AM|PM|am|pm|Pm|Am|pM|aM){0,1}/;
+var timeRegex =  /([0-9]{1,2}):([0-9]{2})[\.:]{0,1}([0-9]{0,2})(AM|PM|am|pm|Pm|Am|pM|aM){0,1}$/;
 function parseTime(t) {
   var match = t.match(timeRegex);
   if (!match) {
@@ -20,7 +20,7 @@ function parseTime(t) {
     throw new Error('0 is not a valid hour when specifying AM or PM');
   }
   if (hour > 12 && match[4]) {
-    throw new Error(`invalid time ${t}. hours greater than 12 are not valid when specifying AM or PM`);
+    throw new Error(`Hours greater than 12 are not valid when specifying AM or PM`);
   }
   if (match[4] && ['pm', 'PM', 'pM', 'Pm'].indexOf(match[4]) != -1) {
     hour += 12;

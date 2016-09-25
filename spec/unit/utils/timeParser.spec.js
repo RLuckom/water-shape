@@ -49,6 +49,7 @@ describe('timeParser', function() {
     }
     var badTimeStrings = [
       '24:22:45',
+      '12:22:45PM<div>evil</div>',
       '13:44:55PM',
       '13:44:55AM',
       '22:67:55',
