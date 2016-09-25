@@ -47,9 +47,25 @@ function dmiFactory(schema, logger) {
       }
     }
     endpoint.save = function(instance, callback) {
-      addId(instance);
-      data[k][instance[v.id]] = instance;
-      return immediate([void(0), instance], callback);
+      if (schema[k].validate) {
+        try {
+          return schema[k].validate(instance, dmi, function(err) {
+            if (err) {
+              callback(err);
+            } else {
+              addId(instance);
+              data[k][instance[v.id]] = instance;
+              return immediate([void(0), instance], callback);
+            }
+          });
+        } catch(err) {
+          callback(err);
+        }
+      } else {
+        addId(instance);
+        data[k][instance[v.id]] = instance;
+        return immediate([void(0), instance], callback);
+      }
     };
     endpoint.delete = function(instance, callback) {
       var id = instance[v.id];

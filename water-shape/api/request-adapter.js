@@ -74,7 +74,21 @@ function apiFactory(schema, apiBaseUrl, request) {
       };
     }
     endpoint.save = function(instance, callback) {
-      endpoint.post(instance, translateToGeneric(callback));
+      if (schema[k].validate) {
+        try {
+          schema[k].validate(instance, dmi, function(err, validate) {
+            if (err) {
+              callback(err)
+            } else {
+              endpoint.post(instance, translateToGeneric(callback));
+            }
+          });
+        } catch(err) {
+          callback(err);
+        }
+      } else {
+        endpoint.post(instance, translateToGeneric(callback));
+      }
     };
     if (v.apiMethods.DELETE) {
       endpoint.delete = function(instance, callback) {

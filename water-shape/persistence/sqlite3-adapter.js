@@ -59,7 +59,7 @@ module.exports = function(filename, schema, logger, callback) {
       });
     }
 
-    function upsertIntoDb(table, object, callback) {
+    function upsertValidObjectIntoDb(table, object, callback) {
       if (schema[table]) {
         const columns = _.keys(schema[table].columns);
         const idColumn = schema[table].id;
@@ -84,6 +84,28 @@ module.exports = function(filename, schema, logger, callback) {
           }
         }
         return dbUpsert(table, object, idColumn, id, columns, callback);
+      } else {
+        return callback(boom.badRequest(`Unknown table: ${table}`));
+      }
+    }
+
+    function upsertIntoDb(table, object, callback) {
+      if (schema[table]) {
+        if (schema[table].validate) {
+          try {
+            return schema[table].validate(object, dmi, function(err) {
+              if (err) {
+                return callback(err);
+              } else {
+                return upsertValidObjectIntoDb(table, object, callback);
+              }
+            });
+          } catch(err) {
+            return callback(err)
+          }
+        } else {
+          return upsertValidObjectIntoDb(table, object, callback);
+        }
       } else {
         return callback(boom.badRequest(`Unknown table: ${table}`));
       }

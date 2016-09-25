@@ -80,6 +80,40 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
         {uid: 3, name: 'Bob3', tree: 1}
       ]
     },
+    leafType: {
+      id: 'uid',
+      columns: {
+        uid: 'TEXT',
+        name: 'TEXT',
+      },
+      apiMethods: {
+        GET: true,
+        POST: true,
+        PUT: true,
+        DELETE: true
+      },
+      constraints: {
+      },
+      validate: function(val, dmi, callback) {
+        if (typeof val.name === 'number') {
+          throw new Error('numbers not allowed')
+        }
+        if (!val.name || val.name[0] !== 'L') {
+          callback('Must be a string starting with l');
+        } else {
+          dmi.leafType.search({name: val.name}, function(err, instances) {
+            if (instances.length) {
+              callback('Cannot add duplicate name');
+            } else {
+              callback();
+            }
+          });
+        }
+      },
+      initialValues: [
+        {uid: 'hgfjxk', name: 'Leaf2'}
+      ]
+    },
     treesWithType: {
       constructed: true,
       structure: {
@@ -119,6 +153,42 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
 
     afterEach(function(done) {
       afterEachFunction(dmi, done)
+    });
+
+    it('can validate inserted values', function(done) {
+      dmi.leafType.save({name: 'Bad'}, function(err, records) {
+        expect(err).not.toBeUndefined();
+        expect(records).toBeUndefined();
+        done();
+      });
+    });
+
+    it('can validate inserted values with the dmi', function(done) {
+      dmi.leafType.save({name: 'Leaf2'}, function(err, records) {
+        expect(err).not.toBeUndefined();
+        expect(records).toBeUndefined();
+        done();
+      });
+    });
+
+    it('catches errors validating inserted values', function(done) {
+      dmi.leafType.save({name: 42}, function(err, records) {
+        expect(err).not.toBeUndefined();
+        expect(records).toBeUndefined();
+        done();
+      });
+    });
+
+    it('can insert validated values', function(done) {
+      dmi.leafType.save({name: 'Leaf3'}, function(err, records) {
+        expect(err).toBeFalsy();
+        expect(records.name).toEqual('Leaf3');
+        dmi.leafType.getById(records.uid, function(err, record) {
+          expect(err).toBeFalsy();
+          expect(records.name).toEqual('Leaf3');
+          done();
+        });
+      });
     });
 
     it('can list the records in a constructed table', function(done) {
