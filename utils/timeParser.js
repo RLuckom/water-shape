@@ -6,7 +6,7 @@
  * @throws {Error} : if the time is not parseable
  */
 
-var timeRegex =  /([0-9]{1,2}):([0-9]{2})[\.:]{0,1}([0-9]{0,2})(AM|PM|am|pm|Pm|Am|pM|aM){0,1}$/;
+var timeRegex =  /([0-9]{1,2}):([0-9]{2})[\.:]{0,1}([0-9]{2}){0,1}(AM|PM|am|pm|Pm|Am|pM|aM){0,1}$/;
 function parseTime(t) {
   var match = t.match(timeRegex);
   if (!match) {
