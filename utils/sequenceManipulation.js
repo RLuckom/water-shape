@@ -81,8 +81,8 @@ function sequenceUtilsFactory(dmi) {
       sequenceId: sequence.uid,
       durationSeconds: null,
       ordinal: null,
-      startTime: JSON.stringify(onTime),
-      endTime: JSON.stringify(offTime),
+      startTime: onTime,
+      endTime: offTime,
       state: 1
     };
     var pin = {

@@ -1,6 +1,7 @@
 'use strict';
 const React = require('react');
 const uuid = require('uuid');
+const parseTime = require('../../utils/timeParser.js');
 
 var EditableValue = React.createClass({
   getInitialState: function() {
@@ -21,17 +22,17 @@ var EditableValue = React.createClass({
   },
   renderDisplay: {
     NUMBER: function(self, opts) {
-      return <div><span onClick={self.toggleEditing}>{opts.label}: {opts.current.displayValue}</span></div>;
+      return <div><span onClick={self.toggleEditing}>{opts.label} {opts.current.displayValue}</span></div>;
     },
     TEXT: function(self, opts) {
-      return <div><span onClick={self.toggleEditing}>{opts.label}: {opts.current.displayValue}</span></div>;
+      return <div><span onClick={self.toggleEditing}>{opts.label} {opts.current.displayValue}</span></div>;
     },
     ENUM: function(self, opts) {
-      return <div><span onClick={self.toggleEditing}>{opts.label}: {opts.current}</span></div>;
+      return <div><span onClick={self.toggleEditing}>{opts.label} {opts.current}</span></div>;
     },
     BOOLEAN: function(self, opts) {
       function change(evt) {
-        return opts.update(evt.target.checked, self.toggleEditing);
+        return opts.update(evt.target.checked, self.handleUpdate(self));
       }
       var inputId = uuid.v4();
       return (
@@ -49,10 +50,35 @@ var EditableValue = React.createClass({
   toggleEditing: function() {
     this.setState({editing: !this.state.editing});
   },
+  handleUpdate: function(self) {
+    return function(err, result) {
+      var errorText, errorVisible, editing;
+      if (err) {
+        editing = self.state.editing;
+        errorVisible = true;
+        if (_.isString(err)) {
+          errorText = err;
+        } else if (_.has(err, 'message')) {
+          errorText = err.message;
+        }
+        self.setState({
+          errorText: errorText,
+          errorVisible: errorVisible
+        });
+      } else {
+        editing = !self.state.editing;
+      }
+      self.setState({
+        errorText: errorText,
+        editing: editing,
+        errorVisible: errorVisible
+      });
+    };
+  },
   renderInput: {
     BOOLEAN: function(self, opts) {
       function change(evt) {
-        return opts.update(evt.target.checked, self.toggleEditing);
+        return opts.update(evt.target.checked, self.handleUpdate(self));
       }
       var inputId = uuid.v4();
       return (
@@ -63,6 +89,9 @@ var EditableValue = React.createClass({
             <div className="slider round">
             </div>
           </label>
+          <div className={'input-error ' + self.state.errorVisible === true ? 'visible' : 'invisible'}>
+            <span>{self.state.errorText}</span>
+          </div>
         </div>
       );
     },
@@ -78,12 +107,15 @@ var EditableValue = React.createClass({
         }
       }
       function callback() {
-        return opts.update(self.input.value, self.toggleEditing);
+        return opts.update(self.input.value, self.handleUpdate);
       }
       return (
         <div className='input-field'>
-          <label className="active" htmlFor={inputId}>{opts.label}: </label>
+          <label className="active" htmlFor={inputId}>{opts.label}</label>
           {numberInput}
+          <div className={'input-error ' + self.state.errorVisible === true ? 'visible' : 'invisible'}>
+            <span>{self.state.errorText}</span>
+          </div>
         </div>
       );
     },
@@ -99,12 +131,15 @@ var EditableValue = React.createClass({
         }
       }
       function callback() {
-        return opts.update(self.input.value, self.toggleEditing);
+        return opts.update(self.input.value, self.handleUpdate(self));
       }
       return (
         <div className='input-field'>
-          <label className="active" htmlFor={inputId}>{opts.label}: </label>
+          <label className="active" htmlFor={inputId}>{opts.label}</label>
           {numberInput}
+          <div className={'input-error ' + self.state.errorVisible === true ? 'visible' : 'invisible'}>
+            <span>{self.state.errorText}</span>
+          </div>
         </div>
       );
     },
@@ -118,7 +153,7 @@ var EditableValue = React.createClass({
       });
 
       function callback(evt) {
-        opts.update(evt.target.value, self.toggleEditing);
+        opts.update(evt.target.value, self.handleUpdate);
       }
       return (
         <div>
@@ -126,6 +161,9 @@ var EditableValue = React.createClass({
           <select defaultValue={opts.current} onBlur={callback} onChange={callback} id={inputId} ref={setInput}>
             {options}
           </select>
+          <div className={'input-error ' + self.state.errorVisible === true ? 'visible' : 'invisible'}>
+            <span>{self.state.errorText}</span>
+          </div>
         </div>
       );
     }
@@ -142,9 +180,18 @@ module.exports = {
   },
   testTextOpts: {
     type: 'TEXT',
-    label: 'Name',
-    current: {displayValue: 'foo'},
-    update: function (val, callback) {console.log(val); this.current.displayValue = val; callback();}
+    label: 'Start time:',
+    current: {displayValue: '12:34:56PM'},
+    update: function (val, callback) {
+      var time;
+      try {
+        time = parseTime(val);
+        this.current.displayValue = val;
+      } catch (err) {
+        return callback(err);
+      }
+      return callback();
+    }
   },
   testBoolOpts: {
     type: 'BOOLEAN',

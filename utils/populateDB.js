@@ -38,8 +38,8 @@ function populateDB(db, callback) {
     sequenceUtils.makeTimeSequenceAndAssignToPin,
     'Light Sequence',
     'RELAY',
-    {hour: 5, minute: 30, second: 0}, // 5:30 AM on
-    {hour: 18, minute: 30, second: 0}, // 6:30PM off
+    '5:30',
+    '18:30',
     14, // pin 14
     0 // default off
   );

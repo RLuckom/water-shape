@@ -1,4 +1,6 @@
 'use strict';
+const parseTime = require('../utils/timeParser.js');
+
 function schemaFactory(noOpValidate) {
   return {
     sequence: {
@@ -198,6 +200,18 @@ function schemaFactory(noOpValidate) {
           sequenceId: 'sequence.uid',
         },
         UNIQUE: [['sequenceId', 'ordinal']],
+      },
+      validate: function(instance, dmi, callback) {
+        if (instance.startTime) {
+          parseTime(instance.startTime);
+        }
+        if (instance.endTime) {
+          parseTime(instance.endTime);
+        }
+        if (instance.state && [0, 1].indexOf(instance.state) === -1) {
+          throw new Error('state must be 0 (off) or 1 (on)');
+        }
+        callback();
       }
     },
     sequenceType: {
