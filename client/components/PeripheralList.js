@@ -2,6 +2,7 @@
 const React = require('react');
 const uuid = require('uuid');
 const _ = require('lodash');
+const Editable = require('../forms/editable.js');
 const sequenceUtilsFactory = require('../../utils/sequenceManipulation.js');
 const SequenceItemRowFactory = require('./SequenceItemRow');
 
@@ -9,11 +10,14 @@ function PeripheralListFactory(api) {
   var SequenceItemRow = SequenceItemRowFactory(api);
   const sequenceUtils = sequenceUtilsFactory(api);
   return React.createClass({
-    loadSequences: function() {
+    loadSequences: function(callback) {
       api.completePeripheral.list(
         function(err, body) {
           console.log(body);
           this.setState({data: body});
+          if (_.isFunction(callback)) {
+            callback();
+          }
         }.bind(this)
       );
     },
@@ -46,13 +50,13 @@ function PeripheralListFactory(api) {
         const sequenceItems = deepSequence.sequenceItems;
         const gpioPins = deepSequence.gpioPins;
         const sequenceItemTableRows = _.map(sequenceItems, function(sequenceItem) {
-          return <SequenceItemRow key={sequenceItem.uid} sequenceItem={sequenceItem} sequenceType={sequence.sequenceType}></SequenceItemRow>;
+          return <SequenceItemRow key={sequenceItem.uid} update={self.loadSequences} sequenceItem={sequenceItem} sequenceType={sequence.sequenceType}></SequenceItemRow>;
         });
         var sequenceItemsTable;
         if (sequence.sequenceType === 'DURATION') {
           sequenceItemsTable = (
-            <div key={sequence.uid}>
-              <table className="highlight">
+            <div className="peripheral-sequence" key={sequence.uid}>
+              <table className="peripheral-sequence-table">
                 <thead>
                   <tr>
                     <th data-field="duration">Duration (seconds)</th>
@@ -68,8 +72,8 @@ function PeripheralListFactory(api) {
           );
         } else {
           sequenceItemsTable = (
-            <div key={sequence.uid}>
-              <table className="highlight sequence">
+            <div className="peripheral-sequence" key={sequence.uid}>
+              <table className="peripheral-sequence-table">
                 <thead>
                   <tr>
                     <th data-field="start-time">Start Time</th>
@@ -85,11 +89,23 @@ function PeripheralListFactory(api) {
             </div>
           );
         }
-        var peripheralNameField = self.renderSequenceNameField(self, peripheral);
+        var peripheralNameOptions = { 
+          type: 'TEXT',
+          inputClass: 'peripheral-name-input',
+          outerClass: 'peripheral-name',
+          label: '',
+          current: {displayValue: peripheral.name},
+          update: function(val, callback) {
+            function loader(err, results) {
+              self.loadSequences(callback)
+            }
+            api.peripheral.update({uid: peripheral.uid, name: val}, loader);
+          },
+        };
         return (
-          <div key={deepSequence.peripheral.uid} className="peripheral-card card">
-            <div className="card-content peripheral-card-content black-text">
-              {peripheralNameField}
+          <div key={deepSequence.peripheral.uid} className="peripheral">
+            <div className="peripheral-content">
+              <Editable.EditableValue opts={peripheralNameOptions}></Editable.EditableValue>
               <div className="peripheral-type-display"><span className="text-label peripheral-type-label">Peripheral Type: </span><span className="peripheral-type-value">{peripheral.peripheralType}</span></div>
               <div className="sequence-type-display"><span className="text-label sequence-type-label">Sequence Type: </span><span className="sequence-type-value">{sequence.sequenceType}</span></div>
               <div className="gpio-display"><span className="text-label gpio-label">GPIO Pin Numbers: </span><span className="sequence-type-value">{_.map(gpioPins, 'pinNumber').join(', ')}</span></div>
@@ -99,9 +115,9 @@ function PeripheralListFactory(api) {
         );
       });
       return (
-        <div className="peripheral-cards">
-          <button onClick={this.newPeripheral}>New Peripheral</button>
+        <div className="peripherals">
           {sequenceCards}
+          <button onClick={this.newPeripheral}>New Peripheral</button>
         </div>
       );
     },
@@ -116,43 +132,6 @@ function PeripheralListFactory(api) {
         this.loadSequences
       );
     },
-    toggleEditingName: function toggleEditingName() {
-      this.setState({editingName: !this.state.editingName});
-    },
-    renderSequenceNameField: function(self, peripheral) {
-      function handleEdit(evt) {
-        return self.handleEditName(peripheral, evt);
-      }
-      if (self.state.editingName) {
-        return (
-          <input
-            onKeyDown={handleEdit}
-            type="text"
-            className="form-control"
-            ref={ `title_${ peripheral.uid }` }
-            name="title"
-            defaultValue={ peripheral.name }
-          />
-        );
-      } else {
-        return <span className="card-title peripheral-card-title black-text" onClick={self.toggleEditingName} >{peripheral.name}</span>;
-      }
-    },
-    handleEditName: function(peripheral, event) {
-      if ( event.keyCode === 13 ) {
-        let target = event.target,
-          update = {};
-        peripheral.name = target.value;
-        var self = this;
-        api.peripheral.update(peripheral, function(err, res) {
-          if (err) {
-            console.error(err)
-          } else {
-            self.toggleEditingName();
-          }
-        });
-      }
-    }
   });
 }
 

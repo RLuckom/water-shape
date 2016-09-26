@@ -1,6 +1,5 @@
 'use strict';
 const React = require('react');
-const basicInputs = require('../forms/basicInputs');
 const _ = require('lodash');
 const Editable = require('../forms/editable.js');
 
@@ -18,21 +17,36 @@ function SequenceItemRowFactory(api) {
         return this.renderTimeSequenceItemOrEdit(sequenceItem);
       }
     },
+    refreshAndCallback: function(callback) {
+      var self = this;
+      return function(err, response) {
+        if (err) {
+          return callback(err);
+        } else {
+          return self.props.update(callback);
+        }
+      }
+    },
     renderDurationSequenceItemOrEdit: function(sequenceItem) {
+      var self = this;
       var durationOptions = {
         type: 'NUMBER',
+        inputClass: 'sequence-item-table-cell-input',
+        outerClass: 'sequence-item-table-cell',
         label: '',
         current: {displayValue: sequenceItem.durationSeconds},
         update: function(val, callback) {
-          api.sequenceItem.update({uid: sequenceItem.uid, durationSeconds: val}, callback);
+          api.sequenceItem.update({uid: sequenceItem.uid, durationSeconds: val}, self.refreshAndCallback(callback));
         },
       };
       var stateOptions = {
         type: 'NUMBER',
+        inputClass: 'sequence-item-table-cell-input',
+        outerClass: 'sequence-item-table-cell',
         label: '',
         current: {displayValue: sequenceItem.state},
         update: function(val, callback) {
-          api.sequenceItem.update({uid: sequenceItem.uid, state: val}, callback);
+          api.sequenceItem.update({uid: sequenceItem.uid, state: val}, self.refreshAndCallback(callback));
         }
       };
       return (
@@ -43,28 +57,35 @@ function SequenceItemRowFactory(api) {
       );
     },
     renderTimeSequenceItemOrEdit: function(sequenceItem) {
+      var self = this;
       var startTimeOptions = {
         type: 'TEXT',
+        inputClass: 'sequence-item-table-cell-input',
+        outerClass: 'sequence-item-table-cell',
         label: '',
         current: {displayValue: sequenceItem.startTime},
         update: function(val, callback) {
-          api.sequenceItem.update({uid: sequenceItem.uid, startTime: val}, callback);
+          api.sequenceItem.update({uid: sequenceItem.uid, startTime: val}, self.refreshAndCallback(callback));
         }
       };
       var endTimeOptions = {
         type: 'TEXT',
+        inputClass: 'sequence-item-table-cell-input',
+        outerClass: 'sequence-item-table-cell',
         label: '',
         current: {displayValue: sequenceItem.endTime},
         update: function(val, callback) {
-          api.sequenceItem.update({uid: sequenceItem.uid, endTime: val}, callback);
+          api.sequenceItem.update({uid: sequenceItem.uid, endTime: val}, self.refreshAndCallback(callback));
         }
       };
       var stateOptions = {
         type: 'NUMBER',
+        inputClass: 'sequence-item-table-cell-input',
+        outerClass: 'sequence-item-table-cell',
         label: '',
         current: {displayValue: sequenceItem.state},
         update: function(val, callback) {
-          api.sequenceItem.update({uid: sequenceItem.uid, state: val}, callback);
+          api.sequenceItem.update({uid: sequenceItem.uid, state: val}, self.refreshAndCallback(callback));
         }
       };
       return (

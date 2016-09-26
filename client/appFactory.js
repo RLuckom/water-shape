@@ -2,6 +2,7 @@
 require('./scss/app.scss');
 const React = require('react');
 const ReactDOM = require('react-dom');
+const EditableValue = require('./forms/editable.js');
 const PeripheralListFactory = require('./components/PeripheralList');
 
 function appFactory(api) {
