@@ -1,7 +1,7 @@
 'use strict';
 const React = require('react');
 const uuid = require('uuid');
-const parseTime = require('../../utils/timeParser.js');
+const timeParser = require('../../utils/timeParser.js');
 
 var EditableValue = React.createClass({
   getInitialState: function() {
@@ -163,7 +163,7 @@ var EditableValue = React.createClass({
       return (
         <div className={`${opts.outerClass}`}>
           <label className={`${opts.inputLabelClass}`} htmlFor={inputId}>{opts.label}</label>
-          <select defaultValue={opts.current} onBlur={callback} onChange={callback} id={inputId} ref={setInput}>
+          <select defaultValue={opts.current} onBlur={self.toggleEditing} onChange={callback} id={inputId} ref={setInput}>
             {options}
           </select>
           <div className={`input-error ${self.state.errorVisible === true ? 'visible' : 'invisible'} ${opts.errorDivClass}`}>
@@ -192,7 +192,7 @@ module.exports = {
     update: function (val, callback) {
       var time;
       try {
-        time = parseTime(val);
+        time = timeParser.parseTime(val);
         this.current.displayValue = val;
       } catch (err) {
         return callback(err);

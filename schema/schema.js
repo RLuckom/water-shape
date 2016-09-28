@@ -1,5 +1,6 @@
 'use strict';
-const parseTime = require('../utils/timeParser.js');
+const timeParser = require('../utils/timeParser.js');
+const _ = require('lodash');
 
 function schemaFactory(noOpValidate) {
   return {
@@ -203,15 +204,29 @@ function schemaFactory(noOpValidate) {
       },
       validate: function(instance, dmi, callback) {
         if (instance.startTime) {
-          parseTime(instance.startTime);
+          timeParser.parseTime(instance.startTime);
         }
         if (instance.endTime) {
-          parseTime(instance.endTime);
+          timeParser.parseTime(instance.endTime);
         }
         if (instance.state && [0, 1].indexOf(instance.state) === -1) {
           throw new Error('state must be 0 (off) or 1 (on)');
         }
-        callback();
+        if (instance.startTime && instance.endTime) {
+          return dmi.sequenceItem.search({sequenceId: instance.sequenceId}, function(err, sequenceItems) {
+            if (err) {
+              return callback(err);
+            }
+            if (instance.uid) {
+              sequenceItems = _.reject(sequenceItems, ['uid', instance.uid]);
+            }
+            if (timeParser.sequenceItemOverlaps(instance, sequenceItems)) {
+              return callback('cannot create a sequence item that overlaps another on the same sequence');
+            }
+            return callback();
+          });
+        }
+        return callback();
       }
     },
     sequenceType: {

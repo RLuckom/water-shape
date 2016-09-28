@@ -1,3 +1,4 @@
+const _ = require('lodash');
 /* Parser for times of day without date information */
 
 /*
@@ -10,6 +11,10 @@ var timeRegex =  /([0-9]{1,2}):([0-9]{2})[\.:]{0,1}([0-9]{2}){0,1}(AM|PM|am|pm|P
 function parseTime(t) {
   var match = t.match(timeRegex);
   if (!match) {
+    var d = new Date(time);
+    if (!_.isNaN(d.getTime())) {
+      return dateToTimeObj(d)
+    }
     throw new Error('Time format not recognized. A supported time format is 13:22:56 or 1:22:56PM');
   }
   var hour = parseInt(match[1]);
@@ -36,4 +41,74 @@ function parseTime(t) {
   return {hour: hour, minute: minute, second: second};
 }
 
-module.exports = parseTime;
+function toSeconds(time) {
+  if (_.isUndefined(time)) {
+    throw new Error('time is undefined')
+  }
+  if (_.isString(time)) {
+    time = parseTime(time);
+  }
+  if (_.isDate(time)) {
+    time = dateToTimeObj(time);;
+  }
+  if (!_.isNumber(time.hour) || !_.isNumber(time.minute) || !_.isNumber(time.second)) {
+    throw new Error(`Time does not have hour, minute, and second attributes ${time}`);
+  }
+  return (time.hour * 3600) + (time.minute * 60) + (time.second);
+}
+
+function dateToTimeObj(date) {
+    return {hour: date.getHours(), minute: date.getMinutes(), second: date.getSeconds()};
+}
+
+function overlaps(period1, period2) {
+  return (
+    (period1.start > period2.start && period1.start < period2.end) ||
+      (period1.end > period2.start && period1.end < period2.end) ||
+      (period1.start < period2.start && period1.end >= period2.end) ||
+      (period2.start < period1.start && period2.end >= period1.end) ||
+      (period1.start <= period2.start && period1.end > period2.end) ||
+      (period2.start <= period1.start && period2.end > period1.end) ||
+      (period2.start === period1.start && period2.end === period1.end)
+  );
+}
+
+function overlapsAny(period, periods) {
+  return !!_.find(_.map(periods, _.partial(overlaps, period)));
+}
+
+function sequenceItemToTimePeriod(sequenceItem) {
+  var tp ={start: toSeconds(sequenceItem.startTime), end: toSeconds(sequenceItem.endTime)};
+  if (tp.start > tp.end) {
+    throw new Error('sequenceItem startTime is after endTime');
+  }
+  return tp;
+}
+
+function sequenceItemOverlaps(sequenceItem, sequenceItems) {
+  return overlapsAny(sequenceItemToTimePeriod(sequenceItem), _.map(sequenceItems, sequenceItemToTimePeriod));
+}
+
+function anySequenceItemOverlaps(sequenceItems) {
+  var s;
+  sequenceItems = _.cloneDeep(sequenceItems);
+  while (sequenceItems.length > 1) {
+    s = sequenceItems.pop();
+    if (sequenceItemOverlaps(s, sequenceItems)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function orderByStartTime(sequenceItems) {
+  return _.orderBy(sequenceItems, function(s) {return toSeconds(s.startTime);});
+}
+
+module.exports = {
+  parseTime: parseTime,
+  sequenceItemOverlaps: sequenceItemOverlaps,
+  anySequenceItemOverlaps: anySequenceItemOverlaps,
+  orderByStartTime: orderByStartTime,
+  toSeconds: toSeconds
+};

@@ -62,18 +62,18 @@ function apiFactory(schema, apiBaseUrl, request) {
       endpoint.update = function(instance, callback) {
         if (v.validate) {
           try {
-            v.validate(instance, dmi, function(err, validate) {
+            return v.validate(instance, dmi, function(err, validate) {
               if (err) {
-                callback(err)
+                return callback(err)
               } else {
-                endpoint.put(instance, translateToGeneric(callback));
+                return endpoint.put(instance, translateToGeneric(callback));
               }
             });
           } catch(err) {
-            callback(err);
+            return callback(err);
           }
         } else {
-          endpoint.put(instance, translateToGeneric(callback));
+          return endpoint.put(instance, translateToGeneric(callback));
         }
       };
     }
@@ -90,18 +90,18 @@ function apiFactory(schema, apiBaseUrl, request) {
     endpoint.save = function(instance, callback) {
       if (v.validate) {
         try {
-          v.validate(instance, dmi, function(err, validate) {
+          return v.validate(instance, dmi, function(err, validate) {
             if (err) {
-              callback(err)
+              return callback(err)
             } else {
-              endpoint.post(instance, translateToGeneric(callback));
+              return endpoint.post(instance, translateToGeneric(callback));
             }
           });
         } catch(err) {
-          callback(err);
+          return callback(err);
         }
       } else {
-        endpoint.post(instance, translateToGeneric(callback));
+        return endpoint.post(instance, translateToGeneric(callback));
       }
     };
     if (v.apiMethods.DELETE) {

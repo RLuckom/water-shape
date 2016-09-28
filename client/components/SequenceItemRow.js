@@ -36,7 +36,7 @@ function SequenceItemRowFactory(api) {
         label: '',
         current: {displayValue: sequenceItem.durationSeconds},
         update: function(val, callback) {
-          api.sequenceItem.update({uid: sequenceItem.uid, durationSeconds: val}, self.refreshAndCallback(callback));
+          api.sequenceItem.save(_.merge(sequenceItem, {durationSeconds: val}), self.refreshAndCallback(callback));
         },
       };
       var stateOptions = {
@@ -46,7 +46,7 @@ function SequenceItemRowFactory(api) {
         label: '',
         current: {displayValue: sequenceItem.state},
         update: function(val, callback) {
-          api.sequenceItem.update({uid: sequenceItem.uid, state: val}, self.refreshAndCallback(callback));
+          api.sequenceItem.save(_.merge(sequenceItem, {state: val}), self.refreshAndCallback(callback));
         }
       };
       return (
@@ -65,7 +65,7 @@ function SequenceItemRowFactory(api) {
         label: '',
         current: {displayValue: sequenceItem.startTime},
         update: function(val, callback) {
-          api.sequenceItem.update({uid: sequenceItem.uid, startTime: val}, self.refreshAndCallback(callback));
+          api.sequenceItem.save(_.merge(sequenceItem, {startTime: val}), self.refreshAndCallback(callback));
         }
       };
       var endTimeOptions = {
@@ -75,7 +75,7 @@ function SequenceItemRowFactory(api) {
         label: '',
         current: {displayValue: sequenceItem.endTime},
         update: function(val, callback) {
-          api.sequenceItem.update({uid: sequenceItem.uid, endTime: val}, self.refreshAndCallback(callback));
+          api.sequenceItem.save(_.merge(sequenceItem, {endTime: val}), self.refreshAndCallback(callback));
         }
       };
       var stateOptions = {
@@ -85,7 +85,7 @@ function SequenceItemRowFactory(api) {
         label: '',
         current: {displayValue: sequenceItem.state},
         update: function(val, callback) {
-          api.sequenceItem.update({uid: sequenceItem.uid, state: val}, self.refreshAndCallback(callback));
+          api.sequenceItem.save(_.merge(sequenceItem, {state: val}), self.refreshAndCallback(callback));
         }
       };
       return (

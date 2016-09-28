@@ -2,6 +2,7 @@
 const async = require('async');
 const _ = require('lodash');
 const uuid = require('uuid');
+const timeParser = require('../utils/timeParser.js');
 
 function sequenceUtilsFactory(dmi) {
   function makeOnOffSequenceAndAssignToPin(name, peripheralType, onDuration, offDuration, pinNumber, defaultState, callback) {
@@ -110,8 +111,8 @@ function sequenceUtilsFactory(dmi) {
             _.each(d, function(sqi) {
               if (sqi.startTime) {
                 try {
-                  sqi.startTime = JSON.parse(sqi.startTime);
-                  sqi.endTime = JSON.parse(sqi.endTime);
+                  sqi.startTime = timeParser.parseTime(sqi.startTime);
+                  sqi.endTime = timeParser.parseTime(sqi.endTime);
                 } catch(error) {
                   callback(error);
                 }
