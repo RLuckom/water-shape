@@ -115,6 +115,65 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
         {uid: 'hgfjxk', name: 'Leaf2'}
       ]
     },
+    treeHouse: {
+      id: 'uid',
+      columns: {
+        uid: 'TEXT',
+        name: 'TEXT',
+      },
+      apiMethods: {
+        GET: true,
+        POST: true,
+        PUT: true,
+        DELETE: true
+      },
+      validate: function() {},
+      initialValues: [
+        {uid: 'jhggzxjclv', name: 'Cool Tree House'}
+      ]
+    },
+    treeTrunk: {
+      id: 'uid',
+      columns: {
+        uid: 'TEXT',
+        name: 'TEXT',
+      },
+      apiMethods: {
+        GET: true,
+        POST: true,
+        PUT: true,
+        DELETE: true
+      },
+      validate: function(v, dmi, callback) {
+        callback();
+        callback();
+        callback();
+      },
+      initialValues: [
+        {uid: 'jhgjclv', name: 'Cool Tree Trunk'}
+      ]
+    },
+    treeSwing: {
+      id: 'uid',
+      columns: {
+        uid: 'TEXT',
+        name: 'TEXT',
+      },
+      apiMethods: {
+        GET: true,
+        POST: true,
+        PUT: true,
+        DELETE: true
+      },
+      validate: function(v, dmi, callback) {
+        callback(new Error('wtf, mate?'));
+        callback();
+        callback();
+      },
+      initialValues: [
+        {uid: 'jhgjc', name: 'Cool Tree Swing'}
+      ]
+    },
     treesWithType: {
       constructed: true,
       structure: {
@@ -149,34 +208,59 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
         dmi = populatedObject;
         done();
       }
-      beforeEachFunction(schema, populatedCallback);
+      beforeEachFunction(_.cloneDeep(schema), populatedCallback);
     });
 
     afterEach(function(done) {
       afterEachFunction(dmi, done)
     });
 
-    it('can validate inserted values', function(done) {
-      dmi.leafType.save({name: 'Bad'}, function(err, records) {
+    it('tolerates validators that never call callback or throw', function(done) {
+      dmi.treeHouse.save({name: '42'}, function(err, records) {
         expect(err).not.toBeUndefined();
         expect(records).toBeUndefined();
         done();
       });
     });
 
-    it('can validate inserted values with the dmi', function(done) {
-      dmi.leafType.save({name: 'Leaf2'}, function(err, records) {
-        expect(err).not.toBeUndefined();
-        expect(records).toBeUndefined();
-        done();
+    it('when validators call callback multiple times, the first call wins and others have no effect on the db - success case', function(done) {
+      var n = 0;
+      dmi.treeTrunk.save({name: '42'}, function(err, records) {
+        if (n === 0) {
+          expect(err).toBeFalsy();
+          expect(records).not.toBeFalsy();
+        } else {
+          expect(true).toBe(false);
+        }
+        n++;
+        setTimeout(function() {
+          dmi.treeTrunk.list(function(err, results) {
+            expect(err).toBeFalsy();
+            expect(_.filter(results, ['name', '42']).length).toEqual(1);
+            done();
+          }, 2000);
+        });
       });
     });
 
-    it('catches errors validating inserted values', function(done) {
-      dmi.leafType.save({name: 42}, function(err, records) {
-        expect(err).not.toBeUndefined();
-        expect(records).toBeUndefined();
-        done();
+    it('when validators call callback multiple times, the first call wins and others have no effect on the db - failure case', function(done) {
+      var n = 0;
+      dmi.treeSwing.save({name: '42'}, function(err, records) {
+        if (n === 0) {
+          expect(err).not.toBeFalsy();
+          expect(records).toBeFalsy();
+        } else {
+          expect(true).toBe(false);
+        }
+        n++;
+        setTimeout(function() {
+          dmi.treeSwing.list(function(err, results) {
+            expect(err).toBeFalsy();
+            console.log(results);
+            expect(_.filter(results, ['name', '42']).length).toEqual(0);
+            done();
+          }, 2000);
+        });
       });
     });
 
@@ -238,6 +322,29 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
       });
     });
 
+    it('can validate inserted values', function(done) {
+      dmi.leafType.save({name: 'Bad'}, function(err, records) {
+        expect(err).not.toBeUndefined();
+        expect(records).toBeUndefined();
+        done();
+      });
+    });
+
+    it('can validate inserted values with the dmi', function(done) {
+      dmi.leafType.save({name: 'Leaf2'}, function(err, records) {
+        expect(err).not.toBeUndefined();
+        expect(records).toBeUndefined();
+        done();
+      });
+    });
+
+    it('catches errors validating inserted values', function(done) {
+      dmi.leafType.save({name: 42}, function(err, records) {
+        expect(err).not.toBeUndefined();
+        expect(records).toBeUndefined();
+        done();
+      });
+    });
     it('can get a record by id', function(done) {
       dmi.treeTypes.getById('78', function(err, record) {
         expect(record).toEqual(schema.treeTypes.initialValues[0]);

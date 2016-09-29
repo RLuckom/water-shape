@@ -3,6 +3,7 @@ const _ = require('lodash');
 const boom = require('boom');
 const sqlite3 = require('sqlite3');
 const uuid = require('uuid');
+const validatorTools = require('../generic/validatorWrapper.js');
 const constructedTableFactory = require('../generic/constructed');
 
 /*
@@ -30,6 +31,7 @@ const constructedTableFactory = require('../generic/constructed');
  */
 
 module.exports = function(filename, schema, logger, callback) {
+  validatorTools.guardValidators(schema);
   logger = logger || {
     log: (level, message) => {
       return console.log(`[ ${level} ] ${message}`);
@@ -92,7 +94,6 @@ module.exports = function(filename, schema, logger, callback) {
     function upsertIntoDb(table, object, callback) {
       if (schema[table]) {
         if (schema[table].validate) {
-          try {
             return schema[table].validate(object, dmi, function(err) {
               logger.log('error', err);
               if (err) {
@@ -101,10 +102,6 @@ module.exports = function(filename, schema, logger, callback) {
                 return upsertValidObjectIntoDb(table, object, callback);
               }
             });
-          } catch(err) {
-            logger.log('error', err);
-            return callback(err)
-          }
         } else {
           return upsertValidObjectIntoDb(table, object, callback);
         }

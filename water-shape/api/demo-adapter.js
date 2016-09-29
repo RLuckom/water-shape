@@ -1,12 +1,14 @@
 const _ = require('lodash');
 const constructedTableFactory = require('../generic/constructed');
 const uuid = require('uuid');
+const validatorTools = require('../generic/validatorWrapper.js');
 
 //TODO: Add support for POST with ID in url
 // Add the option to validate before PUT / POST, using 
 // validation logic shared with server side, based on
 // required data such as 'all models of this type' etc.
 function dmiFactory(schema, logger) {
+  validatorTools.guardValidators(schema);
   function immediate(argsArray, cb) {
     setTimeout(function() {cb.apply({}, argsArray);}, 0);
   }
@@ -48,19 +50,15 @@ function dmiFactory(schema, logger) {
     }
     endpoint.save = function(instance, callback) {
       if (schema[k].validate) {
-        try {
-          return schema[k].validate(instance, dmi, function(err) {
-            if (err) {
-              callback(err);
-            } else {
-              addId(instance);
-              data[k][instance[v.id]] = instance;
-              return immediate([void(0), instance], callback);
-            }
-          });
-        } catch(err) {
-          callback(err);
-        }
+        return schema[k].validate(instance, dmi, function(err) {
+          if (err) {
+            callback(err);
+          } else {
+            addId(instance);
+            data[k][instance[v.id]] = instance;
+            return immediate([void(0), instance], callback);
+          }
+        });
       } else {
         addId(instance);
         data[k][instance[v.id]] = instance;

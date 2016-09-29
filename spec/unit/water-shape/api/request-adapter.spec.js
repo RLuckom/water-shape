@@ -18,7 +18,7 @@ describe('api tests', function() {
 
   var dbUtils, server;
   function setupTests(schema, callback) {
-    const api = apiClientFactory(schema, 'http://localhost:8080/api', request);
+    const api = apiClientFactory(_.cloneDeep(schema), 'http://localhost:8080/api', request);
     var finished = {};
     function all(taskName) {
       finished[taskName] = false;
@@ -32,7 +32,7 @@ describe('api tests', function() {
     try {
       fs.unlinkSync(__dirname + '/test.db');
     } catch(err) {logger.log('unlink', err);} // don't care
-    dbUtilsFactory(__dirname + '/test.db', schema, logger, function(dbu) {
+    dbUtilsFactory(__dirname + '/test.db', _.cloneDeep(schema), logger, function(dbu) {
       dbUtils = dbu;
       var createTableCallback = all('createTables');
       var startServerCallback = all('startServer');
@@ -65,7 +65,7 @@ describe('api tests', function() {
 
   describe('nongeneric tests', function() {
     const schema = require('../../../../schema/schema').schemaFactory();
-    const api = apiClientFactory(schema, 'http://localhost:8080/api', request);
+    const api = apiClientFactory(_.cloneDeep(schema), 'http://localhost:8080/api', request);
     beforeEach(function(done) {
       var finished = {};
       function all(taskName) {
@@ -80,7 +80,7 @@ describe('api tests', function() {
       try {
         fs.unlinkSync(__dirname + '/test.db');
       } catch(err) {logger.log('unlink', err);} // don't care
-      dbUtilsFactory(__dirname + '/test.db', schema, logger, function(dbu) {
+      dbUtilsFactory(__dirname + '/test.db', _.cloneDeep(schema), logger, function(dbu) {
         dbUtils = dbu;
         var createTableCallback = all('createTables');
         var startServerCallback = all('startServer');

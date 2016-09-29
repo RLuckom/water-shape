@@ -1,12 +1,14 @@
 'use strict';
 const _ = require('lodash');
 const constructedTableFactory = require('../generic/constructed');
+const validatorTools = require('../generic/validatorWrapper.js');
 
 //TODO: Add support for POST with ID in url
 // Add the option to validate before PUT / POST, using 
 // validation logic shared with server side, based on
 // required data such as 'all models of this type' etc.
 function apiFactory(schema, apiBaseUrl, request) {
+  validatorTools.guardValidators(schema);
   function translateToGeneric(callback) {
     return function(e, r, b) {
       callback(e, b);
@@ -61,17 +63,13 @@ function apiFactory(schema, apiBaseUrl, request) {
       };
       endpoint.update = function(instance, callback) {
         if (v.validate) {
-          try {
-            return v.validate(instance, dmi, function(err, validate) {
-              if (err) {
-                return callback(err)
-              } else {
-                return endpoint.put(instance, translateToGeneric(callback));
-              }
-            });
-          } catch(err) {
-            return callback(err);
-          }
+          return v.validate(instance, dmi, function(err, validate) {
+            if (err) {
+              return callback(err)
+            } else {
+              return endpoint.put(instance, translateToGeneric(callback));
+            }
+          });
         } else {
           return endpoint.put(instance, translateToGeneric(callback));
         }
@@ -89,17 +87,13 @@ function apiFactory(schema, apiBaseUrl, request) {
     }
     endpoint.save = function(instance, callback) {
       if (v.validate) {
-        try {
-          return v.validate(instance, dmi, function(err, validate) {
-            if (err) {
-              return callback(err)
-            } else {
-              return endpoint.post(instance, translateToGeneric(callback));
-            }
-          });
-        } catch(err) {
-          return callback(err);
-        }
+        return v.validate(instance, dmi, function(err, validate) {
+          if (err) {
+            return callback(err)
+          } else {
+            return endpoint.post(instance, translateToGeneric(callback));
+          }
+        });
       } else {
         return endpoint.post(instance, translateToGeneric(callback));
       }

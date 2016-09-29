@@ -3,6 +3,6 @@
   "strict": "implied",
   "globals: {
     "console":true,
-    "require": true,
+    "require": true
   }
 }
