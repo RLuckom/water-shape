@@ -7,10 +7,8 @@ module.exports.guardValidators = function guardValidators(schema) {
       v.validate = function(val, dmi, callback) {
         var n = 0;
         function singleUseCallback(err) {
-          console.log(n);
           n = n + 1;
           if (n === 1) {
-            console.log(`calling callback for table ${k} with err ${err}`);
             return callback(err);
           }
         }

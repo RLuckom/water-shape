@@ -213,6 +213,9 @@ function schemaFactory(noOpValidate) {
           throw new Error('state must be 0 (off) or 1 (on)');
         }
         if (instance.startTime && instance.endTime) {
+          if (timeParser.toSeconds(instance.startTime) >= timeParser.parseTime(instance.endTime)) {
+            return callback(new Error('startTime must be before endTime'));
+          }
           return dmi.sequenceItem.search({sequenceId: instance.sequenceId}, function(err, sequenceItems) {
             if (err) {
               return callback(err);
@@ -220,8 +223,12 @@ function schemaFactory(noOpValidate) {
             if (instance.uid) {
               sequenceItems = _.reject(sequenceItems, ['uid', instance.uid]);
             }
-            if (timeParser.sequenceItemOverlaps(instance, sequenceItems)) {
-              return callback('cannot create a sequence item that overlaps another on the same sequence');
+            try {
+              if (timeParser.sequenceItemOverlaps(instance, sequenceItems)) {
+                return callback(new Error('cannot create a sequence item that overlaps another on the same sequence'));
+              }
+            } catch(err) {
+              callback(err);
             }
             return callback();
           });

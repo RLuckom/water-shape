@@ -339,12 +339,22 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
     });
 
     it('catches errors validating inserted values', function(done) {
-      dmi.leafType.save({name: 42}, function(err, records) {
+      var lt = {uid: 'hgfjxk', name: 42};
+      dmi.leafType.update(lt, function(err, records) {
         expect(err).not.toBeUndefined();
         expect(records).toBeUndefined();
         done();
       });
     });
+
+    it('catches errors validating inserted values on update', function(done) {
+      dmi.leafType.update({name: 42}, function(err, records) {
+        expect(err).not.toBeUndefined();
+        expect(records).toBeUndefined();
+        done();
+      });
+    });
+
     it('can get a record by id', function(done) {
       dmi.treeTypes.getById('78', function(err, record) {
         expect(record).toEqual(schema.treeTypes.initialValues[0]);

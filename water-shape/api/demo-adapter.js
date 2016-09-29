@@ -38,10 +38,23 @@ function dmiFactory(schema, logger) {
       if (!data[k][id]) {
         return immediate([new Error('no record to update')], callback);
       }
-      _.each(instance, function (v, field) {
-        data[k][id][field] = v;
-      });
-      return immediate([void(0), data[k][id]], callback);
+      if (schema[k].validate) {
+        schema[k].validate(instance, dmi, function(err) {
+          if (err) {
+            callback(err);
+          } else {
+            _.each(instance, function (v, field) {
+              data[k][id][field] = v;
+            });
+            return immediate([void(0), data[k][id]], callback);
+          }
+        });
+      } else {
+        _.each(instance, function (v, field) {
+          data[k][id][field] = v;
+        });
+        return immediate([void(0), data[k][id]], callback);
+      }
     };
     function addId(instance) {
       if (v.id === 'uid' && !instance.uid) {
