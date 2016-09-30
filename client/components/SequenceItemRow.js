@@ -27,6 +27,17 @@ function SequenceItemRowFactory(api) {
         }
       }
     },
+    onError: function(err) {
+      var errorText;
+      if (_.isString(err)) {
+        errorText = err;
+      } else if (_.has(err, 'message')) {
+        errorText = err.message;
+      }
+      this.setState({
+        errorText: errorText
+      });
+    },
     renderDurationSequenceItemOrEdit: function(sequenceItem) {
       var self = this;
       var durationOptions = {
@@ -35,8 +46,9 @@ function SequenceItemRowFactory(api) {
         outerClass: 'sequence-item-table-cell',
         label: '',
         current: {displayValue: sequenceItem.durationSeconds},
+        onError: self.onError,
         update: function(val, callback) {
-          api.sequenceItem.save(_.merge(sequenceItem, {durationSeconds: val}), self.refreshAndCallback(callback));
+          api.sequenceItem.save(_.merge(_.cloneDeep(sequenceItem), {durationSeconds: val}), self.refreshAndCallback(callback));
         },
       };
       var stateOptions = {
@@ -45,15 +57,21 @@ function SequenceItemRowFactory(api) {
         outerClass: 'sequence-item-table-cell',
         label: '',
         current: {displayValue: sequenceItem.state},
+        onError: self.onError,
         update: function(val, callback) {
-          api.sequenceItem.save(_.merge(sequenceItem, {state: val}), self.refreshAndCallback(callback));
+          api.sequenceItem.save(_.merge(_.cloneDeep(sequenceItem), {state: val}), self.refreshAndCallback(callback));
         }
       };
       return (
-        <tr className="sequenceItem">
-          <td><Editable.EditableValue opts={durationOptions}></Editable.EditableValue></td>
-          <td><Editable.EditableValue opts={stateOptions}></Editable.EditableValue></td>
-        </tr>
+        <div className="sequence-item">
+          <div className="sequence-item-inputs">
+            <Editable.EditableValue opts={durationOptions}></Editable.EditableValue>
+            <Editable.EditableValue opts={stateOptions}></Editable.EditableValue>
+          </div>
+          <div className="error">
+            {self.state.errorText}
+          </div>
+        </div>
       );
     },
     renderTimeSequenceItemOrEdit: function(sequenceItem) {
@@ -64,8 +82,9 @@ function SequenceItemRowFactory(api) {
         outerClass: 'sequence-item-table-cell',
         label: '',
         current: {displayValue: sequenceItem.startTime},
+        onError: self.onError,
         update: function(val, callback) {
-          api.sequenceItem.save(_.merge(sequenceItem, {startTime: val}), self.refreshAndCallback(callback));
+          api.sequenceItem.save(_.merge(_.cloneDeep(sequenceItem), {startTime: val}), self.refreshAndCallback(callback));
         }
       };
       var endTimeOptions = {
@@ -74,8 +93,9 @@ function SequenceItemRowFactory(api) {
         outerClass: 'sequence-item-table-cell',
         label: '',
         current: {displayValue: sequenceItem.endTime},
+        onError: self.onError,
         update: function(val, callback) {
-          api.sequenceItem.save(_.merge(sequenceItem, {endTime: val}), self.refreshAndCallback(callback));
+          api.sequenceItem.save(_.merge(_.cloneDeep(sequenceItem), {endTime: val}), self.refreshAndCallback(callback));
         }
       };
       var stateOptions = {
@@ -84,16 +104,22 @@ function SequenceItemRowFactory(api) {
         outerClass: 'sequence-item-table-cell',
         label: '',
         current: {displayValue: sequenceItem.state},
+        onError: self.onError,
         update: function(val, callback) {
-          api.sequenceItem.save(_.merge(sequenceItem, {state: val}), self.refreshAndCallback(callback));
+          api.sequenceItem.save(_.merge(_.cloneDeep(sequenceItem), {state: val}), self.refreshAndCallback(callback));
         }
       };
       return (
-        <tr className="sequenceItem">
-          <td><Editable.EditableValue opts={startTimeOptions}></Editable.EditableValue></td>
-          <td><Editable.EditableValue opts={endTimeOptions}></Editable.EditableValue></td>
-          <td><Editable.EditableValue opts={stateOptions}></Editable.EditableValue></td>
-        </tr>
+        <div className="sequence-item">
+          <div className="sequence-item-inputs">
+            <Editable.EditableValue opts={startTimeOptions}></Editable.EditableValue>
+            <Editable.EditableValue opts={endTimeOptions}></Editable.EditableValue>
+            <Editable.EditableValue opts={stateOptions}></Editable.EditableValue>
+          </div>
+          <div className="error">
+            {this.state.errorText}
+          </div>
+        </div>
       );
     }
   });

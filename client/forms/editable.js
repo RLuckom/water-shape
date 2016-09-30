@@ -52,27 +52,14 @@ var EditableValue = React.createClass({
   },
   handleUpdate: function(self) {
     return function(err, result) {
-      console.log(err, result);
       var errorText, errorVisible, editing;
       if (err) {
-        editing = self.state.editing;
-        errorVisible = true;
-        if (_.isString(err)) {
-          errorText = err;
-        } else if (_.has(err, 'message')) {
-          errorText = err.message;
+        if (_.isFunction(self.props.opts.onError)) {
+          self.props.opts.onError(err)
         }
-        self.setState({
-          errorText: errorText,
-          errorVisible: errorVisible
-        });
-      } else {
-        editing = !self.state.editing;
       }
       self.setState({
-        errorText: errorText,
-        editing: editing,
-        errorVisible: errorVisible
+        editing: !self.state.editing,
       });
     };
   },
@@ -90,9 +77,6 @@ var EditableValue = React.createClass({
             <div className="slider round">
             </div>
           </label>
-          <div className={`input-error ${self.state.errorVisible === true ? 'visible' : 'invisible'} ${opts.errorDivClass}`}>
-            <span className={`${opts.errorTextClass}`} >{self.state.errorText}</span>
-          </div>
         </div>
       );
     },
@@ -118,9 +102,6 @@ var EditableValue = React.createClass({
         <div className={`${opts.outerClass}`}>
           <label className={`${opts.inputLabelClass}`} htmlFor={inputId}>{opts.label}</label>
           {numberInput}
-          <div className={`input-error ${self.state.errorVisible === true ? 'visible' : 'invisible'} ${opts.errorDivClass}`}>
-            <span className={`${opts.errorTextClass}`} >{self.state.errorText}</span>
-          </div>
         </div>
       );
     },
@@ -142,9 +123,6 @@ var EditableValue = React.createClass({
         <div className={`${opts.outerClass}`}>
           <label className={`${opts.inputLabelClass}`} htmlFor={inputId}>{opts.label}</label>
           {numberInput}
-          <div className={`input-error ${self.state.errorVisible === true ? 'visible' : 'invisible'} ${opts.errorDivClass}`}>
-            <span className={`${opts.errorTextClass}`} >{self.state.errorText}</span>
-          </div>
         </div>
       );
     },
@@ -166,9 +144,6 @@ var EditableValue = React.createClass({
           <select defaultValue={opts.current} onBlur={self.toggleEditing} onChange={callback} id={inputId} ref={setInput}>
             {options}
           </select>
-          <div className={`input-error ${self.state.errorVisible === true ? 'visible' : 'invisible'} ${opts.errorDivClass}`}>
-            <span className={`${opts.errorTextClass}`} >{self.state.errorText}</span>
-          </div>
         </div>
       );
     }

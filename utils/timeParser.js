@@ -11,7 +11,7 @@ var timeRegex =  /([0-9]{1,2}):([0-9]{2})[\.:]{0,1}([0-9]{2}){0,1}(AM|PM|am|pm|P
 function parseTime(t) {
   var match = t.match(timeRegex);
   if (!match) {
-    var d = new Date(time);
+    var d = new Date(t);
     if (!_.isNaN(d.getTime())) {
       return dateToTimeObj(d)
     }
@@ -86,6 +86,9 @@ function sequenceItemToTimePeriod(sequenceItem) {
 }
 
 function sequenceItemOverlaps(sequenceItem, sequenceItems) {
+  sequenceItems = _.filter(sequenceItems, function(s) {
+    return s.startTime && s.endTime;
+  });
   return overlapsAny(sequenceItemToTimePeriod(sequenceItem), _.map(sequenceItems, sequenceItemToTimePeriod));
 }
 

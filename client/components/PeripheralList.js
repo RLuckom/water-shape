@@ -56,35 +56,35 @@ function PeripheralListFactory(api) {
         if (sequence.sequenceType === 'DURATION') {
           sequenceItemsTable = (
             <div className="peripheral-sequence" key={sequence.uid}>
-              <table className="peripheral-sequence-table">
-                <thead>
-                  <tr>
-                    <th data-field="duration">Duration (seconds)</th>
-                    <th data-field="state">On / Off</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <div className="peripheral-sequence-table">
+                <div>
+                  <div>
+                    <div data-field="duration">Duration (seconds)</div>
+                    <div data-field="state">On / Off</div>
+                  </div>
+                </div>
+                <div>
                   {sequenceItemTableRows}
-                </tbody>
-              </table>
+                </div>
+              </div>
               <button onClick={self.createSequenceItem(sequence.uid, sequenceItems)}>New Sequence Item</button>
             </div>
           );
         } else {
           sequenceItemsTable = (
             <div className="peripheral-sequence" key={sequence.uid}>
-              <table className="peripheral-sequence-table">
-                <thead>
-                  <tr>
-                    <th data-field="start-time">Start Time</th>
-                    <th data-field="end-time">End Time</th>
-                    <th data-field="state">On / Off</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <div className="peripheral-sequence-table">
+                <div>
+                  <div>
+                    <div data-field="start-time">Start Time</div>
+                    <div data-field="end-time">End Time</div>
+                    <div data-field="state">On / Off</div>
+                  </div>
+                </div>
+                <div>
                   {sequenceItemTableRows}
-                </tbody>
-              </table>
+                </div>
+              </div>
               <button onClick={self.createSequenceItem(sequence.uid)}>New Sequence Item</button>
             </div>
           );
