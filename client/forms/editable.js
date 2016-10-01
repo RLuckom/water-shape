@@ -22,13 +22,17 @@ var EditableValue = React.createClass({
   },
   renderDisplay: {
     NUMBER: function(self, opts) {
-      return <div className={`${opts.outerClass}`} onClick={self.toggleEditing} ><span className={`${opts.displayTextClass}`}>{opts.label} {opts.current.displayValue}</span></div>;
+      return <div className={`${opts.outerClass || 'input-outer-div'}`} onClick={self.toggleEditing} ><span className={`${opts.displayTextClass}`}>{opts.label} {opts.current.displayValue}</span></div>;
     },
     TEXT: function(self, opts) {
-      return <div onClick={self.toggleEditing} className={`${opts.outerClass}`}><span className={`${opts.displayTextClass}`}>{opts.label} {opts.current.displayValue}</span></div>;
+      return (
+        <div onClick={self.toggleEditing} className={`${opts.outerClass || 'input-outer-div'}`}>
+          <span className={`${opts.displayTextClass}`}>{opts.label} {opts.current.displayValue}</span>
+        </div>
+      );
     },
     ENUM: function(self, opts) {
-      return <div className={`${opts.outerClass}`} onClick={self.toggleEditing}><span className={`${opts.displayTextClass}`}>{opts.label} {opts.current}</span></div>;
+      return <div className={`${opts.outerClass || 'input-outer-div'}`} onClick={self.toggleEditing}><span className={`${opts.displayTextClass}`}>{opts.label} {opts.current}</span></div>;
     },
     BOOLEAN_SWITCH: function(self, opts) {
       function change(evt) {
@@ -36,7 +40,7 @@ var EditableValue = React.createClass({
       }
       var inputId = uuid.v4();
       return (
-        <div className={`${opts.outerClass}`}>
+        <div className={`${opts.outerClass || 'input-outer-div'}`}>
           <span className={`${opts.inputLabelClass}`}>{opts.label}</span>
           <label className="switch" htmlFor={inputId}>
             <input type="checkbox" id={inputId} onChange={change}></input>
@@ -53,10 +57,8 @@ var EditableValue = React.createClass({
   handleUpdate: function(self) {
     return function(err, result) {
       var errorText, errorVisible, editing;
-      if (err) {
-        if (_.isFunction(self.props.opts.onError)) {
-          self.props.opts.onError(err)
-        }
+      if (_.isFunction(self.props.opts.onError)) {
+        self.props.opts.onError(err || '');
       }
       self.setState({
         editing: !self.state.editing,
@@ -70,7 +72,7 @@ var EditableValue = React.createClass({
       }
       var inputId = uuid.v4();
       return (
-        <div className={`${opts.outerClass}`}>
+        <div className={`${opts.outerClass || 'input-outer-div'}`}>
           <span className={`${opts.inputLabelClass}`}>{opts.label}</span>
           <label className="switch" htmlFor={inputId}>
             <input type="checkbox" id={inputId} onChange={change}></input>
@@ -99,7 +101,7 @@ var EditableValue = React.createClass({
         }
       }
       return (
-        <div className={`${opts.outerClass}`}>
+        <div className={`${opts.outerClass || 'input-outer-div'}`}>
           <label className={`${opts.inputLabelClass}`} htmlFor={inputId}>{opts.label}</label>
           {numberInput}
         </div>
@@ -120,7 +122,7 @@ var EditableValue = React.createClass({
         return opts.update(self.input.value, self.handleUpdate(self));
       }
       return (
-        <div className={`${opts.outerClass}`}>
+        <div className={`${opts.outerClass || 'input-outer-div'}`}>
           <label className={`${opts.inputLabelClass}`} htmlFor={inputId}>{opts.label}</label>
           {numberInput}
         </div>
@@ -139,7 +141,7 @@ var EditableValue = React.createClass({
         opts.update(evt.target.value, self.handleUpdate);
       }
       return (
-        <div className={`${opts.outerClass}`}>
+        <div className={`${opts.outerClass || 'input-outer-div'}`}>
           <label className={`${opts.inputLabelClass}`} htmlFor={inputId}>{opts.label}</label>
           <select defaultValue={opts.current} onBlur={self.toggleEditing} onChange={callback} id={inputId} ref={setInput}>
             {options}

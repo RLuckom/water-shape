@@ -44,6 +44,7 @@ function SequenceItemRowFactory(api) {
         type: 'NUMBER',
         inputClass: 'sequence-item-table-cell-input',
         outerClass: 'sequence-item-table-cell',
+        inputLabelClass: 'hide',
         label: '',
         current: {displayValue: sequenceItem.durationSeconds},
         onError: self.onError,
@@ -56,6 +57,7 @@ function SequenceItemRowFactory(api) {
         inputClass: 'sequence-item-table-cell-input',
         outerClass: 'sequence-item-table-cell',
         label: '',
+        inputLabelClass: 'hide',
         current: {displayValue: sequenceItem.state},
         onError: self.onError,
         update: function(val, callback) {
@@ -81,6 +83,7 @@ function SequenceItemRowFactory(api) {
         inputClass: 'sequence-item-table-cell-input',
         outerClass: 'sequence-item-table-cell',
         label: '',
+        inputLabelClass: 'hide',
         current: {displayValue: sequenceItem.startTime},
         onError: self.onError,
         update: function(val, callback) {
@@ -92,6 +95,7 @@ function SequenceItemRowFactory(api) {
         inputClass: 'sequence-item-table-cell-input',
         outerClass: 'sequence-item-table-cell',
         label: '',
+        inputLabelClass: 'hide',
         current: {displayValue: sequenceItem.endTime},
         onError: self.onError,
         update: function(val, callback) {
@@ -103,6 +107,7 @@ function SequenceItemRowFactory(api) {
         inputClass: 'sequence-item-table-cell-input',
         outerClass: 'sequence-item-table-cell',
         label: '',
+        inputLabelClass: 'hide',
         current: {displayValue: sequenceItem.state},
         onError: self.onError,
         update: function(val, callback) {
