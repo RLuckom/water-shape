@@ -7,16 +7,15 @@ const _ = require('lodash');
  * @throws {Error} : if the time is not parseable
  */
 
-var timeRegex =  /([0-9]{1,2}):([0-9]{2})[\.:]{0,1}([0-9]{2}){0,1}(AM|PM|am|pm|Pm|Am|pM|aM){0,1}$/;
+var timeRegexWithSeconds =  /([0-9]{1,2}):([0-9]{2}):([0-9]{2}){0,1}(AM|PM|am|pm|Pm|Am|pM|aM){0,1}$/;
+var timeRegexNoSeconds =  /([0-9]{1,2}):([0-9]{2})(AM|PM|am|pm|Pm|Am|pM|aM){0,1}$/;
 function parseTime(t) {
-  var match = t.match(timeRegex);
-  if (!match) {
-    var d = new Date(t);
-    if (!_.isNaN(d.getTime())) {
-      return dateToTimeObj(d)
-    }
+  var withSeconds = t.match(timeRegexWithSeconds);
+  var withoutSeconds = t.match(timeRegexNoSeconds);
+  if (!withSeconds && !withoutSeconds) {
     throw new Error('Time format not recognized. A supported time format is 13:22:56 or 1:22:56PM');
   }
+  var match = withSeconds ? withSeconds : [withoutSeconds[0], withoutSeconds[1], withoutSeconds[2], 0, withoutSeconds[3]];
   var hour = parseInt(match[1]);
   if (hour > 23) {
     throw new Error('Hour cannot be above 23');
