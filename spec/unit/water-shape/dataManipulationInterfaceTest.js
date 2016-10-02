@@ -81,6 +81,25 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
         {uid: 3, name: 'Bob3', tree: 1}
       ]
     },
+    typeSpecimen: {
+      id: 'uid',
+      columns: {
+        uid: 'TEXT',
+        number: 'NUMBER',
+        treeType: 'TEXT'
+      },
+      apiMethods: {
+        GET: true,
+        POST: true,
+        PUT: true,
+        DELETE: true
+      },
+      constraints: {
+        FOREIGN_KEYS: {
+          treeType: 'treeTypes.uid'
+        }
+      },
+    },
     leafType: {
       id: 'uid',
       columns: {
@@ -188,6 +207,13 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
             name: 'tree.treeType'
           }
         },
+        typeSpecimen: {
+          single: true,
+          table: 'typeSpecimen',
+          select: {
+            treeType: 'treeType.uid'
+          }
+        },
         leaves: {
           table: 'leaves',
           select: {
@@ -280,6 +306,7 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
       const treesWithTypes = [
         {
           tree: {treeNumber: 1, treeName: 'Bob', treeType: 'walnut'},
+          typeSpecimen: void(0),
           treeType: {uid: '78', name: 'walnut', description: 'cool tree'},
           leaves: [
             {uid: 1, name: 'Bob1', tree: 1},
@@ -288,6 +315,7 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
           ]
         },
         {
+          typeSpecimen: void(0),
           tree: {treeNumber: 2, treeName: 'Samantha', treeType: 'oak'},
           treeType: {uid: '79', name: 'oak', description: 'ok tree'},
           leaves: []
@@ -303,6 +331,7 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
       const treeWithType = {
         tree: {treeNumber: 1, treeName: 'Bob', treeType: 'walnut'},
         treeType: {uid: '78', name: 'walnut', description: 'cool tree'},
+        typeSpecimen: void(0),
         leaves: [
           {uid: 1, name: 'Bob1', tree: 1},
           {uid: 2, name: 'Bob2', tree: 1},

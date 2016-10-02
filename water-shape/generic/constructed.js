@@ -36,7 +36,7 @@ module.exports.createConstructedTable = function createConstructedTable(dmi, tab
                 if (err) {
                   return callback(err);
                 } else {
-                  if (_.isArray(records) && records.length === 1 && component.single) {
+                  if (_.isArray(records) && component.single) {
                     result[key] = records[0];
                   } else {
                     result[key] = records;
@@ -81,7 +81,7 @@ module.exports.createConstructedTable = function createConstructedTable(dmi, tab
             if (err) {
               return callback(err);
             } else {
-              if (_.isArray(records) && records.length === 1 && component.single) {
+              if (_.isArray(records) && component.single) {
                 result[key] = records[0];
               } else {
                 result[key] = records;
