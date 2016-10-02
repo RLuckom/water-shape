@@ -7,7 +7,7 @@ var EditableValue = React.createClass({
   getInitialState: function() {
     return {
       editing: false,
-      currentValue: this.props.opts.current.displayValue
+      currentValue: this.props.opts.current ? this.props.opts.current.displayValue : ''
     };
   },
   render: function() {
