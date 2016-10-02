@@ -1,5 +1,6 @@
 'use strict';
 const React = require('react');
+const timeParser = require('../../utils/timeParser.js');
 const uuid = require('uuid');
 const _ = require('lodash');
 const Editable = require('../forms/editable.js');
@@ -47,7 +48,7 @@ function PeripheralListFactory(api) {
       var sequenceCards = this.state.data.map(function(deepSequence) {
         const peripheral = deepSequence.peripheral;
         const sequence = deepSequence.sequence;
-        const sequenceItems = deepSequence.sequenceItems;
+        const sequenceItems = sequence.sequenceType === 'TIME' ? timeParser.orderByStartTime(deepSequence.sequenceItems) : _.orderBy(deepSequence.sequenceItems, 'ordinal');;
         const gpioPins = deepSequence.gpioPins;
         const sequenceItemTableRows = _.map(sequenceItems, function(sequenceItem) {
           return <SequenceItemRow key={sequenceItem.uid} update={self.loadSequences} sequenceItem={sequenceItem} sequenceType={sequence.sequenceType}></SequenceItemRow>;

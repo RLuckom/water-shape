@@ -104,7 +104,7 @@ function anySequenceItemOverlaps(sequenceItems) {
 }
 
 function orderByStartTime(sequenceItems) {
-  return _.orderBy(sequenceItems, function(s) {return toSeconds(s.startTime);});
+  return _.orderBy(sequenceItems, function(s) {return !s.startTime ? 5000000 : toSeconds(s.startTime);});
 }
 
 module.exports = {
