@@ -11,7 +11,14 @@ function apiFactory(schema, apiBaseUrl, request) {
   validatorTools.guardValidators(schema);
   function translateToGeneric(callback) {
     return function(e, r, b) {
-      callback(e, b);
+      if (b) {
+        try {
+          return callback(e, JSON.parse(b));
+        } catch(err) {
+          return callback(e, b);
+        }
+      }
+      return callback(e, b);
     };
   }
   var dmi = {};
@@ -37,14 +44,12 @@ function apiFactory(schema, apiBaseUrl, request) {
           method: 'GET',
           qs: instance,
           url: apiBaseUrl + '/' + k,
-          json: true
         }, translateToGeneric(callback));
       };
       endpoint.getById = function(id, callback) {
         return request({
           method: 'GET',
           url: `${apiBaseUrl}/${k}/${id}`,
-          json: true
         }, translateToGeneric(callback));
       };
     }
@@ -57,21 +62,30 @@ function apiFactory(schema, apiBaseUrl, request) {
         return request({
           method: 'PUT',
           url: `${apiBaseUrl}/${k}/${id}`,
-          json: true,
-          body: instance
+          body: instance,
+          json: true
         }, callback);
       };
       endpoint.update = function(instance, callback) {
+        var id = instance[v.id];
         if (v.validate) {
           return v.validate(instance, dmi, function(err, validate) {
             if (err) {
               return callback(err)
             } else {
-              return endpoint.put(instance, translateToGeneric(callback));
+              return request({
+                method: 'PUT',
+                url: `${apiBaseUrl}/${k}/${id}`,
+                body: JSON.stringify(instance),
+              },  translateToGeneric(callback));
             }
           });
         } else {
-          return endpoint.put(instance, translateToGeneric(callback));
+          return request({
+            method: 'PUT',
+            url: `${apiBaseUrl}/${k}/${id}`,
+            body: JSON.stringify(instance)
+          },  translateToGeneric(callback));
         }
       };
     }
@@ -80,8 +94,8 @@ function apiFactory(schema, apiBaseUrl, request) {
         return request({
           method: 'POST',
           url: apiBaseUrl + '/' + k,
-          json: true,
-          body: instance
+          body: instance,
+          json: true
         }, callback);
       };
     }
@@ -91,11 +105,19 @@ function apiFactory(schema, apiBaseUrl, request) {
           if (err) {
             return callback(err)
           } else {
-            return endpoint.post(instance, translateToGeneric(callback));
+            return request({
+              method: 'POST',
+              url: apiBaseUrl + '/' + k,
+              body: JSON.stringify(instance)
+            },  translateToGeneric(callback));
           }
         });
       } else {
-        return endpoint.post(instance, translateToGeneric(callback));
+        return request({
+          method: 'POST',
+          url: apiBaseUrl + '/' + k,
+          body: JSON.stringify(instance)
+        },  translateToGeneric(callback));
       }
     };
     if (v.apiMethods.DELETE) {
@@ -110,7 +132,6 @@ function apiFactory(schema, apiBaseUrl, request) {
         return request({
           method: 'DELETE',
           url: `${apiBaseUrl}/${k}/${id}`,
-          json: true
         }, translateToGeneric(callback));
       };
     }

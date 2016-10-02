@@ -61,7 +61,9 @@ describe('api tests', function() {
     server.stop(stopServerCallback);
   };
 
-  testGenericDataManipulationInterface('api', setupTests, teardownTests);
+  describe('generics', function() {
+    testGenericDataManipulationInterface('api', setupTests, teardownTests);
+  });
 
   describe('nongeneric tests', function() {
     const schema = require('../../../../schema/schema').schemaFactory();
