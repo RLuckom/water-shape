@@ -5,7 +5,10 @@ const timeParser = require('../../utils/timeParser.js');
 
 var EditableValue = React.createClass({
   getInitialState: function() {
-    return {editing: false};
+    return {
+      editing: false,
+      currentValue: this.props.opts.current.displayValue
+    };
   },
   render: function() {
     var self = this;
@@ -19,6 +22,12 @@ var EditableValue = React.createClass({
     if (this.input) {
       this.input.focus();
     }
+  },
+  update: function(val, callback) {
+    if (val === this.state.currentValue) {
+      return this.toggleEditing();
+    }
+    return this.props.opts.update(val, callback);
   },
   renderDisplay: {
     NUMBER: function(self, opts) {
@@ -36,7 +45,7 @@ var EditableValue = React.createClass({
     },
     BOOLEAN_SWITCH: function(self, opts) {
       function change(evt) {
-        return opts.update(evt.target.checked, self.handleUpdate(self));
+        return self.update(evt.target.checked, self.handleUpdate(self));
       }
       var inputId = uuid.v4();
       return (
@@ -68,7 +77,7 @@ var EditableValue = React.createClass({
   renderInput: {
     BOOLEAN_SWITCH: function(self, opts) {
       function change(evt) {
-        return opts.update(evt.target.checked, self.handleUpdate(self));
+        return self.update(evt.target.checked, self.handleUpdate(self));
       }
       var inputId = uuid.v4();
       return (
@@ -87,7 +96,7 @@ var EditableValue = React.createClass({
         self.input = input;
       }
       var inputId = uuid.v4();
-      var numberInput = <input className={opts.inputClass} id={inputId} onBlur={callback} onKeyDown={keyDown} defaultValue={self.props.opts.current.displayValue} ref={setInput} type="number"></input>
+      var numberInput = <input className={opts.inputClass} id={inputId} onKeyDown={keyDown} defaultValue={self.props.opts.current.displayValue} ref={setInput} type="number"></input>
       function keyDown(evt) {
         if (evt.keyCode === 13) {
           return callback()
@@ -95,7 +104,7 @@ var EditableValue = React.createClass({
       }
       function callback() {
         try {
-          return opts.update(parseInt(self.input.value), self.handleUpdate(self));
+          return self.update(parseInt(self.input.value), self.handleUpdate(self));
         } catch(err) {
           console.error(err);
         }
@@ -112,14 +121,14 @@ var EditableValue = React.createClass({
         self.input = input;
       }
       var inputId = uuid.v4();
-      var numberInput = <input id={inputId} className={opts.inputClass} onBlur={callback} onKeyDown={keyDown} defaultValue={self.props.opts.current.displayValue} ref={setInput} type="text"></input>
+      var numberInput = <input id={inputId} className={opts.inputClass} onKeyDown={keyDown} defaultValue={self.props.opts.current.displayValue} ref={setInput} type="text"></input>
       function keyDown(evt) {
         if (evt.keyCode === 13) {
           return callback()
         }
       }
       function callback() {
-        return opts.update(self.input.value, self.handleUpdate(self));
+        return self.update(self.input.value, self.handleUpdate(self));
       }
       return (
         <div className={`${opts.outerClass || 'input-outer-div'}`}>
@@ -138,12 +147,12 @@ var EditableValue = React.createClass({
       });
 
       function callback(evt) {
-        opts.update(evt.target.value, self.handleUpdate);
+        self.update(evt.target.value, self.handleUpdate(self));
       }
       return (
         <div className={`${opts.outerClass || 'input-outer-div'}`}>
           <label className={`${opts.inputLabelClass}`} htmlFor={inputId}>{opts.label}</label>
-          <select defaultValue={opts.current} onBlur={self.toggleEditing} onChange={callback} id={inputId} ref={setInput}>
+          <select defaultValue={opts.current} onChange={callback} id={inputId} ref={setInput}>
             {options}
           </select>
         </div>
