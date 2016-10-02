@@ -5,6 +5,51 @@ const uuid = require('uuid');
 const timeParser = require('../utils/timeParser.js');
 
 function sequenceUtilsFactory(dmi) {
+  function deletePeripheralAndFreeResources(peripheral, callback) {
+    dmi.completePeripheral.getById(peripheral.uid, function(err, res) {
+      if (err) {
+        return callback(err);
+      }
+      function deletePeripheralRule(callback) {
+        console.log(res.peripheralRule);
+        if (!res.peripheralRule) {
+          return callback();
+        }
+        return dmi.peripheralRule.delete(res.peripheralRule, callback);
+      }
+      function deletePeripheralOverrideRules(callback) {
+        async.parallel(
+          _.map(
+            _.concat(res.peripheralOverrideRules, res.overrides),
+            function(or) {return _.partial(dmi.peripheralOverrideRule.delete, or);}
+          ), callback
+        );
+      }
+      function freeGpios(callback) {
+        async.parallel(_.map(res.gpioPins, function(pin) {
+          return _.partial(dmi.gpioPin.delete, pin);
+        }), callback);
+      }
+      function freeCameras(callback) {
+        async.parallel(_.map(res.cameras, function(cam) {
+          return _.partial(dmi.camera.delete, cam);
+        }), callback);
+      }
+      return async.parallel([
+        deletePeripheralRule,
+        deletePeripheralOverrideRules,
+        freeGpios,
+        freeCameras
+      ], function(err, res) {
+        if (err) {
+          console.log(err);
+          callback(err);
+        } else {
+          return dmi.peripheral.delete(peripheral, callback);
+        }
+      });
+    });
+  }
   function makeOnOffSequenceAndAssignToPin(name, peripheralType, onDuration, offDuration, pinNumber, defaultState, callback) {
     var peripheral = {
       uid: uuid.v4(),
@@ -125,7 +170,7 @@ function sequenceUtilsFactory(dmi) {
     };
     return async.auto(tasks, callback);
   }
-  
+
   function getSequencesWithItemsAndPins(callback) {
     return dmi.sequence.list(function(err, sequenceList) {
       if (err) {
@@ -150,6 +195,7 @@ function sequenceUtilsFactory(dmi) {
   return {
     makeOnOffSequenceAndAssignToPin: makeOnOffSequenceAndAssignToPin,
     makeTimeSequenceAndAssignToPin: makeTimeSequenceAndAssignToPin,
+    deletePeripheralAndFreeResources: deletePeripheralAndFreeResources,
     getSequencesWithItemsAndPins: getSequencesWithItemsAndPins
   };
 }

@@ -60,8 +60,8 @@ function PeripheralListFactory(api) {
               <div className="peripheral-sequence-table">
                 <div>
                   <div>
-                    <div data-field="duration">Duration (seconds)</div>
-                    <div data-field="state">On / Off</div>
+                    <div className='sequence-item-header'>Duration (seconds)</div>
+                    <div className='sequence-item-header'>On / Off</div>
                   </div>
                 </div>
                 <div>
@@ -77,9 +77,9 @@ function PeripheralListFactory(api) {
               <div className="peripheral-sequence-table">
                 <div>
                   <div>
-                    <div data-field="start-time">Start Time</div>
-                    <div data-field="end-time">End Time</div>
-                    <div data-field="state">On / Off</div>
+                    <div className='sequence-item-header'>Start Time</div>
+                    <div className='sequence-item-header'>End Time</div>
+                    <div className='sequence-item-header'>On / Off</div>
                   </div>
                 </div>
                 <div>
@@ -123,6 +123,7 @@ function PeripheralListFactory(api) {
               <div className="sequence-type-display"><Editable.EditableValue opts={peripheralTypeOptions}></Editable.EditableValue></div>
               <div className="gpio-display"><span className="text-label gpio-label">GPIO Pin Numbers: </span><span className="sequence-type-value">{_.map(gpioPins, 'pinNumber').join(', ')}</span></div>
               {sequenceItemsTable}
+              <button onClick={function() {sequenceUtils.deletePeripheralAndFreeResources(deepSequence.peripheral, self.loadSequences);}}>Delete Peripheral</button>
             </div>
           </div>
         );

@@ -6,7 +6,7 @@ const Editable = require('../forms/editable.js');
 function SequenceItemRowFactory(api) {
   return React.createClass({
     getInitialState: function() {
-      return {editing: false};
+      return {};
     },
     render: function() {
       const sequenceItem = this.props.sequenceItem;
@@ -37,6 +37,9 @@ function SequenceItemRowFactory(api) {
       this.setState({
         errorText: errorText
       });
+    },
+    deleteSequenceItem: function() {
+      api.sequenceItem.delete(this.props.sequenceItem, this.props.update);
     },
     renderDurationSequenceItemOrEdit: function(sequenceItem) {
       var self = this;
@@ -69,6 +72,7 @@ function SequenceItemRowFactory(api) {
           <div className="sequence-item-inputs">
             <Editable.EditableValue opts={durationOptions}></Editable.EditableValue>
             <Editable.EditableValue opts={stateOptions}></Editable.EditableValue>
+            <button className="btn" onClick={this.deleteSequenceItem}>Delete</button>
           </div>
           <div className="error">
             {self.state.errorText}
@@ -120,6 +124,7 @@ function SequenceItemRowFactory(api) {
             <Editable.EditableValue opts={startTimeOptions}></Editable.EditableValue>
             <Editable.EditableValue opts={endTimeOptions}></Editable.EditableValue>
             <Editable.EditableValue opts={stateOptions}></Editable.EditableValue>
+            <button className="btn" onClick={this.deleteSequenceItem}>Delete</button>
           </div>
           <div className="error">
             {this.state.errorText}

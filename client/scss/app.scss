@@ -23,6 +23,17 @@
   }
 }
 
+.sequence-item-header {
+  display: inline-block;
+  vertical-align: bottom;
+  margin-right: 4px;
+  margin-top: 10px;
+  margin-bottom: 4px;
+  border-bottom: 2px solid black;
+  width: 100px;
+}
+
+
 .hide {
   display: none;
 }
