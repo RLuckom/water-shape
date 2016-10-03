@@ -41,7 +41,14 @@ function startServer(dbUtils, logger, callback) {
           return callback(boom.badRequest(`Unknown table: ${table}`));
         } else {
           logger.log('debug', `POST ${request.params.table}`)
-          const objectToInsert = request.payload;
+          var objectToInsert = request.payload;
+          if (_.isString(objectToInsert)) {
+            try {
+              objectToInsert = JSON.parse(objectToInsert);
+            } catch (err) {
+              logger.log('error', 'Got non-JSON object and could not parse')
+            }
+          }
           objectToInsert[dbUtils.schema[table].id] = objectToInsert[dbUtils.schema[table].id] || uuid.v4();
           return dbUtils[table].save(objectToInsert, reply);
         }
@@ -57,7 +64,14 @@ function startServer(dbUtils, logger, callback) {
         if (!dbUtils.schema[table].apiMethods.POST) {
           return callback(boom.badRequest(`Unknown table: ${table}`));
         } else {
-          const objectToInsert = request.payload;
+          var objectToInsert = request.payload;
+          if (_.isString(objectToInsert)) {
+            try {
+              objectToInsert = JSON.parse(objectToInsert);
+            } catch (err) {
+              logger.log('error', 'Got non-JSON object and could not parse')
+            }
+          }
           if (objectToInsert[dbUtils.schema[table].id] !== id) {
             logger.log('warn', `Got object in POST with different ID than endpoint. endpoint had: ${id} and object had ${objectToInsert[dbUtils.schema[table].id]}`);
           } 
@@ -90,7 +104,14 @@ function startServer(dbUtils, logger, callback) {
         if (!dbUtils.schema[table].apiMethods.PUT) {
           return callback(boom.badRequest(`Unknown table: ${table}`));
         } else {
-          const objectToInsert = request.payload;
+          var objectToInsert = request.payload;
+          if (_.isString(objectToInsert)) {
+            try {
+              objectToInsert = JSON.parse(objectToInsert);
+            } catch (err) {
+              logger.log('error', 'Got non-JSON object and could not parse')
+            }
+          }
           if (objectToInsert[dbUtils.schema[table].id] !== id) {
             logger.log('warn', `Got object in PUT with different ID than endpoint. endpoint had: ${id} and object had ${objectToInsert[dbUtils.schema[table].id]}`);
           } 
