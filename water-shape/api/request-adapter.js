@@ -75,6 +75,7 @@ function apiFactory(schema, apiBaseUrl, request) {
             } else {
               return request({
                 method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
                 url: `${apiBaseUrl}/${k}/${id}`,
                 body: JSON.stringify(instance),
               },  translateToGeneric(callback));
@@ -83,6 +84,7 @@ function apiFactory(schema, apiBaseUrl, request) {
         } else {
           return request({
             method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
             url: `${apiBaseUrl}/${k}/${id}`,
             body: JSON.stringify(instance)
           },  translateToGeneric(callback));
@@ -107,6 +109,7 @@ function apiFactory(schema, apiBaseUrl, request) {
           } else {
             return request({
               method: 'POST',
+              headers: {'Content-Type': 'application/json'},
               url: apiBaseUrl + '/' + k,
               body: JSON.stringify(instance)
             },  translateToGeneric(callback));
@@ -115,6 +118,7 @@ function apiFactory(schema, apiBaseUrl, request) {
       } else {
         return request({
           method: 'POST',
+          headers: {'Content-Type': 'application/json'},
           url: apiBaseUrl + '/' + k,
           body: JSON.stringify(instance)
         },  translateToGeneric(callback));
