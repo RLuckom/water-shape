@@ -14,7 +14,6 @@ function PeripheralListFactory(api) {
     loadSequences: function(callback) {
       api.completePeripheral.list(
         function(err, body) {
-          console.log(body);
           this.setState({data: body});
           if (_.isFunction(callback)) {
             callback();
@@ -86,7 +85,7 @@ function PeripheralListFactory(api) {
                   {sequenceItemTableRows}
                 </div>
               </div>
-              <button onClick={self.createSequenceItem(sequence.uid)}>New Sequence Item</button>
+              <button id="new-sequence" onClick={self.createSequenceItem(sequence.uid)}>New Sequence Item</button>
             </div>
           );
         }
