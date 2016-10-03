@@ -7,7 +7,7 @@ const boom = require('boom');
 const _ = require('lodash');
 const uuid = require('node-uuid');
 
-function startServer(dbUtils, logger, callback) {
+function startServer(opts, dbUtils, logger, callback) {
   logger = logger || {
     log: (level, message) => {
       return console.log(`[ ${level} ] ${message}`);
@@ -20,14 +20,14 @@ function startServer(dbUtils, logger, callback) {
   const server = new Hapi.Server();
 
   server.register(Inert, function() {
-    server.connection({ port: 8080 });
+    server.connection({ port: opts.port });
 
     server.route({
       method: 'GET',
       path: '/{param*}',
       handler: {
         directory: {
-          path: __dirname + '/../../dist'
+          path: __dirname + opts.distPath
         }
       }
     });

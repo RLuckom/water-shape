@@ -41,7 +41,7 @@ function setupTests(schema, callback) {
     var createTableCallback = all('createTables');
     var startServerCallback = all('startServer');
     dbUtils.createTablesAndDefaultValues(createTableCallback);
-    server = startServer(dbUtils, logger, startServerCallback);
+    server = startServer({port: 8080, distPath: '/../../dist'}, dbUtils, logger, startServerCallback);
   });
 };
 

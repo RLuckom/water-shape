@@ -18,7 +18,7 @@ describe('api tests', function() {
 
   var dbUtils, server;
   function setupTests(schema, callback) {
-    const api = apiClientFactory(_.cloneDeep(schema), 'http://localhost:8080/api', request);
+    const api = apiClientFactory(_.cloneDeep(schema), 'http://localhost:9090/api', request);
     var finished = {};
     function all(taskName) {
       finished[taskName] = false;
@@ -37,7 +37,7 @@ describe('api tests', function() {
       var createTableCallback = all('createTables');
       var startServerCallback = all('startServer');
       dbUtils.createTablesAndDefaultValues(createTableCallback);
-      server = startServer(dbUtils, logger, startServerCallback);
+      server = startServer({port: 9090, distPath: '/../../dist'}, dbUtils, logger, startServerCallback);
     });
   };
 
@@ -67,7 +67,7 @@ describe('api tests', function() {
 
   describe('nongeneric tests', function() {
     const schema = require('../../../../schema/schema').schemaFactory();
-    const api = apiClientFactory(_.cloneDeep(schema), 'http://localhost:8080/api', request);
+    const api = apiClientFactory(_.cloneDeep(schema), 'http://localhost:9090/api', request);
     beforeEach(function(done) {
       var finished = {};
       function all(taskName) {
@@ -87,7 +87,7 @@ describe('api tests', function() {
         var createTableCallback = all('createTables');
         var startServerCallback = all('startServer');
         dbUtils.createTablesAndDefaultValues(createTableCallback);
-        server = startServer(dbUtils, logger, startServerCallback);
+        server = startServer({port: 9090, distPath: '/../../dist'}, dbUtils, logger, startServerCallback);
       });
     });
 
@@ -128,7 +128,7 @@ describe('api tests', function() {
     it('serves the API', function(done) {
       request({
         method: 'GET',
-        url: 'http://localhost:8080/api/sequenceType',
+        url: 'http://localhost:9090/api/sequenceType',
         json: true
       }, function(e, r, b) {
         expect(allEqualWithoutId(b, schema.sequenceType.initialValues)).toBe(true);
