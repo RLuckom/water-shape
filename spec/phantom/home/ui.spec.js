@@ -12,7 +12,7 @@ describe('ui tests', function() {
         if (!t) {
           fail('must see text on page');
         } else {
-          expect(t.indexOf('Raspberry Pi GPIO Scheduling Controller') !== -1).toBe(true);
+          expect(t.indexOf('Raspberry Pi Scheduling Controller') !== -1).toBe(true);
         }
         return done();
       });

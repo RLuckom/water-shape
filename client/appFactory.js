@@ -13,7 +13,7 @@ ReactDOM.render(
   <div className="app">
     <div className="header row">
       <div className="header col s12">
-        <h2>Raspberry Pi GPIO Scheduling Controller</h2>
+        <h2>Raspberry Pi Scheduling Controller</h2>
       </div>
     </div>
     <div className="body row">
