@@ -9,23 +9,47 @@ const validatorTools = require('../generic/validatorWrapper.js');
 // required data such as 'all models of this type' etc.
 function apiFactory(schema, apiBaseUrl, request) {
   validatorTools.guardValidators(schema);
+  function tryParse(b) {
+    try {
+      return JSON.parse(b);
+    } catch(err) {
+      return b;
+    }
+  }
   function translateToGeneric(callback) {
     return function(e, r, b) {
-      if (b) {
-        try {
-          return callback(e, JSON.parse(b));
-        } catch(err) {
-          return callback(e, b);
-        }
-      }
-      return callback(e, b);
+      return callback(e, tryParse(b));
     };
   }
   var dmi = {};
   _.each(schema, (v, k) => {
     var endpoint = _.cloneDeep(v);
     if (v.constructed) {
-      dmi[k] = constructedTableFactory.createConstructedTable(dmi, v, k);
+      var constructedMethods = constructedTableFactory.createConstructedTable(dmi, v, k);
+      function createRevert(manualFunction, callback) {
+        return function revertToManual(err, response, body) {
+          if (err || !(parseInt(response.statusCode) >= 200 && parseInt(response.statusCode) <= 300)) {
+            return manualFunction(callback);
+          } else {
+            return callback(err, tryParse(body));
+          }
+        };
+      }
+      dmi[k] = {
+        list: function(callback) {
+          return request({
+            method: 'GET',
+            url: apiBaseUrl + '/' + k,
+            json: true
+          }, createRevert(constructedMethods.list, callback));
+        },
+        getById: function(id, callback) {
+          return request({
+            method: 'GET',
+            url: `${apiBaseUrl}/${k}/${id}`,
+          }, createRevert(_.partial(constructedMethods.getById, id), callback));
+        }
+      }
       return;
     }
     if (v.apiMethods.GET) {

@@ -18,36 +18,13 @@ const logger = {
 function makeApi(schema, driver) {
   function executeInBrowser(tableName, action, argsWithCommaAndSpaces, callback) {
     console.log(`Executing api.${tableName}.${action}(${argsWithCommaAndSpaces}translateToSingleArg);`);
-    function replaceDeep(object, testValue, replacement) {
-      if (testValue(object)) {return replacement;}
-      else if (_.isNumber(object) || _.isString(object) || _.isBoolean(object) || _.isUndefined(object) || _.isNull(object)) {return object;}
-      else if (_.isArray(object)) {
-        return _.map(object, function(o) {return replaceDeep(o, testValue, replacement);});
-      } else {
-        var newObj = {};
-        _.each(object, function(v, k) {newObj[k] = replaceDeep(v, testValue, replacement);});
-        return newObj;
-      }
-    }
     driver.executeAsyncScript(
       `var callback = arguments[arguments.length - 1];
       function translateToSingleArg(err, arg) {
         if (arg) {
-          arg = replaceDeep(arg, _.isUndefined, '___undefined___')
           return callback(JSON.stringify({arg: arg}));
         } else {
           return callback(JSON.stringify({err: err}));
-        }
-      }
-      function replaceDeep(object, testValue, replacement) {
-        if (testValue(object)) {return replacement;}
-        else if (_.isNumber(object) || _.isString(object) || _.isBoolean(object) || _.isUndefined(object) || _.isNull(object)) {return object;}
-        else if (_.isArray(object)) {
-          return _.map(object, function(o) {return replaceDeep(o, testValue, replacement);});
-        } else {
-          var newObj = {};
-          _.each(object, function(v, k) {newObj[k] = replaceDeep(v, testValue, replacement);});
-          return newObj;
         }
       }
       api.${tableName}.${action}(${argsWithCommaAndSpaces}translateToSingleArg);`
@@ -58,7 +35,6 @@ function makeApi(schema, driver) {
         try {
           results = JSON.parse(results);
           if (results.arg) {
-            results.arg = replaceDeep(results.arg, function(o) {return o === '___undefined___';});
             return callback(void(0), results.arg);
           } else if (results.err) {
             return callback(results.err);

@@ -12,6 +12,10 @@ const schema = require('./testSchema');
  */
 function testGenericDataManipulationInterface(dmiName, beforeEachFunction, afterEachFunction) {
 
+  function jsonCycle(o) {
+    return JSON.parse(JSON.stringify(o));
+  }
+
   describe('Generic Data Manipulation interface tests running against ' + dmiName, function() {
     var dmi;
     beforeEach(function(done) {
@@ -70,7 +74,6 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
         setTimeout(function() {
           dmi.treeSwing.list(function(err, results) {
             expect(err).toBeFalsy();
-            console.log(results);
             expect(_.filter(results, ['name', '42']).length).toEqual(0);
             done();
           }, 2000);
@@ -110,7 +113,7 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
         }
       ];
       dmi.treesWithType.list(function(err, records) {
-        expect(records).toEqual(treesWithTypes);
+        expect(jsonCycle(records)).toEqual(jsonCycle(treesWithTypes));
         done();
       });
     });
@@ -127,14 +130,14 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
         ]
       };
       dmi.treesWithType.getById(1, function(err, records) {
-        expect(records).toEqual(treeWithType);
+        expect(jsonCycle(records)).toEqual(jsonCycle(treeWithType));
         done();
       });
     });
 
     it('can list the records in a table', function(done) {
       dmi.treeTypes.list(function(err, records) {
-        expect(records).toEqual(schema.treeTypes.initialValues);
+        expect(jsonCycle(records)).toEqual(jsonCycle(schema.treeTypes.initialValues));
         done();
       });
     });
@@ -174,14 +177,14 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
 
     it('can get a record by id', function(done) {
       dmi.treeTypes.getById('78', function(err, record) {
-        expect(record).toEqual(schema.treeTypes.initialValues[0]);
+        expect(jsonCycle(record)).toEqual(jsonCycle(schema.treeTypes.initialValues[0]));
         done();
       });
     });
 
     it('can search for a record by attribute', function(done) {
       dmi.treeTypes.search({name: 'walnut'}, function(err, records) {
-        expect(records[0]).toEqual(schema.treeTypes.initialValues[0]);
+        expect(jsonCycle(records[0])).toEqual(jsonCycle(schema.treeTypes.initialValues[0]));
         done();
       });
     });
@@ -200,7 +203,7 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
     it('can save a record', function(done) {
       dmi.treeTypes.save({uid: '57', name: 'crabapple', description: 'useless tree'}, function(err, records) {
         dmi.treeTypes.getById('57', function(err, record) {
-          expect(record).toEqual({uid: '57', name: 'crabapple', description: 'useless tree'});
+          expect(jsonCycle(record)).toEqual(jsonCycle({uid: '57', name: 'crabapple', description: 'useless tree'}));
           done();
         });
       });

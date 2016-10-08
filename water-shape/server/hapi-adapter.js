@@ -7,7 +7,7 @@ const boom = require('boom');
 const _ = require('lodash');
 const uuid = require('node-uuid');
 
-function startServer(opts, dbUtils, logger, callback) {
+function startServer(opts, dmi, logger, callback) {
   logger = logger || {
     log: (level, message) => {
       return console.log(`[ ${level} ] ${message}`);
@@ -37,7 +37,7 @@ function startServer(opts, dbUtils, logger, callback) {
       path: '/api/{table}',
       handler: function (request, reply) {
         const table = request.params.table;
-        if (!_.get(dbUtils.schema, `${request.params.table}.apiMethods.POST`)) {
+        if (!_.get(dmi.schema, `${request.params.table}.apiMethods.POST`)) {
           return callback(boom.badRequest(`Unknown table: ${table}`));
         } else {
           logger.log('debug', `POST ${request.params.table}`)
@@ -49,8 +49,8 @@ function startServer(opts, dbUtils, logger, callback) {
               logger.log('error', 'Got non-JSON object and could not parse')
             }
           }
-          objectToInsert[dbUtils.schema[table].id] = objectToInsert[dbUtils.schema[table].id] || uuid.v4();
-          return dbUtils[table].save(objectToInsert, reply);
+          objectToInsert[dmi.schema[table].id] = objectToInsert[dmi.schema[table].id] || uuid.v4();
+          return dmi[table].save(objectToInsert, reply);
         }
       }
     });
@@ -61,7 +61,7 @@ function startServer(opts, dbUtils, logger, callback) {
       handler: function (request, reply) {
         const table = request.params.table;
         const id = request.params.id;
-        if (!dbUtils.schema[table].apiMethods.POST) {
+        if (!dmi.schema[table].apiMethods.POST) {
           return callback(boom.badRequest(`Unknown table: ${table}`));
         } else {
           var objectToInsert = request.payload;
@@ -72,11 +72,11 @@ function startServer(opts, dbUtils, logger, callback) {
               logger.log('error', 'Got non-JSON object and could not parse')
             }
           }
-          if (objectToInsert[dbUtils.schema[table].id] !== id) {
-            logger.log('warn', `Got object in POST with different ID than endpoint. endpoint had: ${id} and object had ${objectToInsert[dbUtils.schema[table].id]}`);
+          if (objectToInsert[dmi.schema[table].id] !== id) {
+            logger.log('warn', `Got object in POST with different ID than endpoint. endpoint had: ${id} and object had ${objectToInsert[dmi.schema[table].id]}`);
           } 
-          objectToInsert[dbUtils.schema[table].id] = id;
-          return dbUtils[table].save(objectToInsert, reply);
+          objectToInsert[dmi.schema[table].id] = id;
+          return dmi[table].save(objectToInsert, reply);
         }
       }
     });
@@ -87,10 +87,10 @@ function startServer(opts, dbUtils, logger, callback) {
       handler: function (request, reply) {
         const table = request.params.table;
         const id = request.params.id;
-        if (!dbUtils.schema[table].apiMethods.DELETE) {
+        if (!dmi.schema[table].apiMethods.DELETE) {
           return callback(boom.badRequest(`Unknown table: ${table}`));
         } else {
-          return dbUtils[table].deleteById(id, reply);
+          return dmi[table].deleteById(id, reply);
         }
       }
     });
@@ -101,7 +101,7 @@ function startServer(opts, dbUtils, logger, callback) {
       handler: function (request, reply) {
         const table = request.params.table;
         const id = request.params.id;
-        if (!dbUtils.schema[table].apiMethods.PUT) {
+        if (!dmi.schema[table].apiMethods.PUT) {
           return callback(boom.badRequest(`Unknown table: ${table}`));
         } else {
           var objectToInsert = request.payload;
@@ -112,11 +112,11 @@ function startServer(opts, dbUtils, logger, callback) {
               logger.log('error', 'Got non-JSON object and could not parse')
             }
           }
-          if (objectToInsert[dbUtils.schema[table].id] !== id) {
-            logger.log('warn', `Got object in PUT with different ID than endpoint. endpoint had: ${id} and object had ${objectToInsert[dbUtils.schema[table].id]}`);
+          if (objectToInsert[dmi.schema[table].id] !== id) {
+            logger.log('warn', `Got object in PUT with different ID than endpoint. endpoint had: ${id} and object had ${objectToInsert[dmi.schema[table].id]}`);
           } 
-          objectToInsert[dbUtils.schema[table].id] = id;
-          return dbUtils[table].update(objectToInsert, reply);
+          objectToInsert[dmi.schema[table].id] = id;
+          return dmi[table].update(objectToInsert, reply);
         }
       }
     });
@@ -128,11 +128,12 @@ function startServer(opts, dbUtils, logger, callback) {
         logger.log('info', `${JSON.stringify(_.keys(request))}`);
         logger.log('info', `1 searching in ${request.params.table} with query: ${JSON.stringify(request.query)}`);
         if (_.keys(request.query).length) {
+          logger.log('info', _.keys(request.query).length);
           logger.log('info', `searching in ${request.params.table} with query: ${JSON.stringify(request.query)}`);
-          return dbUtils.searchInTable(request.params.table, request.query, reply);
+          return dmi[request.params.table].search(request.query, reply);
         } else {
           logger.log('info', `getting from ${request.params.table}`);
-          return dbUtils.getAllRowsFromTable(request.params.table, reply);
+          return dmi[request.params.table].list(reply);
         }
       }
     });
@@ -142,7 +143,7 @@ function startServer(opts, dbUtils, logger, callback) {
       path: '/api/{table}/{id}',
       handler: function(request, reply) {
         logger.log('debug', `GET ${request.params.table}/${request.params.id}`)
-        return dbUtils.getFromDbById(request.params.table, request.params.id, reply);
+        return dmi[request.params.table].getById(request.params.id, reply);
       }
     });
 
