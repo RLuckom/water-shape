@@ -4,7 +4,7 @@ const boom = require('boom');
 const sqlite3 = require('sqlite3');
 const uuid = require('uuid');
 const validatorTools = require('../generic/validatorWrapper.js');
-const constructedTableFactory = require('../generic/constructed');
+const treeTableFactory = require('../generic/tree');
 
 /*
  * API for data access:
@@ -179,7 +179,7 @@ module.exports = function(filename, schema, logger, callback) {
         _.each(query, function(v, k) {
           logger.log('info', `searching for ${k} in ${JSON.stringify(_.keys(schema[table].columns))}`);
           if (_.keys(schema[table].columns).indexOf(k) !== -1) {
-            columns.push(`${k}=?`);
+            columns.push(`${k} is ?`);
             values.push(v);
           } else {
             logger.log('warn', `ignoring unknown query ${k}=${v}`);
@@ -193,7 +193,7 @@ module.exports = function(filename, schema, logger, callback) {
 
     function buildSqliteSchema(schema) {
       var finishedTables = _.filter(_.map(schema, function(v, k) {
-        if (v.constructed) {
+        if (v.type === 'TREE') {
           return k;
         }
       }));
@@ -272,7 +272,7 @@ module.exports = function(filename, schema, logger, callback) {
       getAllRowsFromTable: getAllRowsFromTable
     };
     _.each(schema, function(tableDescription, tableName) {
-      if (!tableDescription.constructed) {
+      if (tableDescription.type !== 'TREE') {
         var tableMethods = {};
         tableMethods.save = _.partial(upsertIntoDb, tableName);
         tableMethods.update = function(instance, callback) {
@@ -294,7 +294,7 @@ module.exports = function(filename, schema, logger, callback) {
         tableMethods.search = _.partial(searchInTable, tableName);
         dmi[tableName] = tableMethods;
       } else {
-        dmi[tableName] = constructedTableFactory.createConstructedTable(dmi, tableDescription, tableName);
+        dmi[tableName] = treeTableFactory.createTreeTable(dmi, tableDescription, tableName);
       }
     });
     db.run('PRAGMA foreign_keys = ON;', function() {

@@ -1,6 +1,6 @@
 'use strict';
 const _ = require('lodash');
-const constructedTableFactory = require('../generic/constructed');
+const treeTableFactory = require('../generic/tree');
 const validatorTools = require('../generic/validatorWrapper.js');
 
 //TODO: Add support for POST with ID in url
@@ -24,8 +24,8 @@ function apiFactory(schema, apiBaseUrl, request) {
   var dmi = {};
   _.each(schema, (v, k) => {
     var endpoint = _.cloneDeep(v);
-    if (v.constructed) {
-      var constructedMethods = constructedTableFactory.createConstructedTable(dmi, v, k);
+    if (v.type === 'TREE') {
+      var treeMethods = treeTableFactory.createTreeTable(dmi, v, k);
       function createRevert(manualFunction, callback) {
         return function revertToManual(err, response, body) {
           if (err || !(parseInt(response.statusCode) >= 200 && parseInt(response.statusCode) <= 300)) {
@@ -41,13 +41,13 @@ function apiFactory(schema, apiBaseUrl, request) {
             method: 'GET',
             url: apiBaseUrl + '/' + k,
             json: true
-          }, createRevert(constructedMethods.list, callback));
+          }, createRevert(treeMethods.list, callback));
         },
         getById: function(id, callback) {
           return request({
             method: 'GET',
             url: `${apiBaseUrl}/${k}/${id}`,
-          }, createRevert(_.partial(constructedMethods.getById, id), callback));
+          }, createRevert(_.partial(treeMethods.getById, id), callback));
         }
       }
       return;

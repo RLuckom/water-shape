@@ -2,11 +2,12 @@
 var _ = require('lodash');
 var async = require('async');
 
-module.exports.createConstructedTable = function createConstructedTable(dmi, tableDescription, tableName) {
+module.exports.createTreeTable = function createTreeTable(dmi, tableDescription, tableName) {
   var tableMethods = {};
   tableMethods.list = function(callback) {
     var autoArgs = {};
     var results = [];
+    var required = tableDescription.root;
     _.each(tableDescription.structure, function(component, key) {
       if (!component.select) {
         autoArgs[key] = function(callback) {
@@ -24,13 +25,19 @@ module.exports.createConstructedTable = function createConstructedTable(dmi, tab
           });
         }
       } else {
-        var dependencies = _.map(component.select, function(v) {return _.split(v, '.', 1)[0];});
+        var dependencies = _.map(_.filter(component.select, ['type', 'COMPUTED']), function(v) {return _.split(v.key, '.', 1)[0];});
+        if (dependencies.indexOf(required) === -1) {
+          dependencies.push(required);
+        }
         dependencies.push(function(autoResults, callback) {
           var tasks = _.map(results, function(result) {
             return function(callback) {
               var searchArgs = {};
-              _.each(component.select, function(v, k) {
-                searchArgs[k] = _.get(result, v);
+              _.each(_.pickBy(component.select, ['type', 'COMPUTED']), function(v, k) {
+                searchArgs[k] = _.get(result, v.key);
+              });
+              _.each(_.pickBy(component.select, ['type', 'LITERAL']), function(v, k) {
+                searchArgs[k] = v.value;
               });
               return dmi[component.table].search(searchArgs, function(err, records) {
                 if (err) {
@@ -41,14 +48,14 @@ module.exports.createConstructedTable = function createConstructedTable(dmi, tab
                   } else {
                     result[key] = records;
                   }
-                  return callback(void[0], records);
+                  return callback(void(0), records);
                 }
               });
             };
           });
           return async.parallel(tasks, callback);
         });
-        autoArgs[key] = dependencies;
+        autoArgs[key] = dependencies.length === 1 ? dependencies[0] : dependencies;
       }
     });
     return async.auto(autoArgs, function(err) {
@@ -58,6 +65,7 @@ module.exports.createConstructedTable = function createConstructedTable(dmi, tab
   tableMethods.getById = function(id, callback) {
     var autoArgs = {};
     var result = {};
+    var required = tableDescription.root;
     _.each(tableDescription.structure, function(component, key) {
       if (!component.select) {
         autoArgs[key] = function(callback) {
@@ -71,11 +79,17 @@ module.exports.createConstructedTable = function createConstructedTable(dmi, tab
           });
         }
       } else {
-        var dependencies = _.map(component.select, function(v) {return _.split(v, '.', 1)[0];});
+        var dependencies = _.map(_.filter(component.select, ['type', 'COMPUTED']), function(v) {return _.split(v.key, '.', 1)[0];});
+        if (dependencies.indexOf(required) === -1) {
+          dependencies.push(required);
+        }
         dependencies.push(function(autoResults, callback) {
           var searchArgs = {};
-          _.each(component.select, function(v, k) {
-            searchArgs[k] = _.get(result, v);
+          _.each(_.pickBy(component.select, ['type', 'COMPUTED']), function(v, k) {
+            searchArgs[k] = _.get(result, v.key);
+          });
+          _.each(_.pickBy(component.select, ['type', 'LITERAL']), function(v, k) {
+            searchArgs[k] = v.value;
           });
           return dmi[component.table].search(searchArgs, function(err, records) {
             if (err) {
@@ -86,7 +100,7 @@ module.exports.createConstructedTable = function createConstructedTable(dmi, tab
               } else {
                 result[key] = records;
               }
-              return callback(void[0], records);
+              return callback(void(0), records);
             }
           });
         });

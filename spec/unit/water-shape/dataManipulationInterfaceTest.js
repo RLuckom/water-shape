@@ -93,12 +93,13 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
       });
     });
 
-    it('can list the records in a constructed table', function(done) {
+    it('can list the records in a tree table', function(done) {
       const treesWithTypes = [
         {
           tree: {treeNumber: 1, treeName: 'Bob', treeType: 'walnut'},
           typeSpecimen: void(0),
           treeType: {uid: '78', name: 'walnut', description: 'cool tree'},
+          treefrog: [{uid: 'A', name: 'Cool Tree Frog'}],
           leaves: [
             {uid: 1, name: 'Bob1', tree: 1},
             {uid: 2, name: 'Bob2', tree: 1},
@@ -108,6 +109,7 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
         {
           typeSpecimen: void(0),
           tree: {treeNumber: 2, treeName: 'Samantha', treeType: 'oak'},
+          treefrog: [{uid: 'A', name: 'Cool Tree Frog'}],
           treeType: {uid: '79', name: 'oak', description: 'ok tree'},
           leaves: []
         }
@@ -118,10 +120,11 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
       });
     });
 
-    it('can get a record in a constructed table by id', function(done) {
+    it('can get a record in a tree table by id', function(done) {
       const treeWithType = {
         tree: {treeNumber: 1, treeName: 'Bob', treeType: 'walnut'},
         treeType: {uid: '78', name: 'walnut', description: 'cool tree'},
+        treefrog: [{uid: 'A', name: 'Cool Tree Frog'}],
         typeSpecimen: void(0),
         leaves: [
           {uid: 1, name: 'Bob1', tree: 1},

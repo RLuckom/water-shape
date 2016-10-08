@@ -1,5 +1,6 @@
 module.exports = {
   trees: {
+    type: 'PERSISTED',
     id: 'treeNumber',
     columns: {
       treeNumber: 'NUMBER',
@@ -24,6 +25,7 @@ module.exports = {
     ]
   },
   treeTypes: {
+    type: 'PERSISTED',
     id: 'uid',
     columns: {
       uid: 'TEXT',
@@ -46,6 +48,7 @@ module.exports = {
     ]
   },
   leaves: {
+    type: 'PERSISTED',
     id: 'uid',
     columns: {
       uid: 'NUMBER',
@@ -70,6 +73,7 @@ module.exports = {
     ]
   },
   typeSpecimen: {
+    type: 'PERSISTED',
     id: 'uid',
     columns: {
       uid: 'TEXT',
@@ -89,6 +93,7 @@ module.exports = {
     },
   },
   leafType: {
+    type: 'PERSISTED',
     id: 'uid',
     columns: {
       uid: 'TEXT',
@@ -123,6 +128,7 @@ module.exports = {
     ]
   },
   treeHouse: {
+    type: 'PERSISTED',
     id: 'uid',
     columns: {
       uid: 'TEXT',
@@ -139,7 +145,26 @@ module.exports = {
       {uid: 'jhggzxjclv', name: 'Cool Tree House'}
     ]
   },
+  treefrog: {
+    type: 'PERSISTED',
+    id: 'uid',
+    columns: {
+      uid: 'TEXT',
+      name: 'TEXT',
+    },
+    apiMethods: {
+      GET: true,
+      POST: true,
+      PUT: true,
+      DELETE: true
+    },
+    validate: function() {},
+    initialValues: [
+      {uid: 'A', name: 'Cool Tree Frog'}
+    ]
+  },
   treeTrunk: {
+    type: 'PERSISTED',
     id: 'uid',
     columns: {
       uid: 'TEXT',
@@ -161,6 +186,7 @@ module.exports = {
     ]
   },
   treeSwing: {
+    type: 'PERSISTED',
     id: 'uid',
     columns: {
       uid: 'TEXT',
@@ -182,7 +208,8 @@ module.exports = {
     ]
   },
   treesWithType: {
-    constructed: true,
+    type: 'TREE',
+    root: 'tree',
     structure: {
       tree: {
         single: true,
@@ -192,20 +219,26 @@ module.exports = {
         single: true,
         table: 'treeTypes',
         select: {
-          name: 'tree.treeType'
+          name: {key: 'tree.treeType', type:'COMPUTED'}
+        }
+      },
+      treefrog: {
+        table: 'treefrog',
+        select: {
+          uid: {type:'LITERAL', value: 'A'}
         }
       },
       typeSpecimen: {
         single: true,
         table: 'typeSpecimen',
         select: {
-          treeType: 'treeType.uid'
+          treeType: {key: 'treeType.uid', type:'COMPUTED'}
         }
       },
       leaves: {
         table: 'leaves',
         select: {
-          tree: 'tree.treeNumber'
+          tree: {key: 'tree.treeNumber', type:'COMPUTED'}
         }
       }
     }

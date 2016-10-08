@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const constructedTableFactory = require('../generic/constructed');
+const treeTableFactory = require('../generic/tree');
 const uuid = require('uuid');
 const validatorTools = require('../generic/validatorWrapper.js');
 
@@ -17,8 +17,8 @@ function dmiFactory(schema, logger) {
   _.each(schema, (v, k) => {
     data[k] = {};
     var endpoint = _.cloneDeep(v);
-    if (v.constructed) {
-      dmi[k] = constructedTableFactory.createConstructedTable(dmi, v, k);
+    if (v.type === 'TREE') {
+      dmi[k] = treeTableFactory.createTreeTable(dmi, v, k);
       return;
     }
     endpoint.list = function(callback) {

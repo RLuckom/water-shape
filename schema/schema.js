@@ -5,6 +5,7 @@ const _ = require('lodash');
 function schemaFactory(noOpValidate) {
   return {
     sequence: {
+      type: 'PERSISTED',
       id: 'uid',
       columns: {
         'uid': 'TEXT',
@@ -26,6 +27,7 @@ function schemaFactory(noOpValidate) {
       },
     },
     pin: {
+      type: 'PERSISTED',
       id: 'uid',
       columns: {
         uid: 'TEXT',
@@ -92,6 +94,7 @@ function schemaFactory(noOpValidate) {
       }
     },
     pinType: {
+      type: 'PERSISTED',
       id: 'uid',
       columns: {
         uid: 'TEXT',
@@ -115,6 +118,7 @@ function schemaFactory(noOpValidate) {
       }
     },
     camera: {
+      type: 'PERSISTED',
       id: 'uid',
       columns: {
         'uid': 'TEXT',
@@ -137,10 +141,11 @@ function schemaFactory(noOpValidate) {
       ]
     },
     gpioPin: {
+      type: 'PERSISTED',
       id: 'pinNumber',
       columns: {
         'pinNumber': 'NUMBER', 
-        'sequenceId': 'TEXT',
+        'peripheralTypeDependency': 'TEXT',
         'peripheralId': 'TEXT',
         'ioType': 'TEXT'
       },
@@ -152,33 +157,34 @@ function schemaFactory(noOpValidate) {
       },
       constraints: {
         FOREIGN_KEYS: {
-          sequenceId : 'sequence.uid',
+          peripheralTypeDependency: 'peripheralTypeDependency.uid',
           ioType : 'ioType.name',
           peripheralId : 'peripheral.uid'
         },
         UNIQUE: [['pinNumber']]
       },
       initialValues: [
-        {pinNumber: 14, sequenceId: null, peripheralId: null},
-        {pinNumber: 15, sequenceId: null, peripheralId: null},
-        {pinNumber: 18, sequenceId: null, peripheralId: null},
-        {pinNumber: 23, sequenceId: null, peripheralId: null},
-        {pinNumber: 24, sequenceId: null, peripheralId: null},
-        {pinNumber: 25, sequenceId: null, peripheralId: null},
-        {pinNumber: 8, sequenceId: null, peripheralId: null},
-        {pinNumber: 7, sequenceId: null, peripheralId: null},
-        {pinNumber: 2, sequenceId: null, peripheralId: null},
-        {pinNumber: 3, sequenceId: null, peripheralId: null},
-        {pinNumber: 4, sequenceId: null, peripheralId: null},
-        {pinNumber: 17, sequenceId: null, peripheralId: null},
-        {pinNumber: 27, sequenceId: null, peripheralId: null},
-        {pinNumber: 22, sequenceId: null, peripheralId: null},
-        {pinNumber: 10, sequenceId: null, peripheralId: null},
-        {pinNumber: 9, sequenceId: null, peripheralId: null},
-        {pinNumber: 11, sequenceId: null, peripheralId: null}
+        {pinNumber: 14, peripheralId: null},
+        {pinNumber: 15, peripheralId: null},
+        {pinNumber: 18, peripheralId: null},
+        {pinNumber: 23, peripheralId: null},
+        {pinNumber: 24, peripheralId: null},
+        {pinNumber: 25, peripheralId: null},
+        {pinNumber: 8, peripheralId: null},
+        {pinNumber: 7, peripheralId: null},
+        {pinNumber: 2, peripheralId: null},
+        {pinNumber: 3, peripheralId: null},
+        {pinNumber: 4, peripheralId: null},
+        {pinNumber: 17, peripheralId: null},
+        {pinNumber: 27, peripheralId: null},
+        {pinNumber: 22, peripheralId: null},
+        {pinNumber: 10, peripheralId: null},
+        {pinNumber: 9, peripheralId: null},
+        {pinNumber: 11, peripheralId: null}
       ]
     },
     sequenceItem: {
+      type: 'PERSISTED',
       id: 'uid',
       columns: {
         'uid': 'TEXT',
@@ -237,6 +243,7 @@ function schemaFactory(noOpValidate) {
       }
     },
     sequenceType: {
+      type: 'PERSISTED',
       id: 'uid',
       columns: {
         'uid': 'TEXT',
@@ -257,6 +264,7 @@ function schemaFactory(noOpValidate) {
       ]
     },
     peripheral: {
+      type: 'PERSISTED',
       id: 'uid',
       columns: {
         'uid': 'TEXT',
@@ -279,6 +287,7 @@ function schemaFactory(noOpValidate) {
       ]
     },
     peripheralType: {
+      type: 'PERSISTED',
       id: 'name',
       columns: {
         'name': 'TEXT',
@@ -302,6 +311,7 @@ function schemaFactory(noOpValidate) {
       ]
     },
     ioType: {
+      type: 'PERSISTED',
       id: 'name',
       columns: {
         'name': 'TEXT',
@@ -322,6 +332,7 @@ function schemaFactory(noOpValidate) {
       ]
     },
     peripheralDomain: {
+      type: 'PERSISTED',
       id: 'name',
       columns: {
         'name': 'TEXT'
@@ -341,11 +352,13 @@ function schemaFactory(noOpValidate) {
       ]
     },
     peripheralTypeDependency: {
+      type: 'PERSISTED',
       id: 'uid',
       columns: {
         'uid': 'TEXT',
         'name': 'TEXT',
         'peripheralType': 'TEXT',
+        'optional': 'NUMBER',
         'ioType': 'TEXT'
       },
       apiMethods: {
@@ -362,9 +375,12 @@ function schemaFactory(noOpValidate) {
         }
       },
       initialValues: [
+        {peripheralType: 'RELAY', name: 'Signal pin', ioType: 'GPIO_OUTPUT', optional: 0},
+        {peripheralType: 'RELAY', name: 'Ground pin', ioType: 'GPIO_OUTPUT', optional: 1}
       ]
     },
     peripheralRule: {
+      type: 'PERSISTED',
       id: 'uid',
       columns: {
         uid: 'TEXT',
@@ -389,6 +405,7 @@ function schemaFactory(noOpValidate) {
       ]
     },
     peripheralOverrideRule: {
+      type: 'PERSISTED',
       id: 'uid',
       columns: {
         'uid': 'TEXT',
@@ -409,6 +426,8 @@ function schemaFactory(noOpValidate) {
       ]
     },
     completePeripheral: {
+      type: 'TREE',
+      root: 'peripheral',
       constructed: true,
       structure: {
         peripheral: {
@@ -419,57 +438,69 @@ function schemaFactory(noOpValidate) {
           single: true,
           table: 'peripheralType',
           select: {
-            name: 'peripheral.peripheralType'
+            name: {
+              type: 'COMPUTED',
+              key: 'peripheral.peripheralType'
+            }
           }
         },
         peripheralTypeDependencies: {
           table: 'peripheralTypeDependency',
           select: {
-            peripheralType: 'peripheral.peripheralType'
+            peripheralType: {
+              type: 'COMPUTED',
+              key: 'peripheral.peripheralType'
+            }
           }
         },
         peripheralRule: {
           single: true,
           table: 'peripheralRule',
           select: {
-            peripheralId: 'peripheral.uid'
+            peripheralId: {key: 'peripheral.uid', type:'COMPUTED'}
           }
         },
         peripheralOverrideRules: {
           table: 'peripheralOverrideRule',
           select: {
-            subjectPeripheral: 'peripheral.uid'
+            subjectPeripheral: {key: 'peripheral.uid', type:'COMPUTED'}
           }
         },
         overrides: {
           table: 'peripheralOverrideRule',
           select: {
-            testPeripheral: 'peripheral.uid'
+            testPeripheral: {key: 'peripheral.uid', type:'COMPUTED'}
           }
         },
         sequence: {
           single: true,
           table: 'sequence',
           select: {
-            uid: 'peripheralRule.sequenceId'
+            uid: {key: 'peripheralRule.sequenceId', type:'COMPUTED'}
           },
         },
         sequenceItems: {
           table: 'sequenceItem',
           select: {
-            sequenceId: 'peripheralRule.sequenceId'
+            sequenceId: {key: 'peripheralRule.sequenceId', type:'COMPUTED'}
           }
         },
         gpioPins: {
           table: 'gpioPin',
           select: {
-            peripheralId: 'peripheral.uid'
+            peripheralId: {key: 'peripheral.uid', type:'COMPUTED'}
+          }
+        },
+        availableGpioPins: {
+          table: 'gpioPin',
+          select: {
+            peripheralId: {type: 'LITERAL', value: null},
           }
         },
         cameras: {
           table: 'camera',
           select: {
-            peripheralId: 'peripheral.uid'
+            peripheralId: {key: 'peripheral.uid', type:'COMPUTED'}
           }
         }
       }
