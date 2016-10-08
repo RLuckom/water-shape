@@ -211,6 +211,6 @@ describe('gpio utils sets gpio pins', function() {
           });
         }, 600);
       });
-    });
+    }, 40000);
   });
 });
