@@ -2,6 +2,7 @@
 
 var gpioLibFactory = require('../../../gpio/gpioLib');
 var dbUtils = require('../../dbUtils.js');
+var dmiFactory = require('../../../water-shape/api/demo-adapter.js');
 var schema = require('../../../schema/schema.js');
 const uuid = require('uuid');
 const fs = require('fs');
@@ -14,9 +15,12 @@ describe('gpio utils sets gpio pins', function() {
 
   function fakeGpio(pinNumber, options) {
     var self = this;
-    this.callArguments = []
+    this.callArguments = [];
+    this.callTimes = [];
+    this.startTime = new Date().getTime();
     this.digitalWrite = function(n) {
       self.callArguments.push(n);
+      self.callTimes.push(self.startTime - new Date().getTime());
     };
     registeredGpios[pinNumber] = this;
   }
@@ -27,24 +31,14 @@ describe('gpio utils sets gpio pins', function() {
     }
   };
 
-  var db;
-
-  function tryToDelete(s) {
-    try{
-      fs.unlinkSync(s);
-    } catch(err) {} // don't care
-  }
-
-  const dbFile = 'test.db';
+  var dmi = 
 
   afterEach(function() {
-    tryToDelete(dbFile);
     gpioLib.stop();
   });
 
   beforeEach(function() {
     registeredGpios = {};
-    tryToDelete(dbFile);
     relayPeripheralType = ['peripheralType', {
       name: 'RELAY',
       domain: 'CONTINUOUS'
@@ -107,7 +101,7 @@ describe('gpio utils sets gpio pins', function() {
       uid: uuid.v4(),
       dateCreated: new Date().toString(),
       sequenceId: sequence1[1].uid,
-      durationSeconds: .25,
+      durationSeconds: .7,
       ordinal: 1,
       startTime: null,
       endTime: null,
@@ -117,7 +111,7 @@ describe('gpio utils sets gpio pins', function() {
       uid: uuid.v4(),
       dateCreated: new Date().toString(),
       sequenceId: sequence1[1].uid,
-      durationSeconds: .25,
+      durationSeconds: .7,
       ordinal: 2,
       startTime: null,
       endTime: null,
@@ -153,7 +147,6 @@ describe('gpio utils sets gpio pins', function() {
     }];
   });
 
-
   describe('need another beforeEach', function() {
     beforeEach(function(done) {
       const recordsToInsert = [
@@ -167,13 +160,13 @@ describe('gpio utils sets gpio pins', function() {
         pin2
       ];
       function assigndb(populatedDb) {
-        db = populatedDb;
+        dmi = populatedDb;
         done();
       }
-      dbUtils.insertRecordsIntoTables('test.db', schema.schemaFactory(), recordsToInsert, logger, assigndb)
+      dbUtils.insertRecordsIntoTables(dmiFactory(schema.schemaFactory(), logger), recordsToInsert, assigndb)
     });
-    it('reads sequences from the db and sets up timeouts correctly based on sequenceItems', function(done) {
-      var peripherals = peripheralsFactory(db);
+    it('reads sequences from the dmi and sets up timeouts correctly based on sequenceItems', function(done) {
+      var peripherals = peripheralsFactory(dmi);
       function deepPeripherals(callback) {
         return peripherals.getDeepPeripherals(function(err, res) {
           if (err) {
@@ -202,9 +195,7 @@ describe('gpio utils sets gpio pins', function() {
             pin2, // shouldn't really delete this
             sequence2
           ];
-          dbUtils.deleteRecordsFromTables(db, recordsToDelete, logger, function() {
-            done();
-          });
+          dbUtils.deleteRecordsFromTables(dmi, recordsToDelete, done);
         }, 900);
       });
     });
@@ -223,13 +214,13 @@ describe('gpio utils sets gpio pins', function() {
         pin1
       ];
       function assigndb(populatedDb) {
-        db = populatedDb;
+        dmi = populatedDb;
         done();
       }
-      dbUtils.insertRecordsIntoTables('test.db', schema.schemaFactory(), recordsToInsert, logger, assigndb)
+      dbUtils.insertRecordsIntoTables(dmiFactory(schema.schemaFactory(), logger), recordsToInsert, assigndb)
     });
-    it('reads sequences from the db and sets up timeouts correctly based on sequenceItems', function(done) {
-      var peripherals = peripheralsFactory(db);
+    it('reads sequences from the dmi and sets up timeouts correctly based on sequenceItems', function(done) {
+      var peripherals = peripheralsFactory(dmi);
       function deepPeripherals(callback) {
         return peripherals.getDeepPeripherals(function(err, res) {
           if (err) {
@@ -247,7 +238,7 @@ describe('gpio utils sets gpio pins', function() {
         setTimeout(function() {
           expect(lights.callArguments.length).toBe(2);
           expect(lights.callArguments[1]).toBe(0);
-        }, 300);
+        }, 900);
         setTimeout(function() {
           var recordsToDelete = [
             onSequenceItem1,
@@ -257,14 +248,75 @@ describe('gpio utils sets gpio pins', function() {
             peripheral1,
             sequence1
           ];
-          dbUtils.deleteRecordsFromTables(db, recordsToDelete, logger, function() {
+          dbUtils.deleteRecordsFromTables(dmi, recordsToDelete, function() {
             setTimeout(function() {
-              expect(lights.callArguments.length).toBe(13);
+              expect(lights.callArguments.length).toBe(6);
               expect(lights.callArguments[2]).toBe(1);
               done();
             }, 3900);
           });
-        }, 600);
+        }, 1000);
+      });
+    });
+  });
+
+  describe('need another beforeEach', function() {
+    beforeEach(function(done) {
+      onSequenceItem1[1].ordinal = 2;
+      offSequenceItem1[1].ordinal = 1;
+      const recordsToInsert = [
+        sequence1,
+        relayPeripheralType,
+        relayPeripheralTypeDependency,
+        peripheral1,
+        peripheralRule1,
+        onSequenceItem1,
+        offSequenceItem1,
+        pin1
+      ];
+      function assigndb(populatedDb) {
+        dmi = populatedDb;
+        done();
+      }
+      dbUtils.insertRecordsIntoTables(dmiFactory(schema.schemaFactory(), logger), recordsToInsert, assigndb)
+    });
+    it('reads sequences from the dmi and sets up timeouts correctly based on sequenceItems', function(done) {
+      var peripherals = peripheralsFactory(dmi);
+      function deepPeripherals(callback) {
+        return peripherals.getDeepPeripherals(function(err, res) {
+          if (err) {
+            throw err;
+          } else {
+            return callback(res);
+          }
+        });
+      }
+      gpioLib = gpioLibFactory(logger, fakeGpio, deepPeripherals);
+      gpioLib.start(function() {
+        var lights = registeredGpios[4];
+        expect(lights.callArguments.length).toBe(1);
+        expect(lights.callArguments[0]).toBe(0);
+        setTimeout(function() {
+          expect(lights.callArguments.length).toBe(2);
+          expect(lights.callArguments[1]).toBe(1);
+        }, 900);
+        setTimeout(function() {
+          var recordsToDelete = [
+            onSequenceItem1,
+            offSequenceItem1,
+            peripheralRule1,
+            pin1, // shouldn't really delete this
+            peripheral1,
+            sequence1
+          ];
+          dbUtils.deleteRecordsFromTables(dmi, recordsToDelete, function() {
+            setTimeout(function() {
+              expect(lights.callArguments.length).toBe(5);
+              expect(lights.callArguments[2]).toBe(0);
+              done();
+            }, 3900);
+          });
+        }, 1000);
       });
     });
   });

@@ -17,9 +17,10 @@ function gpioLibFactory(logger, gpio, getDeepSequences) {
     var sequenceInProgress = {};
     sequenceInProgress.pinNumber = pin;
     sequenceInProgress.itemInProgress = 0;
-    sequenceInProgress.items = _.cloneDeep(sequenceItems);
+    sequenceInProgress.items = _.orderBy(_.cloneDeep(sequenceItems), 'ordinal');
     sequenceInProgress.pin = new gpio(pin, {mode: gpio.OUTPUT, pullUpDown: gpio.PUD_DOWN});
-    sequenceInProgress.pin.digitalWrite(sequenceItems[0].state);
+    sequenceInProgress.pin.digitalWrite(sequenceInProgress.items[0].state);
+    sequenceInProgress.currentState = sequenceInProgress.items[0].state;
     sequenceInProgress.timeout = setTimeout(function() {
       nextSequenceItem(sequenceInProgress);
     }, sequenceItems[0].durationSeconds * 1000);
@@ -30,7 +31,9 @@ function gpioLibFactory(logger, gpio, getDeepSequences) {
   function cancelSequence(oldSequence) {
     if (oldSequence.sequence.sequenceType === 'DURATION') {
       clearTimeout(sequencesInProgress[oldSequence.gpioPins[0].pinNumber].timeout);
-      sequencesInProgress[oldSequence.gpioPins[0].pinNumber].pin.digitalWrite(0);
+      if (sequencesInProgress[oldSequence.gpioPins[0].pinNumber].currentState === 1) {
+        sequencesInProgress[oldSequence.gpioPins[0].pinNumber].pin.digitalWrite(0);
+      }
       delete sequencesInProgress[oldSequence.gpioPins[0].pinNumber];
     }
   }
@@ -64,6 +67,7 @@ function gpioLibFactory(logger, gpio, getDeepSequences) {
   function nextSequenceItem(sequenceInProgress) {
     sequenceInProgress.itemInProgress = sequenceInProgress.itemInProgress < sequenceInProgress.items.length - 1 ? sequenceInProgress.itemInProgress + 1 : 0;
     sequenceInProgress.pin.digitalWrite(sequenceInProgress.items[sequenceInProgress.itemInProgress].state);
+    sequenceInProgress.currentState = sequenceInProgress.items[sequenceInProgress.itemInProgress].state;
     sequenceInProgress.timeout = setTimeout(function() {
       nextSequenceItem(sequenceInProgress);
     }, sequenceInProgress.items[sequenceInProgress.itemInProgress].durationSeconds * 1000);
