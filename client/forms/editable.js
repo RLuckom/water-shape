@@ -70,8 +70,11 @@ var EditableValue = React.createClass({
         self.props.opts.onError(err || '');
       }
       self.setState({
-        editing: !self.state.editing,
+        editing: !self.state.editing
       });
+      if (!err && _.isFunction(self.props.opts.onUpdate)) {
+        self.props.opts.onUpdate(result);
+      }
     };
   },
   renderInput: {
@@ -152,7 +155,7 @@ var EditableValue = React.createClass({
       return (
         <div className={`${opts.outerClass || 'input-outer-div'}`}>
           <label className={`${opts.inputLabelClass}`} htmlFor={inputId}>{opts.label}</label>
-          <select defaultValue={opts.current} onChange={callback} id={inputId} ref={setInput}>
+          <select defaultValue={opts.current} onBlur={self.toggleEditing} onChange={callback} id={inputId} ref={setInput}>
             {options}
           </select>
         </div>

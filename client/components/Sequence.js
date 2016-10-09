@@ -33,18 +33,16 @@ function SequenceFactory(api) {
       const sequenceItems = sequence.sequenceType === 'TIME' ? timeParser.orderByStartTime(self.props.completeSequence.sequenceItems) : _.orderBy(self.props.completeSequence.sequenceItems, 'ordinal');;
       const gpioPins = self.props.completeSequence.gpioPins;
       const sequenceItemTableRows = _.map(sequenceItems, function(sequenceItem) {
-        return <SequenceItemRow key={sequenceItem.uid} update={self.props.refresh} sequenceItem={sequenceItem} sequenceType={sequence.sequenceType}></SequenceItemRow>;
+        return <SequenceItemRow key={sequenceItem.uid} refresh={self.props.refresh} sequenceItem={sequenceItem} sequenceType={sequence.sequenceType}></SequenceItemRow>;
       });
       var sequenceTypeOptions = {
         type: 'ENUM',
         label: 'Sequence Type:',
         options: ['TIME', 'DURATION'],
         current: sequence.sequenceType,
+        onUpdate: self.props.refresh,
         update: function(val, callback) {
-          function loader(err, results) {
-            self.loadSequences(callback)
-          }
-          api.sequence.update({uid: sequence.uid, sequenceType: val}, self.props.refresh);
+          api.sequence.update({uid: sequence.uid, sequenceType: val}, callback);
         }
       };
       if (sequence.sequenceType === 'DURATION') {

@@ -17,16 +17,6 @@ function SequenceItemRowFactory(api) {
         return this.renderTimeSequenceItemOrEdit(sequenceItem);
       }
     },
-    refreshAndCallback: function(callback) {
-      var self = this;
-      return function(err, response) {
-        if (err) {
-          return callback(err);
-        } else {
-          return self.props.update(callback);
-        }
-      }
-    },
     onError: function(err) {
       var errorText;
       if (_.isString(err)) {
@@ -39,7 +29,7 @@ function SequenceItemRowFactory(api) {
       });
     },
     deleteSequenceItem: function() {
-      api.sequenceItem.delete(this.props.sequenceItem, this.props.update);
+      api.sequenceItem.delete(this.props.sequenceItem, this.props.refresh);
     },
     renderDurationSequenceItemOrEdit: function(sequenceItem) {
       var self = this;
@@ -51,8 +41,9 @@ function SequenceItemRowFactory(api) {
         label: '',
         current: {displayValue: sequenceItem.durationSeconds},
         onError: self.onError,
+        onUpdate: self.props.refresh,
         update: function(val, callback) {
-          api.sequenceItem.save(_.merge(_.cloneDeep(sequenceItem), {durationSeconds: val}), self.refreshAndCallback(callback));
+          api.sequenceItem.save(_.merge(_.cloneDeep(sequenceItem), {durationSeconds: val}), callback);
         },
       };
       var stateOptions = {
@@ -61,10 +52,11 @@ function SequenceItemRowFactory(api) {
         outerClass: 'sequence-item-table-cell',
         label: '',
         inputLabelClass: 'hide',
+        onUpdate: self.props.refresh,
         current: {displayValue: sequenceItem.state},
         onError: self.onError,
         update: function(val, callback) {
-          api.sequenceItem.save(_.merge(_.cloneDeep(sequenceItem), {state: val}), self.refreshAndCallback(callback));
+          api.sequenceItem.save(_.merge(_.cloneDeep(sequenceItem), {state: val}), callback);
         }
       };
       return (
@@ -89,9 +81,10 @@ function SequenceItemRowFactory(api) {
         label: '',
         inputLabelClass: 'hide',
         current: {displayValue: sequenceItem.startTime},
+        onUpdate: self.props.refresh,
         onError: self.onError,
         update: function(val, callback) {
-          api.sequenceItem.save(_.merge(_.cloneDeep(sequenceItem), {startTime: val}), self.refreshAndCallback(callback));
+          api.sequenceItem.save(_.merge(_.cloneDeep(sequenceItem), {startTime: val}), callback);
         }
       };
       var endTimeOptions = {
@@ -102,8 +95,9 @@ function SequenceItemRowFactory(api) {
         inputLabelClass: 'hide',
         current: {displayValue: sequenceItem.endTime},
         onError: self.onError,
+        onUpdate: self.props.refresh,
         update: function(val, callback) {
-          api.sequenceItem.save(_.merge(_.cloneDeep(sequenceItem), {endTime: val}), self.refreshAndCallback(callback));
+          api.sequenceItem.save(_.merge(_.cloneDeep(sequenceItem), {endTime: val}), callback);
         }
       };
       var stateOptions = {
@@ -113,9 +107,10 @@ function SequenceItemRowFactory(api) {
         label: '',
         inputLabelClass: 'hide',
         current: {displayValue: sequenceItem.state},
+        onUpdate: self.props.refresh,
         onError: self.onError,
         update: function(val, callback) {
-          api.sequenceItem.save(_.merge(_.cloneDeep(sequenceItem), {state: val}), self.refreshAndCallback(callback));
+          api.sequenceItem.save(_.merge(_.cloneDeep(sequenceItem), {state: val}), callback);
         }
       };
       return (

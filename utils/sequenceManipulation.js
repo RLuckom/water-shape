@@ -5,13 +5,37 @@ const uuid = require('uuid');
 const timeParser = require('../utils/timeParser.js');
 
 function sequenceUtilsFactory(dmi) {
+
+  function assignPin(pinNumber, availablePins, dependency, peripheral, callback) {
+    var pin = _.find(availablePins, ['pinNumber', parseInt(pinNumber)]);
+    if (!pin && !_.isNull(pinNumber)) {
+      return callback(`Pin number ${pinNumber} is in use or oes not exist`);
+    }
+    if (_.isNull(pinNumber)) {
+      return callback();
+    }
+    pin.peripheralTypeDependency = dependency.uid;
+    pin.peripheralId = peripheral.uid;
+    pin.ioType = dependency.ioType;
+    return dmi.gpioPin.update(pin, callback);
+  }
+
+  function releasePin(pin, callback) {
+    if (!pin) {
+      return callback();
+    }
+    pin.peripheralTypeDependency = null;
+    pin.peripheralId = null;
+    pin.ioType = null;
+    return dmi.gpioPin.update(pin, callback);
+  }
+
   function deletePeripheralAndFreeResources(peripheral, callback) {
     dmi.completePeripheral.getById(peripheral.uid, function(err, res) {
       if (err) {
         return callback(err);
       }
       function deletePeripheralRule(callback) {
-        console.log(res.peripheralRule);
         if (!res.peripheralRule) {
           return callback();
         }
@@ -27,7 +51,7 @@ function sequenceUtilsFactory(dmi) {
       }
       function freeGpios(callback) {
         async.parallel(_.map(res.gpioPins, function(pin) {
-          return _.partial(dmi.gpioPin.delete, pin);
+          return _.partial(releasePin, pin);
         }), callback);
       }
       function freeCameras(callback) {
@@ -42,7 +66,6 @@ function sequenceUtilsFactory(dmi) {
         freeCameras
       ], function(err, res) {
         if (err) {
-          console.log(err);
           callback(err);
         } else {
           return dmi.peripheral.delete(peripheral, callback);
@@ -196,6 +219,8 @@ function sequenceUtilsFactory(dmi) {
     makeOnOffSequenceAndAssignToPin: makeOnOffSequenceAndAssignToPin,
     makeTimeSequenceAndAssignToPin: makeTimeSequenceAndAssignToPin,
     deletePeripheralAndFreeResources: deletePeripheralAndFreeResources,
+    assignPin: assignPin,
+    releasePin: releasePin,
     getSequencesWithItemsAndPins: getSequencesWithItemsAndPins
   };
 }
