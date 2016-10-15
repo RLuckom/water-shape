@@ -107,7 +107,15 @@ function orderByStartTime(sequenceItems) {
   return _.orderBy(sequenceItems, function(s) {return !s.startTime ? 5000000 : toSeconds(s.startTime);});
 }
 
+function isWithin(sequenceItem, time) {
+  return (
+    toSeconds(sequenceItem.startTime) < toSeconds(time) &&
+      toSeconds(sequenceItem.endTime) > toSeconds(time)
+  ); 
+}
+
 module.exports = {
+  isWithin: isWithin,
   parseTime: parseTime,
   sequenceItemOverlaps: sequenceItemOverlaps,
   anySequenceItemOverlaps: anySequenceItemOverlaps,

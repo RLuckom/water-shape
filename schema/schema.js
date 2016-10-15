@@ -331,6 +331,26 @@ function schemaFactory(noOpValidate) {
         {name: 'CAMERA'}
       ]
     },
+    parameterType: {
+      type: 'PERSISTED',
+      id: 'name',
+      columns: {
+        'name': 'TEXT',
+      },
+      apiMethods: {
+        GET: true,
+        POST: false,
+        PUT: false,
+        DELETE: false
+      },
+      constraints: {
+        UNIQUE: [['name']],
+      },
+      initialValues: [
+        {name: 'TEXT'},
+        {name: 'NUMBER'}
+      ]
+    },
     peripheralDomain: {
       type: 'PERSISTED',
       id: 'name',
@@ -351,12 +371,39 @@ function schemaFactory(noOpValidate) {
         {name: 'TRIGGERED'}
       ]
     },
+    peripheralTypeParameters: {
+      type: 'PERSISTED',
+      id: 'uid',
+      columns: {
+        'uid': 'TEXT',
+        'name': 'TEXT',
+        'peripheralType': 'TEXT',
+        'optional': 'NUMBER',
+        'parameterType': 'TEXT'
+      },
+      apiMethods: {
+        GET: true,
+        POST: true,
+        PUT: true,
+        DELETE: true
+      },
+      constraints: {
+        UNIQUE: [['name']],
+        FOREIGN_KEYS: {
+          peripheralType: 'peripheralType.name',
+          parameterType: 'parameterType.name'
+        }
+      },
+      initialValues: [
+      ]
+    },
     peripheralTypeDependency: {
       type: 'PERSISTED',
       id: 'uid',
       columns: {
         'uid': 'TEXT',
         'name': 'TEXT',
+        displayName: 'TEXT',
         'peripheralType': 'TEXT',
         'optional': 'NUMBER',
         'ioType': 'TEXT'
@@ -375,8 +422,8 @@ function schemaFactory(noOpValidate) {
         }
       },
       initialValues: [
-        {peripheralType: 'RELAY', name: 'Signal pin', ioType: 'GPIO_OUTPUT', optional: 0},
-        {peripheralType: 'RELAY', name: 'Ground pin', ioType: 'GPIO_OUTPUT', optional: 1}
+        {peripheralType: 'RELAY', displayName: 'Signal pin', name: 'signal', ioType: 'GPIO_OUTPUT', optional: 0},
+        {peripheralType: 'RELAY', displayName: 'Ground pin', name: 'ground', ioType: 'GPIO_OUTPUT', optional: 1}
       ]
     },
     peripheralRule: {
