@@ -39,7 +39,7 @@ function testGenericDataManipulationInterface(dmiName, beforeEachFunction, after
         expect(records).toBeUndefined();
         done();
       });
-    });
+    }, 40 * 1000);
 
     it('when validators call callback multiple times, the first call wins and others have no effect on the db - success case', function(done) {
       var n = 0;

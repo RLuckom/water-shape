@@ -82,6 +82,7 @@ function sequenceUtilsFactory(dmi) {
     var sequence = {
       uid: uuid.v4(),
       name: name,
+      alignment: '12:00AM',
       dateCreated: new Date().toString(),
       sequenceType: 'DURATION',
       defaultState: defaultState
@@ -135,6 +136,7 @@ function sequenceUtilsFactory(dmi) {
     var sequence = {
       uid: uuid.v4(),
       name: name,
+      alignment: '12:00AM',
       dateCreated: new Date().toString(),
       sequenceType: 'TIME',
       defaultState: defaultState

@@ -27,6 +27,7 @@ var EditableValue = React.createClass({
     if (val === this.state.currentValue) {
       return this.toggleEditing();
     }
+    this.setState({currentValue: val});
     return this.props.opts.update(val, callback);
   },
   renderDisplay: {
@@ -127,7 +128,7 @@ var EditableValue = React.createClass({
       var numberInput = <input id={inputId} className={opts.inputClass} onKeyDown={keyDown} defaultValue={self.props.opts.current.displayValue} ref={setInput} type="text"></input>
       function keyDown(evt) {
         if (evt.keyCode === 13) {
-          return callback()
+          return callback();
         }
       }
       function callback() {

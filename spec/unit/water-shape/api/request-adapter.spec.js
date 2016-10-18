@@ -148,6 +148,7 @@ describe('api tests', function() {
         uid: uuid.v4(),
         dateCreated: new Date().toString(),
         name: 'newSequence',
+        alignment: '14:00',
         sequenceType: 'DURATION',
         defaultState: 1
       };

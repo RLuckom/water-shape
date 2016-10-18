@@ -12,6 +12,17 @@ function SequenceFactory(api) {
     getInitialState: function() {
       return {data: [], editingName: false};
     },
+    onError: function(err) {
+      var errorText;
+      if (_.isString(err)) {
+        errorText = err;
+      } else if (_.has(err, 'message')) {
+        errorText = err.message;
+      }
+      this.setState({
+        errorText: errorText
+      });
+    },
     createSequenceItem: function(sequenceUid, sequenceItems) {
       const self = this;
       return function() {
@@ -45,10 +56,24 @@ function SequenceFactory(api) {
           api.sequence.update({uid: sequence.uid, sequenceType: val}, callback);
         }
       };
+      var sequenceAlignmentOptions = {
+        type: 'TEXT',
+        label: 'Sequence Alignment:',
+        current: {displayValue: sequence.alignment || '12:00AM'},
+        onError: self.onError,
+        onUpdate: self.props.refresh,
+        update: function(val, callback) {
+          api.sequence.update({uid: sequence.uid, alignment: val}, callback);
+        }
+      };
       if (sequence.sequenceType === 'DURATION') {
         return (
           <div className="peripheral-sequence" key={sequence.uid}>
             <div className="sequence-type-display"><Editable.EditableValue opts={sequenceTypeOptions}></Editable.EditableValue></div>
+            <div className="sequence-alignment-display"><Editable.EditableValue opts={sequenceAlignmentOptions}></Editable.EditableValue></div>
+          <div className="error">
+            {self.state.errorText}
+          </div>
             <div className="peripheral-sequence-table">
               <div>
                 <div>
@@ -67,6 +92,9 @@ function SequenceFactory(api) {
         return (
           <div className="peripheral-sequence" key={sequence.uid}>
             <div className="sequence-type-display"><Editable.EditableValue opts={sequenceTypeOptions}></Editable.EditableValue></div>
+            <div className="error">
+              {self.state.errorText}
+            </div>
             <div className="peripheral-sequence-table">
               <div>
                 <div>
