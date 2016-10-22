@@ -1,4 +1,5 @@
 const timeParser = require('../../../utils/timeParser.js');
+const moment = require('moment');
 
 describe('timeParser', function() {
   it('should accept all valid inputs and turn them into seconds correctly', function() {
@@ -34,6 +35,8 @@ describe('timeParser', function() {
               testStrings.push(`${hour}:${minuteString}AM`);
             }
           }
+          testStrings.push(new Date(null, null, null, hour, minute, second));
+          testStrings.push(moment({hour: hour, minute: minute, second: second}));
           testStrings.forEach(function(s) {
             parsed = timeParser.parseTime(s);
             expect(parsed.hour).toEqual(hour, `Expected hour in ${s} to be ${hour} but found ${parsed.hour}`);
@@ -117,7 +120,7 @@ describe('timeParser', function() {
       {startTime: '6:25AM', endTime: '7:30AM'},
       {startTime: '16:30', endTime: '17:30'}
     ];
-    expect(timeParser.anySequenceItemOverlaps(overlaps)).toBe(true);
+    expect(timeParser.anySequenceItemOverlaps(overlaps)).toEqual({ startTime: '6:25AM', endTime: '7:30AM' });
     noOverlaps = [
       {startTime: '6:30AM', endTime: '7:30AM'},
       {startTime: '6:25AM', endTime: '6:30AM'},
@@ -146,5 +149,25 @@ describe('timeParser', function() {
       {startTime: '6:25AM', endTime: '7:30AM'}
     ];
     expect(timeParser.orderByStartTime(unordered)).toEqual(ordered);
+  });
+  it('can detect the nearest boundary after a point', function() {
+    let unordered = [
+      {startTime: '6:25AM', endTime: '7:30AM'},
+      {startTime: '16:30', endTime: '17:30'},
+      {startTime: '7:30AM', endTime: '8:30AM'}
+    ];
+    expect(timeParser.nearestBoundaryAfter(unordered, '6:20AM')).toEqual(
+      {sequenceItem: null, boundary: '6:25AM'}
+    );
+    expect(timeParser.nearestBoundaryAfter(unordered, '7:30AM')).toEqual(
+      {sequenceItem: unordered[2], boundary: '8:30AM'}
+    );
+    expect(timeParser.nearestBoundaryAfter(unordered, timeParser.toSeconds('19:00'))).toEqual(
+      {sequenceItem: null, boundary: '6:25AM'}
+    );
+  });
+  it('can detect the seconds between two times with wrapping', function() {
+    expect(timeParser.secondsBetween('17:00', '17:01')).toEqual(60);
+    expect(timeParser.secondsBetween('23:59', '00:01')).toEqual(120);
   });
 });
