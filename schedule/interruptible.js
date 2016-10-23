@@ -27,7 +27,7 @@ function interruptible(controller, defaultState=0) {
         maxPriority = interrupts[n].priority;
       }
     }
-    if (currentMaxInterrupt.uid !== activeInterruptUid) {
+    if (currentMaxInterrupt.uid !== activeInterruptUid || (currentMaxInterrupt.uid === null && activeState !== defaultState)) {
       controller.setState(currentMaxInterrupt.state);
       activeInterruptUid = currentMaxInterrupt.uid;
       activeState = currentMaxInterrupt.state;
@@ -50,12 +50,21 @@ function interruptible(controller, defaultState=0) {
     onChange();
   }
 
+  function setDefault(state) {
+    if (!_.isUndefined(state)) {
+      defaultState = state;
+      onChange();
+    }
+    return defaultState;
+  }
+
   onChange();
 
   return {
     interrupt,
     endInterrupt,
     activeInterrupts: _.partial(_.cloneDeep, interrupts),
+    defaultState: setDefault,
     activeState: function() {return _.cloneDeep(activeState);}
   };
 }

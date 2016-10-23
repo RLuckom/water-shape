@@ -54,6 +54,7 @@ function durationSequenceExecutor(controller, sequence, sequenceItems) {
   function replaceSequence(newSequence, newSequenceItems) {
     sequenceItems = filterSequenceItems(newSequenceItems);
     alignmentTime = newSequence.alignment ? timeParser.toSeconds(newSequence.alignment) : alignmentTime;
+    sequenceInterruptible.defaultState(newSequence.defaultState);
     endSchedule();
     executeSequenceItem();
   }

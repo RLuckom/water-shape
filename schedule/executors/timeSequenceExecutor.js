@@ -49,6 +49,7 @@ function timeSequenceExecutor(controller, sequence, sequenceItems) {
   }
   function replaceSequence(newSequence, newSequenceItems) {
     sequenceItems = filterSequenceItems(newSequenceItems);
+    sequenceInterruptible.defaultState(newSequence.defaultState);
     endSchedule();
     executeSequenceItem();
   }

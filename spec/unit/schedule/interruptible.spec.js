@@ -13,6 +13,16 @@ describe('interruptible', function() {
       interruptible(controller, 1);
       expect(controller.setState).toHaveBeenCalledWith(1);
     });
+    it('sets the new default state when changed', function() {
+      const controller = {setState: jasmine.createSpy('setState')};
+      const i = interruptible(controller, 1);
+      expect(controller.setState).toHaveBeenCalledWith(1);
+      expect(i.defaultState()).toBe(1);
+      i.defaultState(0);
+      expect(controller.setState).toHaveBeenCalledWith(0);
+      expect(i.defaultState()).toBe(0);
+      expect(controller.setState.calls.count()).toBe(2);
+    });
   });
   describe('interrupts', function() {
     it('throws an error if the interrupt is undefined', function() {

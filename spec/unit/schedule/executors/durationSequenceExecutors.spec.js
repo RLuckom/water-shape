@@ -112,7 +112,7 @@ describe('durationSequenceExecutor', function() {
             expect(controller.setState.calls.mostRecent().args).toEqual([0]);
             expect(controller.setState.calls.count()).toEqual(4);
             expect(executor.activeState()).toEqual(0);
-            executor.replaceSequence({}, [
+            executor.replaceSequence({defaultState: 0}, [
               {durationSeconds: 5, ordinal: 0, state: 0},
               {durationSeconds: 3, ordinal: 1, state: 3}
             ]);
@@ -121,7 +121,7 @@ describe('durationSequenceExecutor', function() {
               expect(controller.setState.calls.mostRecent().args).toEqual([3]);
               expect(controller.setState.calls.count()).toEqual(6);
               expect(executor.activeState()).toEqual(3);
-              executor.replaceSequence({}, [
+              executor.replaceSequence({defaultState: 1}, [
                 {durationSeconds: 9, ordinal: 0, state: 0},
                 {durationSeconds: 3, ordinal: 1, state: 4}
               ]);
@@ -131,9 +131,9 @@ describe('durationSequenceExecutor', function() {
                 expect(controller.setState.calls.count()).toEqual(9);
                 expect(executor.activeState()).toEqual(4);
                 executor.endSchedule();
-                expect(controller.setState.calls.mostRecent().args).toEqual([0]);
+                expect(controller.setState.calls.mostRecent().args).toEqual([1]);
                 expect(controller.setState.calls.count()).toEqual(10);
-                expect(executor.activeState()).toEqual(0);
+                expect(executor.activeState()).toEqual(1);
                 expect(executor.activeInterrupts()).toEqual([]);
                 done();
               }, 3000);
