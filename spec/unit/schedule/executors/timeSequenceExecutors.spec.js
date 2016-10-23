@@ -59,7 +59,7 @@ describe('timeSequenceExecutor', function() {
       const now = moment();
       const sequenceItems = [{startTime: moment(now).add(2, 'seconds'), endTime: moment(now).add(4, 'seconds'), state: 2}];
       const controller = {setState: jasmine.createSpy('setState')};
-      const executor = timeSequenceExecutor.timeSequenceExecutor(controller, sequenceItems, 0);
+      const executor = timeSequenceExecutor.executor(controller, {defaultState: 0}, sequenceItems);
       executor.startSchedule();
       setTimeout(function() {
         // 500 ms
@@ -76,7 +76,7 @@ describe('timeSequenceExecutor', function() {
             expect(controller.setState.calls.mostRecent().args).toEqual([0]);
             expect(controller.setState.calls.count()).toEqual(3);
             expect(executor.activeState()).toEqual(0);
-            executor.replaceSequenceItems([{
+            executor.replaceSequence({}, [{
               startTime: moment(now).add(5, 'seconds'),
               endTime: moment(now).add(8, 'seconds'), state: 3
             }]);
@@ -85,7 +85,7 @@ describe('timeSequenceExecutor', function() {
               expect(controller.setState.calls.mostRecent().args).toEqual([3]);
               expect(controller.setState.calls.count()).toEqual(4);
               expect(executor.activeState()).toEqual(3);
-              executor.replaceSequenceItems([{
+              executor.replaceSequence({}, [{
                 startTime: moment(now).add(9, 'seconds'),
                 endTime: moment(now).add(12, 'seconds'), state: 4
               }]);

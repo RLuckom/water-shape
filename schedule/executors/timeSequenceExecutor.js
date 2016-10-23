@@ -19,8 +19,8 @@ function filterSequenceItems(sequenceItems) {
   return filteredSequenceItems;
 }
 
-function timeSequenceExecutor(controller, sequenceItems, defaultState) {
-  const sequenceInterruptible = interruptible.interruptible(controller, defaultState);
+function timeSequenceExecutor(controller, sequence, sequenceItems) {
+  const sequenceInterruptible = interruptible.interruptible(controller, sequence.defaultState);
   let peripheralTimeout;
   let currentInterrupt;
   sequenceItems = filterSequenceItems(sequenceItems);
@@ -47,18 +47,18 @@ function timeSequenceExecutor(controller, sequenceItems, defaultState) {
       sequenceInterruptible.endInterrupt(currentInterrupt);
     }
   }
-  function replaceSequenceItems(newSequenceItems) {
+  function replaceSequence(newSequence, newSequenceItems) {
     sequenceItems = filterSequenceItems(newSequenceItems);
     endSchedule();
     executeSequenceItem();
   }
   sequenceInterruptible.startSchedule = executeSequenceItem;
-  sequenceInterruptible.replaceSequenceItems = replaceSequenceItems;
+  sequenceInterruptible.replaceSequence = replaceSequence;
   sequenceInterruptible.endSchedule = endSchedule;
   return sequenceInterruptible;
 }
 
 module.exports = {
-  timeSequenceExecutor,
+  executor: timeSequenceExecutor,
   filterSequenceItems
 };
