@@ -168,7 +168,7 @@ function schemaFactory(noOpValidate) {
       },
       constraints: {
         FOREIGN_KEYS: {
-          peripheralTypeDependency: 'peripheralTypeDependency.uid',
+          peripheralTypeDependency: 'peripheralTypeDependency.name',
           ioType : 'ioType.name',
           peripheralId : 'peripheral.uid'
         },
@@ -410,9 +410,8 @@ function schemaFactory(noOpValidate) {
     },
     peripheralTypeDependency: {
       type: 'PERSISTED',
-      id: 'uid',
+      id: 'name',
       columns: {
-        'uid': 'TEXT',
         'name': 'TEXT',
         displayName: 'TEXT',
         'peripheralType': 'TEXT',
@@ -433,8 +432,8 @@ function schemaFactory(noOpValidate) {
         }
       },
       initialValues: [
-        {peripheralType: 'RELAY', displayName: 'Signal pin', name: 'signal', ioType: 'GPIO_OUTPUT', optional: 0},
-        {peripheralType: 'RELAY', displayName: 'Ground pin', name: 'ground', ioType: 'GPIO_OUTPUT', optional: 1}
+        {peripheralType: 'RELAY', displayName: 'Ground pin', name: 'ground', ioType: 'GPIO_OUTPUT', optional: 1},
+        {peripheralType: 'RELAY', displayName: 'Signal pin', name: 'signal', ioType: 'GPIO_OUTPUT', optional: 0}
       ]
     },
     peripheralRule: {

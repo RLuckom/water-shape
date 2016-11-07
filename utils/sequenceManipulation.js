@@ -14,7 +14,7 @@ function sequenceUtilsFactory(dmi) {
     if (_.isNull(pinNumber)) {
       return callback();
     }
-    pin.peripheralTypeDependency = dependency.uid;
+    pin.peripheralTypeDependency = dependency.name;
     pin.peripheralId = peripheral.uid;
     pin.ioType = dependency.ioType;
     return dmi.gpioPin.update(pin, callback);

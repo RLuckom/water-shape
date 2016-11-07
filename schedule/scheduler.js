@@ -1,125 +1,150 @@
 const _ = require('lodash');
+const timeParser = require('../utils/timeParser.js');
+const sequenceItemExecutors = require('./sequenceItemExecutors');
 
 function createScheduler(dmi, hardwareManager, controllers, config, logger) {
 
   const RELOAD_SCHEDULE_INTERVAL = (config.RELOAD_SCHEDULE_SECONDS || 10) * 1000;
-  const TICK_LENGTH = (config.TICK_LENGTH || 1) * 1000;
-  const reloadSchedule = _.partial(dmi.completePeripherals.list, runUpdatedSchedule);
+  const reloadSchedule = _.partial(dmi.completePeripheral.list, runUpdatedSchedule);
 
-  let currentPeripherals;
-  let newPeripherals;
-  let state;
+  let currentPeripherals = [];
   let updateScheduleInterval;
-  let mainLoopTimeout;
-  let newScheduleIsAvailable;
+  let stopped;
 
   function runUpdatedSchedule(error, completePeripherals) {
+    completePeripherals = _.filter(completePeripherals, function(per) {
+      return per.peripheral && per.sequence && (_.isArray(per.sequenceItems) && per.sequenceItems.length > 0);
+    });
     if (error) {
       logger.log('error', error);
       // TODO: Should we stop everything if the schedule can't update?
       return;
     }
-    if (!currentSchedule) {
-      currentPeripherals = completePeripherals;
-      mainLoopTimeout = setTimeout(mainLoop, TICK_LENGTH);
+    if (stopped) { // scheduler.stop could be called while we're fetching from db
       return;
-    } else {
-      newPeripherals = completePeripherals;
-      newScheduleIsAvailable = true;
-      return;
+    }
+    const peripheralsToCompare = _.intersectionBy(
+      currentPeripherals,
+      completePeripherals,
+      'peripheral.uid'
+    );
+    _.each(peripheralsToCompare, function(currentPeripheral) {
+      return updatePeripheral(
+        currentPeripheral,
+        _.find(completePeripherals, ['peripheral.uid', currentPeripheral.peripheral.uid])
+      );
+    });
+    const peripheralsToDelete = _.differenceBy(
+      currentPeripherals,
+      completePeripherals,
+      'peripheral.uid'
+    );
+    _.each(peripheralsToDelete, stopPeripheral);
+    const peripheralsToCreate = _.differenceBy(
+      completePeripherals,
+      currentPeripherals,
+      'peripheral.uid'
+    );
+    _.each(peripheralsToCreate, startPeripheral);
+  }
+
+  function mustReplace(currentPeripheral, newPeripheral) {
+    if (currentPeripheral.sequence.sequenceType !== newPeripheral.sequence.sequenceType) {
+      return true;
+    }
+    if (_.differenceWith(currentPeripheral.gpioPins, newPeripheral.gpioPins, _.isEqual).length !== 0) {
+      return true;
+    }
+    if (currentPeripheral.peripheral.peripheralType !== newPeripheral.peripheral.peripheralType) {
+      return true;
     }
   }
 
-  function createScheduleFromPeripherals(completePeripherals) {
-    const schedule = _.keyBy(completePeripherals, 'peripheral.uid');
+  function updatePeripheral(currentPeripheral, newPeripheral) {
+    if (mustReplace(currentPeripheral, newPeripheral)) {
+      stopPeripheral(currentPeripheral);
+      startPeripheral(newPeripheral);
+      return;
+    }
+    if (newPeripheral.sequence.defaultState !== currentPeripheral.sequence.defaultState) {
+      currentPeripheral.executor.setDefault(newPeripheral.sequence.defaultState);
+    }
+    if (_.differenceWith(currentPeripheral.sequenceItems, newPeripheral.sequenceItems, _.isEqual).length !== 0) {
+      currentPeripheral.executor.replaceSequence(
+        newPeripheral.sequence,
+        newPeripheral.sequenceItems
+      );
+    };
   }
 
-  function newState() {
-    var now = new Date();
-    state = {
-      startTime: now.getTime();
-      time: now.getTime(),
-      hour: now.getHour(),
-      minute: now.getMinute(),
-      second: now.getSecond(),
-      elapsed: 0,
-    }
+  function stopPeripheral(peripheral) {
+    peripheral.executor.endSchedule();
+    peripheral.controller.destroy();
+    _.remove(currentPeripherals, ['peripheral.uid', peripheral.peripheral.uid])
+  }
+
+  function startPeripheral(peripheral) {
+    peripheral = _.cloneDeep(peripheral);
+    peripheral.controller = createController(
+      hardwareManager,
+      _.cloneDeep(peripheral.peripheralTypeDependencies),
+      _.cloneDeep(peripheral.peripheral),
+      _.cloneDeep(peripheral.gpioPins),
+      _.cloneDeep(peripheral.cameras)
+    );
+    peripheral.executor = scheduledTaskExecutor(
+      peripheral.controller,
+      _.cloneDeep(peripheral.sequence),
+      _.cloneDeep(peripheral.sequenceItems)
+    );
+    peripheral.executor.startSchedule();
+    currentPeripherals.push(peripheral);
   }
 
   function start() {
-    // Maybe write start conditions to a DB?
-    // If we're supposed to wait an hour, then do something for one
-    // second. If we break after 45, 55 minutes of waiting, we should not
-    // reset to 0 again. But if the scheduler starts running at 5:00AM,
-    // and at 8:55 a user adds the peripheral described above, and then we
-    // break at 8:56, then if we're going by a 5:00AM start time, the
-    // peripheral will come on at 9:00, 5 minutes after it was added.
-    // So maybe write start conditions for each peripheral to db? But if so,
-    // does every peripheral maintain its own state?
+    stopped = false;
     updateScheduleInterval = setInterval(reloadSchedule, RELOAD_SCHEDULE_INTERVAL);
   }
 
-  function updateState(state, date) {
-    var now = date || new Date();
-    state.time = now.getTime();
-    state.elapsed = state.time - state.startTime;
-    state.hour = now.getHour();
-    state.minute = now.getMinute();
-    state.second = now.getSecond();
-    return state;
+  function stop() {
+    stopped = true;
+    clearInterval(updateScheduleInterval);
+    _.each(currentPeripherals, stopPeripheral);
   }
 
-  function peripheralToScheduleFunction(completePeripheral, scheduler) {
-    let state = newState();
-    let dependencies = {}
-    _.each(completePeripheral.peripheralTypeDependencies, function(dep) {
+  function createController(hardwareManager, peripheralTypeDependencies, peripheral, gpioPins, camera) {
+    let dependencies = {};
+    _.each(peripheralTypeDependencies, function(dep) {
       if (['GPIO_INPUT', 'GPIO_OUTPUT'].indexOf(dep.ioType) === -1) {
-        throw new Error(`Unsupported ioType ${dep.ioType} in peripheral ${completePeripheral.peripheral.name}`);
+        throw new Error(`Unsupported ioType ${dep.ioType} in peripheral ${peripheral.name}`);
       }
-      let gpio = _.find(completePeripheral.gpioPins, ['peripheralTypeDependency', dep.uid]);
+      let gpio = _.find(gpioPins, ['peripheralTypeDependency', dep.name]);
       if (!(dep.optional || gpio)) {
-        throw new Error(`No gpio assigned for required dependency ${dep.displayName} in peripheral ${completePeripheral.peripheral.name}`);
+        throw new Error(`No gpio assigned for required dependency ${dep.displayName} in peripheral ${peripheral.name}`);
       }
-      dependencies[dep.name] = hardwareManager.get(dep.ioType, gpio)
+      if (gpio) {
+        dependencies[dep.name] = hardwareManager.get(dep.ioType, gpio)
+      }
     });
-    let controller = controllers[completePeripheral.peripheral.peripheralType].createController(dependencies);
-    if (completePeripheral.sequence.sequenceType === 'DURATION') {
-      let peripheralTimeout;
-      let sequenceItems = _.orderBy(completePeripheral.sequenceItems, 'ordinal');
-      let currentSequenceItemIndex = 0;
-      function executeSequenceItem() {
-        let currentSequenceItem = sequenceItems[currentSequenceItemIndex];
-        controller.setState(currentSequenceItem.state);
-        currentSequenceItemIndex++;
-        peripheralTimeout = setTimeout(executeSequenceItem, currentSequenceItem.durationSeconds * 1000);
-      }
-      peripheralTimeout = setTimeout(executeSequenceItem, 0);
-      return {stop: function() {clearTimeout(peripheralTimeout);}};
-    } else if (completePeripheral.sequence.sequenceType === 'TIME') {
-      function updateSequenceState(date) {
-        updateState(state, date);
-        _.each(completePeripheral.sequenceItems, function(item) {
-          if (timeParser.isWithin(sequenceItem, date)) {
-            controller.setState(sequenceItem.state)
-          }
-        });
-      }
-      scheduler.onTick(updateSequenceState);
-    }
+    return controllers[peripheral.peripheralType].createController(dependencies);
   }
 
-  function mainLoop() {
-    updateState();
-    if (newScheduleIsAvailable) {
-      if (!_.equals(currentPeripherals, newPeripherals)) {
-        // reconcile schedules
-      }
+  /* @param {controller} controller
+   * @param {sequence} sequence
+   * @param {sequenceItem[]} sequenceItems
+   * @return {executor}
+   */
+  function scheduledTaskExecutor(controller, sequence, sequenceItems) {
+    if (!sequenceItemExecutors[sequence.sequenceType]) {
+      throw new Error(`Cannot create scheduled task executor for sequence type ${sequence.sequenceType}`);
     }
-    // turn things on and off
-    mainLoopTimeout = setTimeout(
-      mainLoop,
-      // Tick length - control loop time
-      TICK_LENGTH - (new Date.getTime() - state.time)
-    ); 
+    return sequenceItemExecutors[sequence.sequenceType].executor(controller, sequence, sequenceItems)
   }
+
+  return {
+    start,
+    stop
+  };
 }
+
+module.exports = createScheduler;

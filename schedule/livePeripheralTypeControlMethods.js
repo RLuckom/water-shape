@@ -1,39 +1,31 @@
 'use strict';
 const _ = require('lodash');
-const gpioLib = require('pigpio');
-const cameraLib = require('raspicam');
 
 function createControlMethods(logger) {
   const RELAY = {
-    createController: function(gpioPins) {
-      if (gpioPins.length !== 1 || gpioPins[0].ioType !== 'GPIO_OUTPUT') {
-        throw new Error(`createController for RELAY needed 1 pin in GPIO_OUTPUT, got ${JSON.stringify(gpioPins)}`);
+    createController: function(dependencies) {
+      if (dependencies.ground) {
+        dependencies.ground.digitalWrite(0);
       }
-      const gpio = new gpioLib.Gpio(gpioPins[0].pinNumber, {mode: gpioLib.OUTPUT});
       return {
-        turnOn: function() {
-          logger.log('debug', `turning on pin ${gpioPins[0].pinNumber}`);
-          gpio.digitalWrite(1);
+        setState: function(state) {
+          dependencies.signal.digitalWrite(state);
         },
-        turnOff: function() {
-          logger.log('debug', `turning off pin ${gpioPins[0].pinNumber}`);
-          gpio.digitalWrite(0);
-        }
+        destroy: function() {dependencies.signal.digitalWrite(0);}
       };
     }
   };
   const CAMERA = {
-    createController: function() {
+    createController: function(dependencies) {
       return {
 				trigger: function(callback, timeoutMS) {
-					var camera = new cameraLib({
-						mode: 'photo',
-						output: Date.now() + '.jpg',
-						encoding: 'jpg',
-					});
-
           var error;
           var exited;
+          var camera = new dependencies.camera({
+            mode: 'photo',
+            output: Date.now() + '.jpg',
+            encoding: 'jpg',
+          });
 
 					camera.on('start', function( err, timestamp ){
 						logger.log('debug', `photo started at ${timestamp} with err ${err}`);

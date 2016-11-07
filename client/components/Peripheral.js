@@ -41,11 +41,11 @@ function PeripheralFactory(dmi) {
             pinNumber = null;
           }
           return async.series([
-            _.partial(sequenceUtils.releasePin, _.find(gpioPins, ['peripheralTypeDependency', dependency.uid])),
+            _.partial(sequenceUtils.releasePin, _.find(gpioPins, ['peripheralTypeDependency', dependency.name])),
             _.partial(sequenceUtils.assignPin, pinNumber, availablePins, dependency, peripheral),
           ], callback);
         }
-        var currentPin = _.get(_.find(gpioPins, ['peripheralTypeDependency', dependency.uid]), 'pinNumber', 'None');
+        var currentPin = _.get(_.find(gpioPins, ['peripheralTypeDependency', dependency.name]), 'pinNumber', 'None');
         var pinsToInclude = [currentPin];
         if (currentPin !== 'None') {
           pinsToInclude.push('None');
