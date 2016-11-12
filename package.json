@@ -6,7 +6,7 @@
   "scripts": {
     "test": "node spec/unit/testRunner.js",
     "phantomTest": "node spec/phantom/testRunner.js",
-    "serve": "node server/app.js",
+    "serve": "node bin/server.js",
     "compile": "webpack --config webpack.config.prod.js",
     "watch": "webpack --config webpack.config.prod.js --watch",
     "compile-demo": "webpack --config webpack.config.demo.js",
