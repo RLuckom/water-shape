@@ -41,6 +41,14 @@ describe('durationSequenceExecutor', function() {
     });
   });
   describe('durationSequenceExecutor', function() {
+    it('can handle a sequence with no sequenceItems', function() {
+      const sequenceItems = [];
+      const controller = {setState: jasmine.createSpy('setState')};
+      const executor = durationSequenceExecutor.executor(controller, {defaultState: 0}, sequenceItems);
+      executor.startSchedule();
+      expect(controller.setState.calls.mostRecent().args).toEqual([0]);
+      expect(controller.setState.calls.count()).toEqual(1);
+    });
     it('executes a sequence', function(done) {
       const sequenceItems = [
         {durationSeconds: 2, ordinal: 0, state: 0},

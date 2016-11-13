@@ -25,6 +25,9 @@ function timeSequenceExecutor(controller, sequence, sequenceItems) {
   let currentInterrupt;
   sequenceItems = filterSequenceItems(sequenceItems);
   function executeSequenceItem() {
+    if (_.get(sequenceItems, 'length') < 1) {
+      return;
+    }
     const t = new Date();
     const boundary = timeParser.nearestBoundaryAfter(sequenceItems, t);
     const currentSequenceItem = boundary.sequenceItem;

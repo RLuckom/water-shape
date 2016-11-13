@@ -13,7 +13,7 @@ function createScheduler(dmi, hardwareManager, controllers, config, logger) {
 
   function runUpdatedSchedule(error, completePeripherals) {
     completePeripherals = _.filter(completePeripherals, function(per) {
-      return per.peripheral && per.sequence && (_.isArray(per.sequenceItems) && per.sequenceItems.length > 0);
+      return per.peripheral && per.sequence && (_.isArray(per.sequenceItems));
     });
     if (error) {
       logger.log('error', error);
@@ -84,21 +84,25 @@ function createScheduler(dmi, hardwareManager, controllers, config, logger) {
   }
 
   function startPeripheral(peripheral) {
-    peripheral = _.cloneDeep(peripheral);
-    peripheral.controller = createController(
-      hardwareManager,
-      _.cloneDeep(peripheral.peripheralTypeDependencies),
-      _.cloneDeep(peripheral.peripheral),
-      _.cloneDeep(peripheral.gpioPins),
-      _.cloneDeep(peripheral.cameras)
-    );
-    peripheral.executor = scheduledTaskExecutor(
-      peripheral.controller,
-      _.cloneDeep(peripheral.sequence),
-      _.cloneDeep(peripheral.sequenceItems)
-    );
-    peripheral.executor.startSchedule();
-    currentPeripherals.push(peripheral);
+    try {
+      peripheral = _.cloneDeep(peripheral);
+      peripheral.controller = createController(
+        hardwareManager,
+        _.cloneDeep(peripheral.peripheralTypeDependencies),
+        _.cloneDeep(peripheral.peripheral),
+        _.cloneDeep(peripheral.gpioPins),
+        _.cloneDeep(peripheral.cameras)
+      );
+      peripheral.executor = scheduledTaskExecutor(
+        peripheral.controller,
+        _.cloneDeep(peripheral.sequence),
+        _.cloneDeep(peripheral.sequenceItems)
+      );
+      peripheral.executor.startSchedule();
+      currentPeripherals.push(peripheral);
+    } catch(err) {
+      logger.log('error', err);
+    }
   }
 
   function start() {
@@ -126,6 +130,7 @@ function createScheduler(dmi, hardwareManager, controllers, config, logger) {
         dependencies[dep.name] = hardwareManager.get(dep.ioType, gpio)
       }
     });
+    logger.log('debug', `creating controller for ${peripheral.peripheralType}`);
     return controllers[peripheral.peripheralType].createController(dependencies);
   }
 

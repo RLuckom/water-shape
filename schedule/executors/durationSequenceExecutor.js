@@ -25,6 +25,9 @@ function durationSequenceExecutor(controller, sequence, sequenceItems) {
   let currentInterrupt;
   let alignmentTime = sequence.alignment ? timeParser.toSeconds(sequence.alignment) : timeParser.toSeconds(new Date()); 
   function executeSequenceItem() {
+    if (_.get(sequenceItems, 'length') < 1) {
+      return;
+    }
     const totalSequenceTime = _.sumBy(sequenceItems, 'durationSeconds');
     const currentTime = timeParser.toSeconds(new Date());
     const elapsed = currentTime < alignmentTime ? currentTime + (86400 - alignmentTime) : currentTime - alignmentTime;

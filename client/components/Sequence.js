@@ -28,7 +28,7 @@ function SequenceFactory(api) {
       return function() {
         api.sequenceItem.save({
           sequenceId: sequenceUid,
-          ordinal: sequenceItems ? _.max(_.map(sequenceItems, 'ordinal')) + 1 : null
+          ordinal: _.get(sequenceItems, 'length') > 0 ? _.max(_.map(sequenceItems, 'ordinal')) + 1 : 0
         }, function(err, result) {
           if (err) {
             return console.error(err)
@@ -41,7 +41,7 @@ function SequenceFactory(api) {
       var self = this;
       const peripheral = self.props.completeSequence.peripheral;
       const sequence = self.props.completeSequence.sequence;
-      const sequenceItems = sequence.sequenceType === 'TIME' ? timeParser.orderByStartTime(self.props.completeSequence.sequenceItems) : _.orderBy(self.props.completeSequence.sequenceItems, 'ordinal');;
+      const sequenceItems = sequence.sequenceType === 'TIME' ? timeParser.orderByStartTime(self.props.completeSequence.sequenceItems) : _.orderBy(self.props.completeSequence.sequenceItems, 'ordinal');
       const gpioPins = self.props.completeSequence.gpioPins;
       const sequenceItemTableRows = _.map(sequenceItems, function(sequenceItem) {
         return <SequenceItemRow key={sequenceItem.uid} refresh={self.props.refresh} sequenceItem={sequenceItem} sequenceType={sequence.sequenceType}></SequenceItemRow>;
