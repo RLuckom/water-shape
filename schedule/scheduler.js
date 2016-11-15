@@ -74,6 +74,8 @@ function createScheduler(dmi, hardwareManager, controllers, config, logger) {
         newPeripheral.sequence,
         newPeripheral.sequenceItems
       );
+      _.remove(currentPeripherals, ['peripheral.uid', currentPeripheral.peripheral.uid])
+      currentPeripherals.push(newPeripheral);
     };
   }
 
