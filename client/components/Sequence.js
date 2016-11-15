@@ -56,21 +56,10 @@ function SequenceFactory(api) {
           api.sequence.update({uid: sequence.uid, sequenceType: val}, callback);
         }
       };
-      var sequenceAlignmentOptions = {
-        type: 'TEXT',
-        label: 'Sequence Alignment:',
-        current: {displayValue: sequence.alignment || '12:00AM'},
-        onError: self.onError,
-        onUpdate: self.props.refresh,
-        update: function(val, callback) {
-          api.sequence.update({uid: sequence.uid, alignment: val}, callback);
-        }
-      };
       if (sequence.sequenceType === 'DURATION') {
         return (
           <div className="peripheral-sequence" key={sequence.uid}>
             <div className="sequence-type-display"><Editable.EditableValue opts={sequenceTypeOptions}></Editable.EditableValue></div>
-            <div className="sequence-alignment-display"><Editable.EditableValue opts={sequenceAlignmentOptions}></Editable.EditableValue></div>
           <div className="error">
             {self.state.errorText}
           </div>

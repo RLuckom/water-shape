@@ -27,7 +27,7 @@ function interruptible(controller, defaultState=0) {
         maxPriority = interrupts[n].priority;
       }
     }
-    if (currentMaxInterrupt.uid !== activeInterruptUid || (currentMaxInterrupt.uid === null && activeState !== defaultState)) {
+    if ((currentMaxInterrupt.uid !== activeInterruptUid) || (currentMaxInterrupt.uid === null && activeState !== defaultState)) {
       controller.setState(currentMaxInterrupt.state);
       activeInterruptUid = currentMaxInterrupt.uid;
       activeState = currentMaxInterrupt.state;

@@ -23,23 +23,14 @@ function durationSequenceExecutor(controller, sequence, sequenceItems) {
   sequenceItems = filterSequenceItems(sequenceItems);
   let peripheralTimeout;
   let currentInterrupt;
+  let currentSequenceItemIndex = 0;
   let alignmentTime = sequence.alignment ? timeParser.toSeconds(sequence.alignment) : timeParser.toSeconds(new Date()); 
   function executeSequenceItem() {
     if (_.get(sequenceItems, 'length') < 1) {
       return;
     }
-    const totalSequenceTime = _.sumBy(sequenceItems, 'durationSeconds');
-    const currentTime = timeParser.toSeconds(new Date());
-    const elapsed = currentTime < alignmentTime ? currentTime + (86400 - alignmentTime) : currentTime - alignmentTime;
-    const position = elapsed % totalSequenceTime;
-    let t = 0;
-    let currentSequenceItemIndex = 0;
-    while (t < position && currentSequenceItemIndex < sequenceItems.length - 1) {
-      t += sequenceItems[currentSequenceItemIndex].durationSeconds;
-      currentSequenceItemIndex++;
-    }
-    const secondsRemaining = t - elapsed;
     const currentSequenceItem = sequenceItems[currentSequenceItemIndex];
+    let t = currentSequenceItem.durationSeconds;
     const previousInterrupt = currentInterrupt;
     currentInterrupt = {uid: uuid.v4(), state: currentSequenceItem.state};
     sequenceInterruptible.interrupt(currentInterrupt);
@@ -47,12 +38,14 @@ function durationSequenceExecutor(controller, sequence, sequenceItems) {
       sequenceInterruptible.endInterrupt(previousInterrupt);
     }
     peripheralTimeout = setTimeout(executeSequenceItem, currentSequenceItem.durationSeconds * 1000);
+    currentSequenceItemIndex = (currentSequenceItemIndex + 1) % sequenceItems.length;
   }
   function endSchedule() {
     clearTimeout(peripheralTimeout);
     if (currentInterrupt) {
       sequenceInterruptible.endInterrupt(currentInterrupt);
     }
+    currentSequenceItemIndex = 0;
   }
   function replaceSequence(newSequence, newSequenceItems) {
     sequenceItems = filterSequenceItems(newSequenceItems);

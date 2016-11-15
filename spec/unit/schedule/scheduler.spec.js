@@ -174,7 +174,8 @@ describe('gpio utils sets gpio pins', function() {
       // |            V
       // |      get sequence items
       setTimeout(function() {
-        // 1200 ms
+        // 1400 ms
+        console.log('1400 ms');
         var pump = registeredGpios[14];
         expect(pump.callArguments.length).toBe(2);
         expect(pump.callArguments[0]).toBe(0); // calls default on init
@@ -182,17 +183,20 @@ describe('gpio utils sets gpio pins', function() {
         console.log(pump);
         setTimeout(function() {
           // 2400 ms
+          console.log('2400 ms');
           expect(pump.callArguments.length).toBe(3); // second SI 
           expect(pump.callArguments[2]).toBe(0); // 0 for 2s
           console.log(pump);
         }, 1000);
         setTimeout(function() {
           // 3400 ms
+          console.log('3400 ms');
           expect(pump.callArguments.length).toBe(3); // still second si
           console.log(pump);
         }, 2000);
         setTimeout(function() {
           // 4400 ms
+          console.log('4400 ms');
           expect(pump.callArguments.length).toBe(4); // third SI
           expect(pump.callArguments[3]).toBe(1); // 1 for 1s
           console.log(pump);
@@ -203,16 +207,20 @@ describe('gpio utils sets gpio pins', function() {
             peripheral2,
             sequence2
           ];
-          dbUtils.deleteRecordsFromTables(dmi, recordsToDelete, function() {
-            setTimeout(function() {
-              // 6400 ms
-              expect(pump.callArguments.length).toBe(6); 
-              expect(pump.callArguments[4]).toBe(0); // start of second 0 period
-              expect(pump.callArguments[5]).toBe(0); // destroy
-              console.log(pump);
-              done();
-            }, 2000)
-          });
+          setTimeout(function() {
+            dbUtils.deleteRecordsFromTables(dmi, recordsToDelete, function() {
+              setTimeout(function() {
+                // 6400 ms
+                console.log('6400 ms');
+                expect(pump.callArguments.length).toBe(7); 
+                expect(pump.callArguments[4]).toBe(0); // start of second 0 period
+                expect(pump.callArguments[5]).toBe(0); // destroy
+                expect(pump.callArguments[6]).toBe(0); // destroy
+                console.log(pump);
+                done();
+              }, 2000)
+            });
+          }, 1000);
         }, 3000);
       }, 1400);
     }, 40000);

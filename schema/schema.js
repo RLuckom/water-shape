@@ -11,7 +11,6 @@ function schemaFactory(noOpValidate) {
         'uid': 'TEXT',
         'name': 'TEXT',
         'dateCreated': 'TEXT',
-        'alignment': 'TEXT',
         'sequenceType': 'TEXT',
         'defaultState': 'NUMBER'
       },
@@ -25,17 +24,7 @@ function schemaFactory(noOpValidate) {
         FOREIGN_KEYS: {
           sequenceType : 'sequenceType.typeName'
         }
-      },
-      validate: function(instance, dmi, callback) {
-        if (instance.alignment) {
-          try {
-            timeParser.parseTime(instance.alignment)
-          } catch(err) {
-            return callback(err);
-          }
-        }
-        return callback();
-      },
+      }
     },
     pin: {
       type: 'PERSISTED',

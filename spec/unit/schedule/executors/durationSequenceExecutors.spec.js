@@ -62,26 +62,31 @@ describe('durationSequenceExecutor', function() {
       executor.startSchedule();
       setTimeout(function() {
         // 500 ms
+        console.log('500 ms');
         expect(controller.setState.calls.mostRecent().args).toEqual([0]);
         expect(controller.setState.calls.count()).toEqual(2);
         expect(executor.activeState()).toEqual(0);
         setTimeout(function() {
           // 2500 ms
+          console.log('2500 ms');
           expect(controller.setState.calls.mostRecent().args).toEqual([2]);
           expect(controller.setState.calls.count()).toEqual(3);
           expect(executor.activeState()).toEqual(2);
           setTimeout(function() {
             // 4500 ms
+            console.log('4500 ms');
             expect(controller.setState.calls.mostRecent().args).toEqual([3]);
             expect(controller.setState.calls.count()).toEqual(4);
             expect(executor.activeState()).toEqual(3);
             setTimeout(function() {
               // 6500 ms
+              console.log('6500 ms');
               expect(controller.setState.calls.mostRecent().args).toEqual([4]);
               expect(controller.setState.calls.count()).toEqual(5);
               expect(executor.activeState()).toEqual(4);
               setTimeout(function() {
                 // 9500
+                console.log('9500 ms');
                 expect(controller.setState.calls.mostRecent().args).toEqual([5]);
                 expect(controller.setState.calls.count()).toEqual(6);
                 expect(executor.activeState()).toEqual(5);
@@ -107,40 +112,45 @@ describe('durationSequenceExecutor', function() {
       executor.startSchedule();
       setTimeout(function() {
         // 500 ms
+        console.log('500 ms');
         expect(controller.setState.calls.mostRecent().args).toEqual([0]);
         expect(controller.setState.calls.count()).toEqual(2);
         expect(executor.activeState()).toEqual(0);
         setTimeout(function() {
           // 2500 ms
+          console.log('2500 ms');
           expect(controller.setState.calls.mostRecent().args).toEqual([2]);
           expect(controller.setState.calls.count()).toEqual(3);
           expect(executor.activeState()).toEqual(2);
           setTimeout(function() {
             // 4500 ms
+            console.log('4500 ms');
             expect(controller.setState.calls.mostRecent().args).toEqual([0]);
             expect(controller.setState.calls.count()).toEqual(4);
             expect(executor.activeState()).toEqual(0);
             executor.replaceSequence({defaultState: 0}, [
-              {durationSeconds: 5, ordinal: 0, state: 0},
+              {durationSeconds: 1, ordinal: 0, state: 0},
               {durationSeconds: 3, ordinal: 1, state: 3}
             ]);
             setTimeout(function() {
               // 6500 ms
+              console.log('6500 ms');
               expect(controller.setState.calls.mostRecent().args).toEqual([3]);
-              expect(controller.setState.calls.count()).toEqual(6);
+              expect(controller.setState.calls.count()).toEqual(7);
               expect(executor.activeState()).toEqual(3);
               executor.replaceSequence({defaultState: 1}, [
-                {durationSeconds: 9, ordinal: 0, state: 0},
+                {durationSeconds: 2, ordinal: 0, state: 0},
                 {durationSeconds: 3, ordinal: 1, state: 4}
               ]);
               setTimeout(function() {
                 // 9500
+                console.log('9500 ms');
                 expect(controller.setState.calls.mostRecent().args).toEqual([4]);
-                expect(controller.setState.calls.count()).toEqual(9);
+                expect(controller.setState.calls.count()).toEqual(10);
                 expect(executor.activeState()).toEqual(4);
                 executor.endSchedule();
                 expect(controller.setState.calls.mostRecent().args).toEqual([1]);
-                expect(controller.setState.calls.count()).toEqual(10);
+                expect(controller.setState.calls.count()).toEqual(11);
                 expect(executor.activeState()).toEqual(1);
                 expect(executor.activeInterrupts()).toEqual([]);
                 done();
