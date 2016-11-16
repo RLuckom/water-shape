@@ -23,12 +23,16 @@ function SequenceFactory(api) {
         errorText: errorText
       });
     },
-    createSequenceItem: function(sequenceUid, sequenceItems) {
+    createSequenceItem: function(sequence, sequenceItems) {
       const self = this;
       return function() {
+        let ordinal = _.get(sequenceItems, 'length') > 0 ? _.max(_.map(sequenceItems, 'ordinal')) + 1 : 0;
+        if (sequence.sequenceType !== 'DURATION') {
+          ordinal = null;
+        }
         api.sequenceItem.save({
-          sequenceId: sequenceUid,
-          ordinal: _.get(sequenceItems, 'length') > 0 ? _.max(_.map(sequenceItems, 'ordinal')) + 1 : 0
+          sequenceId: sequence.uid,
+          ordinal: ordinal
         }, function(err, result) {
           if (err) {
             return console.error(err)
@@ -74,7 +78,7 @@ function SequenceFactory(api) {
                 {sequenceItemTableRows}
               </div>
             </div>
-            <button onClick={self.createSequenceItem(sequence.uid, sequenceItems)}>New Sequence Item</button>
+            <button onClick={self.createSequenceItem(sequence, sequenceItems)}>New Sequence Item</button>
           </div>
         );
       } else {
@@ -96,7 +100,7 @@ function SequenceFactory(api) {
                 {sequenceItemTableRows}
               </div>
             </div>
-            <button id="new-sequence" onClick={self.createSequenceItem(sequence.uid)}>New Sequence Item</button>
+            <button id="new-sequence" onClick={self.createSequenceItem(sequence)}>New Sequence Item</button>
           </div>
         );
       }
