@@ -322,7 +322,7 @@ describe('gpio utils sets gpio pins', function() {
             }, 3000);
           });
         }, 3000);
-      }, 1400);
+      }, 1600);
     }, 40000);
   });
 });
