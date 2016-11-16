@@ -49,6 +49,20 @@ function sequenceUtilsFactory(dmi) {
           ), callback
         );
       }
+      function deleteSequenceItems(callback) {
+        async.parallel(
+          _.map(
+            res.sequenceItems,
+            function(sq) {return _.partial(dmi.sequenceItem.delete, sq);}
+          ), callback
+        );
+      }
+      function deleteSequence(callback) {
+        if (!res.sequence) {
+          return callback();
+        }
+        return dmi.sequence.delete(res.sequence, callback);
+      }
       function freeGpios(callback) {
         async.parallel(_.map(res.gpioPins, function(pin) {
           return _.partial(releasePin, pin);
@@ -59,11 +73,13 @@ function sequenceUtilsFactory(dmi) {
           return _.partial(dmi.camera.delete, cam);
         }), callback);
       }
-      return async.parallel([
+      return async.series([
         deletePeripheralRule,
         deletePeripheralOverrideRules,
         freeGpios,
-        freeCameras
+        freeCameras,
+        deleteSequenceItems,
+        deleteSequence
       ], function(err, res) {
         if (err) {
           callback(err);
