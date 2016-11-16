@@ -58,6 +58,13 @@ function createScheduler(dmi, hardwareManager, controllers, config, logger) {
     if (currentPeripheral.peripheral.peripheralType !== newPeripheral.peripheral.peripheralType) {
       return true;
     }
+    if (anyDifferent(currentPeripheral.sequenceItems, newPeripheral.sequenceItems) && !currentPeripheral.executor) {
+      return true;
+    }
+  }
+
+  function anyDifferent(array1, array2) {
+    return _.differenceWith(array1, array2, _.isEqual).length !== 0 || _.differenceWith(array2, array1, _.isEqual).length !== 0;
   }
 
   function updatePeripheral(currentPeripheral, newPeripheral) {
@@ -66,22 +73,35 @@ function createScheduler(dmi, hardwareManager, controllers, config, logger) {
       startPeripheral(newPeripheral);
       return;
     }
+    let replace = false;
     if (newPeripheral.sequence.defaultState !== currentPeripheral.sequence.defaultState) {
       currentPeripheral.executor.setDefault(newPeripheral.sequence.defaultState);
+      replace = true;
     }
-    if (_.differenceWith(currentPeripheral.sequenceItems, newPeripheral.sequenceItems, _.isEqual).length !== 0) {
+    if (anyDifferent(currentPeripheral.sequenceItems, newPeripheral.sequenceItems)) {
       currentPeripheral.executor.replaceSequence(
         newPeripheral.sequence,
         newPeripheral.sequenceItems
       );
+      replace = true;
+    };
+    if (replace) {
       _.remove(currentPeripherals, ['peripheral.uid', currentPeripheral.peripheral.uid])
       currentPeripherals.push(newPeripheral);
-    };
+    }
   }
 
   function stopPeripheral(peripheral) {
-    peripheral.executor.endSchedule();
-    peripheral.controller.destroy();
+    try {
+      peripheral.executor.endSchedule();
+    } catch(err) {
+      logger.log('error', `Error ending executor schedule ${err.message} stack ${err.stack}`);
+    }
+    try {
+      peripheral.controller.destroy();
+    } catch(err) {
+      logger.log('error', `Error destroying controller ${err.message} stack ${err.stack}`);
+    }
     _.remove(currentPeripherals, ['peripheral.uid', peripheral.peripheral.uid])
   }
 
