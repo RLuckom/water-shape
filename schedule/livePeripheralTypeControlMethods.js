@@ -3,20 +3,24 @@ const _ = require('lodash');
 
 function createControlMethods(logger) {
   const RELAY = {
-    createController: function(dependencies) {
+    createController: function(dependencies, name, logger) {
       if (dependencies.ground) {
         dependencies.ground.digitalWrite(0);
       }
       return {
         setState: function(state) {
+          logger.log('info', `setting state of ${name} to ${state}`);
           dependencies.signal.digitalWrite(state);
         },
-        destroy: function() {dependencies.signal.digitalWrite(0);}
+        destroy: function() {
+          logger.log('info', `destroying controller for ${name}`);
+          dependencies.signal.digitalWrite(0);
+        }
       };
     }
   };
   const CAMERA = {
-    createController: function(dependencies) {
+    createController: function(dependencies, name, logger) {
       return {
 				trigger: function(callback, timeoutMS) {
           var error;

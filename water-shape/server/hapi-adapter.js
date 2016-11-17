@@ -14,7 +14,6 @@ function startServer(opts, dmi, logger, callback) {
     }
   };
   if (callback && !_.isFunction(callback)) {
-    logger.log('error', `callback is ${callback}, not function`);
     throw new Error(`callback is ${callback}, not function`);
   }
   const server = new Hapi.Server();
@@ -40,7 +39,6 @@ function startServer(opts, dmi, logger, callback) {
         if (!_.get(dmi.schema, `${request.params.table}.apiMethods.POST`)) {
           return callback(boom.badRequest(`Unknown table: ${table}`));
         } else {
-          logger.log('debug', `POST ${request.params.table}`)
           var objectToInsert = request.payload;
           if (_.isString(objectToInsert)) {
             try {
@@ -125,14 +123,10 @@ function startServer(opts, dmi, logger, callback) {
       method: 'GET',
       path: '/api/{table}',
       handler: function(request, reply) {
-        logger.log('info', `${JSON.stringify(_.keys(request))}`);
-        logger.log('info', `1 searching in ${request.params.table} with query: ${JSON.stringify(request.query)}`);
         if (_.keys(request.query).length) {
-          logger.log('info', _.keys(request.query).length);
-          logger.log('info', `searching in ${request.params.table} with query: ${JSON.stringify(request.query)}`);
           return dmi[request.params.table].search(request.query, reply);
         } else {
-          logger.log('info', `getting from ${request.params.table}`);
+          logger.log('info', `GET ${request.params.table}`);
           return dmi[request.params.table].list(reply);
         }
       }

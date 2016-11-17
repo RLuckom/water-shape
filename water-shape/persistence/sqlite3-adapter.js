@@ -47,10 +47,8 @@ module.exports = function(filename, schema, logger, callback) {
         r.push(_.isUndefined(object[v]) ? null : object[v]);
         return r;
       }, []);
-      logger.log('debug', `inserting ${JSON.stringify(object)}`);
       var qs = _.fill(Array(values.length), '?');
       var stmt = db.prepare(`INSERT OR REPLACE into ${table} (${columns.join(', ')}) VALUES (${qs.join(', ')});`, values);
-      logger.log('debug', JSON.stringify(stmt));
       return db.get(`INSERT OR REPLACE into ${table} (${columns.join(', ')}) VALUES (${qs.join(', ')});`, values, (err, rows) => {
         if (err) {
           logger.log('error', `error upserting into ${table}: ${err}`);
@@ -78,7 +76,6 @@ module.exports = function(filename, schema, logger, callback) {
                 return callback(err);
               }
               id = _.toInteger(_.maxBy(rows, (r) => {return _.toInteger(r[idColumn]);})[idColumn]) + 1;
-              logger.log('info', id);
               object[idColumn] = id;
               return dbUpsert(table, object, idColumn, id, columns, callback);
             };
@@ -112,12 +109,10 @@ module.exports = function(filename, schema, logger, callback) {
 
     function dbLogResponse(callback, op, table) {
       return function(error, rows) {
-        logger.log('debug', `${op} in table ${table} complete. Error: ${JSON.stringify(error)}, rows: ${rows}`);
         if (error) {
           logger.log('error', 'db error: ' + error);
           return callback(new Error(`db error: ${error}`))
         } else {
-          logger.log('info', 'e, r: ' + JSON.stringify(error) + JSON.stringify(rows));
           return callback(null, rows);
         }
       };
@@ -177,7 +172,6 @@ module.exports = function(filename, schema, logger, callback) {
         var columns = [];
         var values = [];
         _.each(query, function(v, k) {
-          logger.log('info', `searching for ${k} in ${JSON.stringify(_.keys(schema[table].columns))}`);
           if (_.keys(schema[table].columns).indexOf(k) !== -1) {
             columns.push(`${k} is ?`);
             values.push(v);

@@ -9,6 +9,6 @@ const config = {
   RELOAD_SCHEDULE_SECONDS: 4
 };
 
-dmiFactory(FILENAME, schema, {log: function(){}}, function(dmi) {
+dmiFactory(FILENAME, schema, logger, function(dmi) {
   schedulerFactory(dmi, hardwareManager, controllers, config, logger).start();
 });

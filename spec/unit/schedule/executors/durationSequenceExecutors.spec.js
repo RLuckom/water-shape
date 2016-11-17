@@ -1,5 +1,8 @@
 const durationSequenceExecutor = require('../../../../schedule/executors/durationSequenceExecutor');
 const moment = require('moment');
+const logger = {
+  log: function(level, message) {return console.log(`[ ${level} ] ${message}`);}
+};
 
 describe('durationSequenceExecutor', function() {
   describe('filterSequenceItems', function() {
@@ -19,7 +22,7 @@ describe('durationSequenceExecutor', function() {
         validSequenceItems[1],
         validSequenceItems[2]
       ];
-      expect(durationSequenceExecutor.filterSequenceItems(testSequenceItems)).toEqual(validSequenceItems);
+      expect(durationSequenceExecutor.filterSequenceItems(testSequenceItems, logger, 'test')).toEqual(validSequenceItems);
     });
     it('throws if two valid sequence items have the same ordinal', function() {
       const validSequenceItems = [
@@ -37,14 +40,14 @@ describe('durationSequenceExecutor', function() {
         validSequenceItems[1],
         validSequenceItems[2]
       ];
-      expect(() => {durationSequenceExecutor.filterSequenceItems(testSequenceItems)}).toThrow();
+      expect(() => {durationSequenceExecutor.filterSequenceItems(testSequenceItemsi, logger, 'test')}).toThrow();
     });
   });
   describe('durationSequenceExecutor', function() {
     it('can handle a sequence with no sequenceItems', function() {
       const sequenceItems = [];
       const controller = {setState: jasmine.createSpy('setState')};
-      const executor = durationSequenceExecutor.executor(controller, {defaultState: 0}, sequenceItems);
+      const executor = durationSequenceExecutor.executor(controller, {defaultState: 0}, sequenceItems, 'test', logger);
       executor.startSchedule();
       expect(controller.setState.calls.mostRecent().args).toEqual([0]);
       expect(controller.setState.calls.count()).toEqual(1);
@@ -58,7 +61,7 @@ describe('durationSequenceExecutor', function() {
         {durationSeconds: 2, ordinal: 4, state: 5}
       ];
       const controller = {setState: jasmine.createSpy('setState')};
-      const executor = durationSequenceExecutor.executor(controller, {defaultState: 0}, sequenceItems);
+      const executor = durationSequenceExecutor.executor(controller, {defaultState: 0}, sequenceItems, 'test', logger);
       executor.startSchedule();
       setTimeout(function() {
         // 500 ms
@@ -108,7 +111,7 @@ describe('durationSequenceExecutor', function() {
         {durationSeconds: 2, ordinal: 1, state: 2}
       ];
       const controller = {setState: jasmine.createSpy('setState')};
-      const executor = durationSequenceExecutor.executor(controller, {defaultState: 0}, sequenceItems);
+      const executor = durationSequenceExecutor.executor(controller, {defaultState: 0}, sequenceItems, 'test', logger);
       executor.startSchedule();
       setTimeout(function() {
         // 500 ms

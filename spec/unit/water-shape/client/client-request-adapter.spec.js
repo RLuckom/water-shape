@@ -17,7 +17,6 @@ const logger = {
 
 function makeApi(schema, driver) {
   function executeInBrowser(tableName, action, argsWithCommaAndSpaces, callback) {
-    console.log(`Executing api.${tableName}.${action}(${argsWithCommaAndSpaces}translateToSingleArg);`);
     driver.executeAsyncScript(
       `var callback = arguments[arguments.length - 1];
       function translateToSingleArg(err, arg) {
@@ -30,7 +29,6 @@ function makeApi(schema, driver) {
       api.${tableName}.${action}(${argsWithCommaAndSpaces}translateToSingleArg);`
     ).then(
       function(results) {
-        console.log(`got results! ${results}`);
         results;
         try {
           results = JSON.parse(results);

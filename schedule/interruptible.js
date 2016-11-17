@@ -13,7 +13,7 @@ const _ = require('lodash');
 * interruptible.activeInterrupts {Function} : return an array including all active interrupts
 * interruptible.activeState {Function} : return the current state of the peripheral
 */
-function interruptible(controller, defaultState=0) {
+function interruptible(controller, defaultState=0, name, logger) {
   const interrupts = [];
   let activeInterruptUid;
   let activeState;
@@ -36,24 +36,31 @@ function interruptible(controller, defaultState=0) {
 
   function interrupt(interrupt) {
     if (!interrupt) {
+      logger.log('error', `tried to interrupt ${name} but interrupt is falsy`);
       throw new Error('interrupt must not be falsy');
     }
     if (!interrupt.uid) {
+      logger.log('error', `tried to interrupt ${name} but interrupt uid is falsy: ${interrupt.uid}`);
       throw new Error('interrupt.uid must not be falsy');
     }
+    logger.log('info', `adding interrupt ${interrupt.uid} with state ${interrupt.state} and priority ${interrupt.priority} peripheral ${name}.`)
     interrupts.push(interrupt);
     onChange();
   }
 
   function endInterrupt(interrupt) {
+    logger.log('info', `removing interrupt ${interrupt.uid} with state ${interrupt.state} and priority ${interrupt.priority} from peripheral ${name}.`)
     _.remove(interrupts, ['uid', interrupt.uid || interrupt]);
     onChange();
   }
 
   function setDefault(state) {
     if (!_.isUndefined(state)) {
+      logger.log('info', `setting default state of ${name} to ${state}`);
       defaultState = state;
       onChange();
+    } else {
+      logger.log('info', `not setting default state of ${name} because state is undefined`);
     }
     return defaultState;
   }

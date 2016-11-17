@@ -1,5 +1,8 @@
 const timeSequenceExecutor = require('../../../../schedule/executors/timeSequenceExecutor');
 const moment = require('moment');
+const logger = {
+  log: function(level, message) {return console.log(`[ ${level} ] ${message}`);}
+};
 
 describe('timeSequenceExecutor', function() {
   describe('filterSequenceItems', function() {
@@ -28,7 +31,7 @@ describe('timeSequenceExecutor', function() {
         validSequenceItems[1],
         validSequenceItems[2]
       ];
-      expect(timeSequenceExecutor.filterSequenceItems(testSequenceItems)).toEqual(validSequenceItems);
+      expect(timeSequenceExecutor.filterSequenceItems(testSequenceItems, logger, 'test')).toEqual(validSequenceItems);
     });
     it('throws if two valid sequence items overlap', function() {
       const t1 = new Date();
@@ -51,14 +54,14 @@ describe('timeSequenceExecutor', function() {
         {startTime: 67, endTime: 'kl', state: 0},
         validSequenceItems[1]
       ];
-      expect(() => {timeSequenceExecutor.filterSequenceItems(testSequenceItems)}).toThrow();
+      expect(() => {timeSequenceExecutor.filterSequenceItems(testSequenceItems, logger, 'test')}).toThrow();
     });
   });
   describe('timeSequenceExecutor', function() {
     it('can handle a sequence with no sequenceItems', function() {
       const sequenceItems = [];
       const controller = {setState: jasmine.createSpy('setState')};
-      const executor = timeSequenceExecutor.executor(controller, {defaultState: 0}, sequenceItems);
+      const executor = timeSequenceExecutor.executor(controller, {defaultState: 0}, sequenceItems, 'test', logger);
       executor.startSchedule();
       expect(controller.setState.calls.mostRecent().args).toEqual([0]);
       expect(controller.setState.calls.count()).toEqual(1);
@@ -67,7 +70,7 @@ describe('timeSequenceExecutor', function() {
       const now = moment();
       const sequenceItems = [{startTime: moment(now).add(2, 'seconds'), endTime: moment(now).add(4, 'seconds'), state: 2}];
       const controller = {setState: jasmine.createSpy('setState')};
-      const executor = timeSequenceExecutor.executor(controller, {defaultState: 0}, sequenceItems);
+      const executor = timeSequenceExecutor.executor(controller, {defaultState: 0}, sequenceItems, 'test', logger);
       executor.startSchedule();
       setTimeout(function() {
         // 500 ms
