@@ -1,6 +1,6 @@
 {
   "name": "water-shape",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Persistence and data access for people who dislike ORMs.",
   "repository": {
     "type": "git",

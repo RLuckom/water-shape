@@ -2,6 +2,8 @@ const db = require('../../../src/persistence/sqlite3-adapter');
 const fs = require('fs');
 const path = require('path');
 const _ = require('lodash');
+const async = require('async');
+const sqlite3 = require('sqlite3');
 const uuid = require('uuid');
 const testGenericDataManipulationInterface = require('../dataManipulationInterfaceTest');
 
@@ -15,7 +17,7 @@ describe('the db object implements the data manipulation api', function() {
       o.createTablesAndDefaultValues(function() {
         callback(null, o);
       });
-    });
+    }, _, async, sqlite3, uuid);
   };
 
   function afterEachFunction(dmi, done) {
@@ -143,7 +145,7 @@ describe('the schema can be turned into a sql document', function() {
     db('test.db', schema, null, function(dbu) {
       dbUtils = dbu;
       done();
-    });
+    }, _, async, sqlite3, uuid);
   });
 
   afterEach(function(done) {

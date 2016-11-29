@@ -1,13 +1,11 @@
-const _ = require('lodash');
-const treeTableFactory = require('../generic/tree');
-const uuid = require('uuid');
-const validatorTools = require('../generic/validatorWrapper.js');
-
+'use strict';
 //TODO: Add support for POST with ID in url
 // Add the option to validate before PUT / POST, using 
 // validation logic shared with server side, based on
 // required data such as 'all models of this type' etc.
-function dmiFactory(schema, logger) {
+function dmiFactory(schema, logger, _, async, uuid) {
+  const treeTableFactory = require('../generic/tree')(_, async);
+  const validatorTools = require('../generic/validatorWrapper.js')(_);
   validatorTools.guardValidators(schema);
   function immediate(argsArray, cb) {
     setTimeout(function() {cb.apply({}, argsArray);}, 0);

@@ -7,6 +7,10 @@ const phantomPath = require('phantomjs-prebuilt').path;
 const uuid = require('uuid');
 const fs = require('fs');
 const _ = require('lodash');
+const async = require('async');
+const sqlite3 = require('sqlite3');
+const hapi = require('hapi');
+const inert = require('inert');
 const webdriver = require('selenium-webdriver');
 
 const logger = {
@@ -118,8 +122,8 @@ describe('api tests', function() {
       var createTableCallback = all('createTables');
       var startServerCallback = all('startServer');
       dbUtils.createTablesAndDefaultValues(createTableCallback);
-      server = startServer({port: 9090, distPath: __dirname + '/dist'}, dbUtils, logger, startServerCallback);
-    });
+      server = startServer({port: 9090, distPath: __dirname + '/dist'}, dbUtils, logger, startServerCallback, hapi, inert, _, uuid);
+    }, _, async, sqlite3, uuid);
   };
 
   function teardownTests(dmi, callback) {

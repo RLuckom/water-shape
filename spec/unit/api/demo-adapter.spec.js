@@ -14,7 +14,7 @@ describe('api tests', function() {
 
   var dbUtils, server;
   function setupTests(schema, callback) {
-    callback(void(0), dmiClientFactory(schema, logger));
+    callback(void(0), dmiClientFactory(schema, logger, _, require('async'), uuid));
   };
 
   function teardownTests(dmi, callback) {

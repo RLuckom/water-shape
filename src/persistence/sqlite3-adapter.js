@@ -1,10 +1,4 @@
 'use strict';
-const _ = require('lodash');
-const boom = require('boom');
-const sqlite3 = require('sqlite3');
-const uuid = require('uuid');
-const validatorTools = require('../generic/validatorWrapper.js');
-const treeTableFactory = require('../generic/tree');
 
 /*
  * API for data access:
@@ -30,7 +24,9 @@ const treeTableFactory = require('../generic/tree');
  *  object, treat it as the primary key of the object to delete.
  */
 
-module.exports = function(filename, schema, logger, callback) {
+module.exports = function(filename, schema, logger, callback, _, async, sqlite3, uuid) {
+  const treeTableFactory = require('../generic/tree')(_, async);
+  const validatorTools = require('../generic/validatorWrapper.js')(_);
   validatorTools.guardValidators(schema);
   logger = logger || {
     log: (level, message) => {
@@ -84,7 +80,7 @@ module.exports = function(filename, schema, logger, callback) {
         }
         return dbUpsert(table, object, idColumn, id, columns, callback);
       } else {
-        return callback(boom.badRequest(`Unknown table: ${table}`));
+        return callback(new Error(`Unknown table: ${table}`));
       }
     }
 
@@ -103,7 +99,7 @@ module.exports = function(filename, schema, logger, callback) {
           return upsertValidObjectIntoDb(table, object, callback);
         }
       } else {
-        return callback(boom.badRequest(`Unknown table: ${table}`));
+        return callback(new Error(`Unknown table: ${table}`));
       }
     }
 
@@ -126,14 +122,14 @@ module.exports = function(filename, schema, logger, callback) {
       if (schema[table]) {
         return db.get(`SELECT * FROM ${table} WHERE ${schema[table].id}=$id;`, {$id: id}, dbLogResponse(callback, 'searchById', table));
       } else {
-        return callback(boom.badRequest(`Unknown table: ${table}`));
+        return callback(new Error(`Unknown table: ${table}`));
       }
     }
 
     function remove(table, obj, callback) {
       const id = _.get(obj, _.get(schema, `${table}.id`));
       if (_.isUndefined(id) || _.isNull(id)) { // '', 0, and false could be IDs
-        return callback(boom.badRequest(`No ID found on delete from ${table}`));
+        return callback(new Error(`No ID found on delete from ${table}`));
       } else {
         return removeById(table, id, callback);
       }
@@ -147,7 +143,7 @@ module.exports = function(filename, schema, logger, callback) {
       if (schema[table]) {
         return db.get(`DELETE FROM ${table} WHERE ${schema[table].id}=$id;`, {$id: id}, dbLogResponse(callback, 'delete', table));
       } else {
-        return callback(boom.badRequest(`Unknown table: ${table}`));
+        return callback(new Error(`Unknown table: ${table}`));
       }
     }
 
@@ -159,7 +155,7 @@ module.exports = function(filename, schema, logger, callback) {
       if (schema[table]) {
         return db.all(`SELECT * FROM ${table};`, dbLogResponse(callback, 'getAll', table));
       } else {
-        return callback(boom.badRequest(`Unknown table: ${table}`));
+        return callback(new Error(`Unknown table: ${table}`));
       }
     }
 
@@ -181,7 +177,7 @@ module.exports = function(filename, schema, logger, callback) {
         });
         return db.all(`SELECT * FROM ${table} WHERE ${columns.join(', ')};`, values, dbLogResponse(callback, 'search', table));
       } else {
-        return callback(boom.badRequest(`Unknown table: ${table}`));
+        return callback(new Error(`Unknown table: ${table}`));
       }
     }
 
@@ -272,11 +268,11 @@ module.exports = function(filename, schema, logger, callback) {
         tableMethods.update = function(instance, callback) {
           var id = instance[tableDescription.id];
           if (_.isNull(id) || _.isUndefined(id)) {
-            return callback(boom.badRequest(`Can't save without id column: ${tableDescription.id}`));
+            return callback(new Error(`Can't save without id column: ${tableDescription.id}`));
           }
           return tableMethods.getById(id, function(err, record) {
             if (!record) {
-              return callback(boom.badRequest(`Can't update nonexistent object: ${id}`));
+              return callback(new Error(`Can't update nonexistent object: ${id}`));
             }
             return tableMethods.save(_.merge(record, instance), callback);
           });

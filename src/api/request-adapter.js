@@ -1,13 +1,12 @@
 'use strict';
-const _ = require('lodash');
-const treeTableFactory = require('../generic/tree');
-const validatorTools = require('../generic/validatorWrapper.js');
 
 //TODO: Add support for POST with ID in url
 // Add the option to validate before PUT / POST, using 
 // validation logic shared with server side, based on
 // required data such as 'all models of this type' etc.
-function apiFactory(schema, apiBaseUrl, request) {
+function apiFactory(schema, apiBaseUrl, request, _, async) {
+  const treeTableFactory = require('../generic/tree')(_, async);
+  const validatorTools = require('../generic/validatorWrapper.js')(_);
   validatorTools.guardValidators(schema);
   function tryParse(b) {
     try {

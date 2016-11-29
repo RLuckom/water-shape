@@ -1,13 +1,6 @@
 'use strict';
-const Path = require('path');
-var Inert = require('inert');
-const Hapi = require('hapi');
-const sqlite3 = require('sqlite3');
-const boom = require('boom');
-const _ = require('lodash');
-const uuid = require('node-uuid');
 
-function startServer(opts, dmi, logger, callback) {
+function startServer(opts, dmi, logger, callback, hapi, inert, _, uuid) {
   logger = logger || {
     log: (level, message) => {
       return console.log(`[ ${level} ] ${message}`);
@@ -16,9 +9,9 @@ function startServer(opts, dmi, logger, callback) {
   if (callback && !_.isFunction(callback)) {
     throw new Error(`callback is ${callback}, not function`);
   }
-  const server = new Hapi.Server();
+  const server = new hapi.Server();
 
-  server.register(Inert, function() {
+  server.register(inert, function() {
     server.connection({ port: opts.port });
 
     server.route({
@@ -37,7 +30,7 @@ function startServer(opts, dmi, logger, callback) {
       handler: function (request, reply) {
         const table = request.params.table;
         if (!_.get(dmi.schema, `${request.params.table}.apiMethods.POST`)) {
-          return callback(boom.badRequest(`Unknown table: ${table}`));
+          return callback(new Error(`Unknown table: ${table}`));
         } else {
           var objectToInsert = request.payload;
           if (_.isString(objectToInsert)) {
@@ -60,7 +53,7 @@ function startServer(opts, dmi, logger, callback) {
         const table = request.params.table;
         const id = request.params.id;
         if (!dmi.schema[table].apiMethods.POST) {
-          return callback(boom.badRequest(`Unknown table: ${table}`));
+          return callback(new Error(`Unknown table: ${table}`));
         } else {
           var objectToInsert = request.payload;
           if (_.isString(objectToInsert)) {
@@ -86,7 +79,7 @@ function startServer(opts, dmi, logger, callback) {
         const table = request.params.table;
         const id = request.params.id;
         if (!dmi.schema[table].apiMethods.DELETE) {
-          return callback(boom.badRequest(`Unknown table: ${table}`));
+          return callback(new Error(`Unknown table: ${table}`));
         } else {
           return dmi[table].deleteById(id, reply);
         }
@@ -100,7 +93,7 @@ function startServer(opts, dmi, logger, callback) {
         const table = request.params.table;
         const id = request.params.id;
         if (!dmi.schema[table].apiMethods.PUT) {
-          return callback(boom.badRequest(`Unknown table: ${table}`));
+          return callback(new Error(`Unknown table: ${table}`));
         } else {
           var objectToInsert = request.payload;
           if (_.isString(objectToInsert)) {

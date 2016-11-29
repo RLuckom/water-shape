@@ -4,9 +4,12 @@ const startServer = require('../../../src/server/hapi-adapter').startServer;
 const apiClientFactory = require('../../../src/api/request-adapter');
 const testGenericDataManipulationInterface = require('../dataManipulationInterfaceTest');
 const request = require('request');
+const async = require('async');
 const uuid = require('uuid');
 const fs = require('fs');
 const _ = require('lodash');
+const hapi = require('hapi');
+const sqlite3 = require('sqlite3');
 
 const logger = {
   log: (level, message) => {
@@ -18,7 +21,7 @@ describe('api tests', function() {
 
   var dbUtils, server;
   function setupTests(schema, callback) {
-    const api = apiClientFactory(_.cloneDeep(schema), 'http://localhost:9090/api', request);
+    const api = apiClientFactory(_.cloneDeep(schema), 'http://localhost:9090/api', request, _, async);
     var finished = {};
     function all(taskName) {
       finished[taskName] = false;
@@ -37,8 +40,8 @@ describe('api tests', function() {
       var createTableCallback = all('createTables');
       var startServerCallback = all('startServer');
       dbUtils.createTablesAndDefaultValues(createTableCallback);
-      server = startServer({port: 9090, distPath: '/../../dist'}, dbUtils, logger, startServerCallback);
-    });
+      server = startServer({port: 9090, distPath: '/../../dist'}, dbUtils, logger, startServerCallback, hapi, require('inert'), _, uuid);
+    }, _, async, sqlite3, uuid);
   };
 
   function teardownTests(dmi, callback) {
@@ -67,7 +70,7 @@ describe('api tests', function() {
 
   describe('nongeneric tests', function() {
     const schema = require('../fixtures/bucketBrainSchema').schemaFactory();
-    const api = apiClientFactory(_.cloneDeep(schema), 'http://localhost:9090/api', request);
+    const api = apiClientFactory(_.cloneDeep(schema), 'http://localhost:9090/api', request, _, async);
     beforeEach(function(done) {
       var finished = {};
       function all(taskName) {
@@ -87,8 +90,8 @@ describe('api tests', function() {
         var createTableCallback = all('createTables');
         var startServerCallback = all('startServer');
         dbUtils.createTablesAndDefaultValues(createTableCallback);
-        server = startServer({port: 9090, distPath: '/../../dist'}, dbUtils, logger, startServerCallback);
-      });
+        server = startServer({port: 9090, distPath: '/../../dist'}, dbUtils, logger, startServerCallback, hapi, require('inert'), _, uuid);
+      }, _, async, sqlite3, uuid);
     });
 
     afterEach(function(done) {
