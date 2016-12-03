@@ -1,59 +1,44 @@
 {
-  "name": "bucket-brain",
-  "version": "1.0.0",
-  "description": "",
+  "name": "water-shape",
+  "version": "0.0.1",
+  "description": "Persistence and data access for people who dislike ORMs.",
   "main": "index.js",
   "scripts": {
-    "test": "node spec/unit/testRunner.js",
-    "phantomTest": "node spec/phantom/testRunner.js",
-    "serve": "node bin/server.js",
-    "compile": "webpack --config webpack.config.prod.js",
-    "watch": "webpack --config webpack.config.prod.js --watch",
-    "compile-demo": "webpack --config webpack.config.demo.js",
-    "watch-demo": "webpack --config webpack.config.demo.js --watch"
+    "test": "node spec/unit/testRunner.js"
   },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "async": "^2.0.1",
-    "babel": "^6.5.2",
-    "babel-core": "^6.9.1",
-    "babel-loader": "^6.2.4",
-    "babel-preset-es2015": "^6.9.0",
-    "babel-preset-react": "^6.5.0",
-    "browser-request": "^0.3.3",
-    "express": "^4.14.0",
-    "gulp": "^3.9.1",
-    "hapi": "^13.4.1",
-    "inert": "^4.0.1",
-    "lodash": "^4.13.1",
-    "moment": "^2.14.1",
-    "node-sass": "^3.7.0",
-    "react": "^15.1.0",
-    "react-dom": "^15.1.0",
-    "sass-loader": "^3.2.0",
-    "sqlite3": "^3.1.4",
-    "url-loader": "^0.5.7",
-    "uuid": "^2.0.2",
-    "webpack": "^1.13.1",
-    "winston": "^2.2.0"
-  },
+  "keywords": [
+    "sqlite3",
+    "database",
+    "api",
+    "generator",
+    "schema"
+  ],
+  "author": "Raphael Luckom",
+  "license": "MIT",
   "devDependencies": {
+    "jasmine": "^2.5.2",
+    "selenium-webdriver": "^3.0.1",
+    "webpack": "^1.13.3",
+    "babel": "^6.5.2",
     "babel-core": "^6.10.4",
     "babel-loader": "^6.2.4",
     "babel-preset-es2015": "^6.9.0",
     "babel-preset-react": "^6.11.1",
-    "css-loader": "^0.23.1",
     "file-loader": "^0.8.5",
-    "jasmine": "^2.4.1",
-    "react-hot-loader": "^1.3.0",
-    "selenium-webdriver": "^3.0.0-beta-2",
-    "style-loader": "^0.13.1",
     "webpack-dev-server": "^1.14.1"
   },
+  "dependencies": {
+    "async": "^2.1.4",
+    "browser-request": "^0.3.3",
+    "hapi": "^15.2.0",
+    "inert": "^4.0.2",
+    "lodash": "^4.17.2",
+    "node-uuid": "^1.4.7",
+    "request": "^2.79.0",
+    "sqlite3": "^3.1.8",
+    "uuid": "^3.0.0"
+  },
   "optionalDependencies": {
-    "phantomjs-prebuilt": "^2.1.12",
-    "pigpio": "^0.3.4",
-    "raspicam": "^0.2.13"
+    "phantomjs-prebuilt": "^2.1.12"
   }
 }

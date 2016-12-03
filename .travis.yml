@@ -1,11 +1,9 @@
 language: node_js
 node_js:
-    - "6.1"
+    - "6"
 install:
   - npm install
 script:
-  - npm run compile
-  - npm run phantomTest
   - npm test
 env:
   - CXX=g++-4.8
